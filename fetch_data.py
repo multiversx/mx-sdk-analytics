@@ -3,9 +3,36 @@ from functools import reduce
 import json
 import subprocess
 from typing import Any, Dict
-from bs4 import BeautifulSoup
-
+from bs4 import BeautifulSoup, Tag
 import requests
+from tqdm import tqdm
+
+# in order to permit calculations of scores in future implementations, the score must be a dictionary of individual composit scores
+# the general score is calculated as a weighted means of composit scores, which in turn will be weighted means of individual scores.
+#
+# NPM: final_score = weightedMean([[quality, 6],[popularity, 7],[maintenance, 7]]);
+# NPM: quality = weightedMean([[carefulness, 7],[tests, 7],[health, 4],[branding, 2]]);
+# NPM: maintanance = weightedMean([[releasesFrequency, 2],[commitsFrequency, 1],[openIssues, 1],[issuesDistribution, 2]]);
+# NPM: popularity = weightedMean([[communityInterest, 2],[downloadsCount, 2],[downloadsAcceleration, 1],// [scores.dependentsCount, 2]]);
+# PYPI: health_score = weightedMean([[security, 6],[popularity, 6],[maintanance, 4],[community, 4]]);
+
+
+class ScoreObject:
+    def __init__(self) -> None:
+        self.score: int = 0
+        self.score_breakdown = {}
+
+    def to_dict(self) -> Dict[str, int]:
+        return {
+            "general_score": self.score,
+            "score_breakdown": {}
+        }
+
+    @staticmethod
+    def from_pypi_http_response(info: Dict[str, Any]) -> 'ScoreObject':
+        response = ScoreObject()
+        response.score = info.get('score', 0)
+        response.score_breakdown = info.get('score_breakdown', {})
 
 
 class DailyDownloads:
@@ -66,6 +93,7 @@ class PackageDownloads:
         self.package_site = ''
         self.downloads: list[DailyDownloads] = []
         self.no_of_downloads = 0
+        self.libraries_io_score: json = {}
 
     def __str__(self):
         print_str = f"PACKAGE = {self.package_name} - language = {self.package_language} - site = {
@@ -80,9 +108,27 @@ class PackageDownloads:
                 "section_name": self.package_site,
                 "package_name": self.package_name,
                 "language": self.package_language,
-                "no_of_downloads": self.no_of_downloads
+                "no_of_downloads": self.no_of_downloads,
+                "libraries_io_score": self.libraries_io_score
             },
             "downloads": [item.to_dict() for item in self.downloads]
+        }
+    # TODO get rid of this:
+
+    def set_libraries_io_score(self, data: Any):
+        self.libraries_io_score = data
+
+    def calculate_monthly_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
+        last_month_downloads = reduce(lambda acc, dd: acc + dd.downloads, self.downloads, 0)
+        avg_daily_downloads = last_month_downloads / 30
+        date_format = '%Y-%m-%d'
+        start_date = (datetime.strptime(end_date, date_format).date() - timedelta(6)).strftime(date_format)
+        last_week_downloads = reduce(lambda acc, dd: acc + dd.downloads, [item for item in self.downloads if item.date >= start_date], 0)
+        return {
+            "last_month_downloads": last_month_downloads,
+            "last_week_downloads": last_week_downloads,
+            "avg_daily_downloads": avg_daily_downloads,
+            "libraries_io_score": reduce(lambda acc, value: acc + value, self.libraries_io_score.values(), 0)
         }
 
     @staticmethod
@@ -147,6 +193,7 @@ class PackageDownloads:
         result.package_site = meta.get('section_name', '')
         result.package_language = meta.get('language', '')
         result.no_of_downloads = meta.get('no_of_downloads', '')
+        result.libraries_io_score = meta.get('libraries_io_score', {})
         return result
 
 
@@ -186,7 +233,7 @@ class DownloadsFetcher:
             file.write(json.dumps(self.to_dict(), indent=4))
     # npm api (registry.npmjs.org) - query search result
 
-    def get_npm_package_names(self, pattern: str) -> list[PackageDownloads]:
+    def get_npm_package_names(self, pattern: str) -> list[str]:
         size = 20
         page = 0
         packages = []
@@ -211,7 +258,7 @@ class DownloadsFetcher:
         return response.json()
     # crates api (crates/api) - query search result
 
-    def get_crates_package_names(self, pattern: str) -> list[PackageDownloads]:
+    def get_crates_package_names(self, pattern: str) -> list[str]:
         size = 20
         page = 0
         packages = []
@@ -227,7 +274,6 @@ class DownloadsFetcher:
                 break
             page += 1
         return packages
-    # <title>package health: 69/100</title>
 
     def fetch_crates_downloads(self, package_name: str):
         url = f"https://crates.io/api/v1/crates/{package_name}/downloads"
@@ -245,7 +291,7 @@ class DownloadsFetcher:
         return filtered_data
     # pypi http search result scrapping
 
-    def get_pypi_package_names(self, pattern: str) -> list[PackageDownloads]:
+    def get_pypi_package_names(self, pattern: str) -> list[str]:
         size = 20
         page = 1
         packages = []
@@ -267,6 +313,25 @@ class DownloadsFetcher:
             page += 1
         return packages
 
+    # <title>package health: 69/100</title>
+    def fetch_pypi_package_score(self, package_name: str) -> json:
+        score = ScoreObject()
+        url = f"https://snyk.io/advisor/python/{package_name}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            title_tags: list[Tag] = [item for item in soup.find_all('title')]
+            for title_tag in title_tags:
+                title_text = title_tag.text
+                if "package health:" in title_text.lower():
+                    health_score: int = title_text.split(':')[-1].split('/')[0].strip()
+                    score.score = int(health_score) / 100
+                    score.score_breakdown = {"health_score": score.score}
+                    # print("Package Score:", json.dumps(score, indent=4))
+        else:
+            print(f"Failed to retrieve the details webpage for package {package_name}.")
+        return score.json()
+
     def fetch_pypi_downloads(self, package_name: str):
         url = f"https://pypistats.org/api/packages/{package_name}/overall"
         response = requests.get(url)
@@ -280,6 +345,13 @@ class DownloadsFetcher:
                                  if self.start_date <= entry['date'] <= self.end_date]
         return filtered_data
 
+    def fetch_libraries_io_score(self, package_name: str, site: str) -> json:
+        package = package_name.replace('/', '%2F')
+        url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key=f8adc475b99fdefa72ae0886b653b921"
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+
     @staticmethod
     def from_package_sites():
         result = DownloadsFetcher()
@@ -289,25 +361,35 @@ class DownloadsFetcher:
         result.end_date = end_date.strftime("%Y-%m-%d")  # "2024-08-07"
         print("fetching from npm ...")
         packages = result.get_npm_package_names("@multiversx/sdk")
-        for package_name in packages:
-            fetched_downloads = result.fetch_npm_downloads(package_name)
-            package_downloads = PackageDownloads.from_npm_fetched_data(
-                package_name, 'Javascript', fetched_downloads)
-            result.downloads.append(package_downloads)
+        with tqdm(total=len(packages)) as pbar:
+            for package_name in packages:
+                fetched_downloads = result.fetch_npm_downloads(package_name)
+                package_downloads = PackageDownloads.from_npm_fetched_data(
+                    package_name, 'Javascript', fetched_downloads)
+                package_downloads.set_libraries_io_score(result.fetch_libraries_io_score(package_name, "NPM"))
+                result.downloads.append(package_downloads)
+                pbar.update(1)
         print("fetching from crates ...")
         packages = result.get_crates_package_names("multiversx")
-        for package_name in packages:
-            fetched_downloads = result.fetch_crates_downloads(package_name)
-            package_downloads = PackageDownloads.from_crates_fetched_data(
-                package_name, 'Rust', fetched_downloads)
-            result.downloads.append(package_downloads)
+        with tqdm(total=len(packages)) as pbar:
+            for package_name in packages:
+                fetched_downloads = result.fetch_crates_downloads(package_name)
+                package_downloads = PackageDownloads.from_crates_fetched_data(
+                    package_name, 'Rust', fetched_downloads)
+                package_downloads.set_libraries_io_score(result.fetch_libraries_io_score(package_name, 'CARGO'))
+                result.downloads.append(package_downloads)
+                pbar.update(1)
         print("fetching from pypi ...")
         packages = result.get_pypi_package_names("multiversx-sdk")
-        for package_name in packages:
-            fetched_downloads = result.fetch_pypi_downloads(package_name)
-            package_downloads = PackageDownloads.from_pypi_fetched_data(
-                package_name, 'Python', fetched_downloads)
-            result.downloads.append(package_downloads)
+        with tqdm(total=len(packages)) as pbar:
+            for package_name in packages:
+                fetched_downloads = result.fetch_pypi_downloads(package_name)
+                package_downloads = PackageDownloads.from_pypi_fetched_data(
+                    package_name, 'Python', fetched_downloads)
+                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, 'PYPI')
+                result.downloads.append(package_downloads)
+                result.fetch_pypi_package_score(package_name)
+                pbar.update(1)
         return result
 
     @staticmethod
