@@ -3,11 +3,12 @@ from typing import List
 
 
 class Language(Enum):
-    JAVASCRIPT = 'javascript'
-    TYPESCRIPT = 'typescript'
-    NESTJS = 'nestjs'
-    RUST = 'rust'
-    PYTHON = 'python'
+    JAVASCRIPT = 'Javascript'
+    TYPESCRIPT = 'Typescript'
+    NESTJS = 'Nestjs'
+    RUST = 'Rust'
+    PYTHON = 'Python'
+
 
 class Repository(Enum):
     NPM = ('npmjs', [Language.JAVASCRIPT, Language.TYPESCRIPT, Language.NESTJS])
@@ -19,11 +20,12 @@ class Repository(Enum):
         self.languages = languages
 
 
-def print_repos():    
+def print_repos():
     for repo in Repository:
         print(f"Repository: {repo.name} - {repo.repo_name}")
-        #print("Supported languages: ", ', '.join(map(lambda lang: lang.value, repo.languages)))
-        print(f"Supported languages:{', '.join(map(lambda lang: lang.value,repo.languages))}")
+        # print("Supported languages: ", ', '.join(map(lambda lang: lang.value, repo.languages)))
+        print(f"Supported languages:{', '.join(map(lambda lang: lang.value, repo.languages))}")
         print()
 
-#print_repos()
+
+# print_repos()

@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
 from functools import reduce
 import json
+import os
 import subprocess
 from typing import Any, Dict
 from bs4 import BeautifulSoup, Tag
 import requests
 from tqdm import tqdm
+
+from utils import Language, Repository
 
 # in order to permit calculations of scores in future implementations, the score must be a dictionary of individual composit scores
 # the general score is calculated as a weighted means of composit scores, which in turn will be weighted means of individual scores.
@@ -15,6 +18,8 @@ from tqdm import tqdm
 # NPM: maintanance = weightedMean([[releasesFrequency, 2],[commitsFrequency, 1],[openIssues, 1],[issuesDistribution, 2]]);
 # NPM: popularity = weightedMean([[communityInterest, 2],[downloadsCount, 2],[downloadsAcceleration, 1],// [scores.dependentsCount, 2]]);
 # PYPI: health_score = weightedMean([[security, 6],[popularity, 6],[maintanance, 4],[community, 4]]);
+
+libraries_io_api_key = os.environ.get("LIBRARIES_IO_API_KEY")
 
 
 class ScoreObject:
@@ -94,6 +99,7 @@ class PackageDownloads:
         self.downloads: list[DailyDownloads] = []
         self.no_of_downloads = 0
         self.libraries_io_score: json = {}
+        self.site_score: json = {}
 
     def __str__(self):
         print_str = f"PACKAGE = {self.package_name} - language = {self.package_language} - site = {
@@ -109,7 +115,8 @@ class PackageDownloads:
                 "package_name": self.package_name,
                 "language": self.package_language,
                 "no_of_downloads": self.no_of_downloads,
-                "libraries_io_score": self.libraries_io_score
+                "libraries_io_score": self.libraries_io_score,
+                "site_score": self.site_score
             },
             "downloads": [item.to_dict() for item in self.downloads]
         }
@@ -194,6 +201,7 @@ class PackageDownloads:
         result.package_language = meta.get('language', '')
         result.no_of_downloads = meta.get('no_of_downloads', '')
         result.libraries_io_score = meta.get('libraries_io_score', {})
+        result.site_score = meta.get('site_score', {})
         return result
 
 
@@ -228,27 +236,34 @@ class DownloadsFetcher:
 
     def write_json(self):
         print("writting json ...")
-        report_name = f"./Output/json{cn_date()}.txt"
+        report_name = f"./Output/blue{cn_date()}.json"
         with open(report_name, 'w') as file:
             file.write(json.dumps(self.to_dict(), indent=4))
     # npm api (registry.npmjs.org) - query search result
 
-    def get_npm_package_names(self, pattern: str) -> list[str]:
+    def get_npm_package_names(self, pattern: str) -> Dict[str, Any]:
         size = 20
         page = 0
-        packages = []
+        # packages = []
+        # scores = []
+        scores_dict = {}
         while True:
             url = f"https://registry.npmjs.org/-/v1/search?text={
                 pattern}&size={size}&from={page * size}"
             response = requests.get(url).json()
             package_info = response.get('objects', [])
-            new_packages = [item.get('package', {}).get(
-                'name') for item in package_info if pattern in item.get('package', {}).get('name')]
-            packages.extend(new_packages)
+            # new_packages = [item.get('package', {}).get('name') for item in package_info if pattern in item.get('package', {}).get('name')]
+            # downloads_dict.update({p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages})
+            scores_dict.update({item.get('package', {}).get('name'): item.get('score', {}) for item in package_info
+                                if pattern in item.get('package', {}).get('name')})
+            # new_scores = [item.get('score', {}) for item in package_info if item.get('package', {}).get('name') in new_packages]
+            # print(scores_dict)
+            # packages.extend(new_packages)
+            # scores.extend(new_scores)
             if len(response['objects']) < size:
                 break
             page += 1
-        return packages
+        return scores_dict
 
     def fetch_npm_downloads(self, package_name: str):
         url = f"https://api.npmjs.org/downloads/range/{
@@ -315,7 +330,8 @@ class DownloadsFetcher:
 
     # <title>package health: 69/100</title>
     def fetch_pypi_package_score(self, package_name: str) -> json:
-        score = ScoreObject()
+        # score = ScoreObject()
+        score_details = {}
         url = f"https://snyk.io/advisor/python/{package_name}"
         response = requests.get(url)
         if response.status_code == 200:
@@ -325,12 +341,18 @@ class DownloadsFetcher:
                 title_text = title_tag.text
                 if "package health:" in title_text.lower():
                     health_score: int = title_text.split(':')[-1].split('/')[0].strip()
-                    score.score = int(health_score) / 100
-                    score.score_breakdown = {"health_score": score.score}
-                    # print("Package Score:", json.dumps(score, indent=4))
+                    score_details['final'] = int(health_score) / 100
+            score_details['detail'] = {}
+            scores_list = soup.find('ul', class_='scores')
+            for li in scores_list.find_all('li'):
+                category = li.find('span').text.strip()
+                status = li.find('span', class_='vue--pill__body').text.strip()
+                score_details['detail'][category] = status
+            # print(score_details)
+            # print("Package Score:", json.dumps(score_details, indent=4))
         else:
             print(f"Failed to retrieve the details webpage for package {package_name}.")
-        return score.json()
+        return score_details
 
     def fetch_pypi_downloads(self, package_name: str):
         url = f"https://pypistats.org/api/packages/{package_name}/overall"
@@ -347,7 +369,7 @@ class DownloadsFetcher:
 
     def fetch_libraries_io_score(self, package_name: str, site: str) -> json:
         package = package_name.replace('/', '%2F')
-        url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key=f8adc475b99fdefa72ae0886b653b921"
+        url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
         response = requests.get(url)
         response.raise_for_status()
         return response.json()
@@ -362,11 +384,12 @@ class DownloadsFetcher:
         print("fetching from npm ...")
         packages = result.get_npm_package_names("@multiversx/sdk")
         with tqdm(total=len(packages)) as pbar:
-            for package_name in packages:
+            for package_name in packages.keys():
                 fetched_downloads = result.fetch_npm_downloads(package_name)
                 package_downloads = PackageDownloads.from_npm_fetched_data(
                     package_name, 'Javascript', fetched_downloads)
                 package_downloads.set_libraries_io_score(result.fetch_libraries_io_score(package_name, "NPM"))
+                package_downloads.site_score = packages[package_name]
                 result.downloads.append(package_downloads)
                 pbar.update(1)
         print("fetching from crates ...")
@@ -385,8 +408,9 @@ class DownloadsFetcher:
             for package_name in packages:
                 fetched_downloads = result.fetch_pypi_downloads(package_name)
                 package_downloads = PackageDownloads.from_pypi_fetched_data(
-                    package_name, 'Python', fetched_downloads)
-                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, 'PYPI')
+                    package_name, Language.PYTHON.value, fetched_downloads)
+                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, Repository.PYPI.name)
+                package_downloads.site_score = result.fetch_pypi_package_score(package_name)
                 result.downloads.append(package_downloads)
                 result.fetch_pypi_package_score(package_name)
                 pbar.update(1)
@@ -423,3 +447,8 @@ def search_npm_packages(pattern: str):
                      for pkg in packages if pattern.lower() in pkg['name'].lower()]
 
     return package_names
+
+
+# fetcher = DownloadsFetcher()
+# fetcher.fetch_pypi_package_score("multiversx-sdk")
+# packages = fetcher.get_npm_package_names("@multiversx/sdk")
