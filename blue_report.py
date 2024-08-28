@@ -5,13 +5,17 @@ from typing import Any, Dict
 import dash
 from dash import dcc, html, Input, Output
 # from dash import dash_table
+from dotenv.main import load_dotenv
 import plotly.graph_objs as go
 from fetch_data import DownloadsFetcher, PackageDownloads
 from utils import Repository
 
+
+load_dotenv()
+
 app = dash.Dash(__name__)
 
-directory = './Output'
+directory = os.environ.get("JSON_FOLDER")
 json_files = glob.glob(os.path.join(directory, 'blue*.json'))
 json_files.sort(reverse=True)
 
@@ -32,8 +36,16 @@ app.layout = html.Div(children=[
 
 
 def create_table(fetcher: DownloadsFetcher, section: Repository):
-    header_row = [html.Th("Package"), html.Th("Downloads last month"), html.Th("Downloads last week"),
-                  html.Th("Avg downloads per day"), html.Th("Libraries.io Score"), html.Th("Site Score")]
+    header_row = [
+        html.Th("Package"),
+        html.Th(["Downloads", html.Br(), "last month"]),
+        html.Th(["Downloads", html.Br(), "last week"]),
+        html.Th(["Avg downloads", html.Br(), "per day"]),
+        html.Th(["Libraries.io", html.Br(), "Score"]),
+        html.Th(["Site", html.Br(), " Score"]),
+        html.Th("Site Score Details")
+    ]
+
     table_header = [html.Tr(header_row)]
     table_rows = []
     packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
@@ -42,17 +54,32 @@ def create_table(fetcher: DownloadsFetcher, section: Repository):
         package_statistics = package.calculate_monthly_statistics_from_daily_downloads(fetcher.end_date)
         row = [
             html.Td(package.package_name),
-            html.Td(package_statistics['last_month_downloads']),
-            html.Td(package_statistics['last_week_downloads']),
-            html.Td(int(package_statistics['avg_daily_downloads'])),
-            html.Td(package_statistics['libraries_io_score'])
+            html.Td(package_statistics['last_month_downloads'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(package_statistics['last_week_downloads'], style={'textAlign': 'right'}),
+            html.Td(int(package_statistics['avg_daily_downloads']), style={'textAlign': 'right'}),
+            html.Td(package_statistics['libraries_io_score'], id=f"lio_{package.package_name}", style={'textAlign': 'right'}),
+            html.Td(package_statistics['site_score'], style={'textAlign': 'right', 'width': '100px'}),
+            html.Td(" - " + package_statistics['site_score_details'], style={'textAlign': 'right', })
         ]
-        if (package.site_score):
-            row.extend([html.Td(f"{package.site_score['final']:.2f}")])
-            #row.extend([html.Td(item) for item in package.site_score.get('detail',{})])
         table_rows.append(html.Tr(row))
 
     return html.Table(table_header + table_rows)
+
+
+def create_package_info_box(fetcher: DownloadsFetcher, section: Repository):
+    info_boxes = []
+    packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
+    packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
+
+    for package in packages:
+        info = package.analyse_libraries_io_score()
+        if info:
+            info_boxes.append(html.Div([
+                html.H3(package.package_name),
+                html.P(info),
+            ], style={'border': '1px solid #ccc', 'padding': '10px', 'margin': '10px'}))
+
+    return html.Div(info_boxes)
 
 
 def create_graph(fetcher: DownloadsFetcher, section: Repository) -> Dict[str, Any]:
@@ -102,7 +129,9 @@ def update_report(selected_file: str):
                 dcc.Graph(
                     id='downloads-graph',
                     figure=create_graph(fetcher, repo)
-                )
+                ),
+                html.H2("Libraries.io warnings"),
+                create_package_info_box(fetcher, repo)
             ])
             for repo in Repository
         ])

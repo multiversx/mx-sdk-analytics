@@ -1,175 +1,16 @@
 {
     "metadata": {
         "report_type": "blue",
-        "start_date": "2024-07-28",
-        "end_date": "2024-08-26"
+        "start_date": "2024-07-29",
+        "end_date": "2024-08-27"
     },
     "records": [
         {
             "metadata": {
                 "section_name": "npmjs",
-                "package_name": "@multiversx/sdk-dapp",
-                "language": "Javascript",
-                "no_of_downloads": 4635,
-                "libraries_io_score": {
-                    "basic_info_present": 1,
-                    "repository_present": 1,
-                    "readme_present": 1,
-                    "license_present": 1,
-                    "versions_present": 1,
-                    "follows_semver": 1,
-                    "recent_release": 1,
-                    "not_brand_new": 1,
-                    "one_point_oh": 1,
-                    "dependent_projects": 2,
-                    "dependent_repositories": 1,
-                    "stars": 2,
-                    "contributors": 1,
-                    "subscribers": 0,
-                    "all_prereleases": 0,
-                    "any_outdated_dependencies": -1,
-                    "is_deprecated": 0,
-                    "is_unmaintained": 0,
-                    "is_removed": 0
-                },
-                "site_score": {
-                    "final": 0.316280042114468,
-                    "detail": {
-                        "quality": 0.6349022673852778,
-                        "popularity": 0.026121986377765638,
-                        "maintenance": 0.3333333333333333
-                    }
-                }
-            },
-            "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 20
-                },
-                {
-                    "date": "2024-07-29",
-                    "downloads": 60
-                },
-                {
-                    "date": "2024-07-30",
-                    "downloads": 106
-                },
-                {
-                    "date": "2024-07-31",
-                    "downloads": 62
-                },
-                {
-                    "date": "2024-08-01",
-                    "downloads": 317
-                },
-                {
-                    "date": "2024-08-02",
-                    "downloads": 658
-                },
-                {
-                    "date": "2024-08-03",
-                    "downloads": 458
-                },
-                {
-                    "date": "2024-08-04",
-                    "downloads": 23
-                },
-                {
-                    "date": "2024-08-05",
-                    "downloads": 151
-                },
-                {
-                    "date": "2024-08-06",
-                    "downloads": 263
-                },
-                {
-                    "date": "2024-08-07",
-                    "downloads": 341
-                },
-                {
-                    "date": "2024-08-08",
-                    "downloads": 407
-                },
-                {
-                    "date": "2024-08-09",
-                    "downloads": 272
-                },
-                {
-                    "date": "2024-08-10",
-                    "downloads": 91
-                },
-                {
-                    "date": "2024-08-11",
-                    "downloads": 77
-                },
-                {
-                    "date": "2024-08-12",
-                    "downloads": 85
-                },
-                {
-                    "date": "2024-08-13",
-                    "downloads": 164
-                },
-                {
-                    "date": "2024-08-14",
-                    "downloads": 205
-                },
-                {
-                    "date": "2024-08-15",
-                    "downloads": 90
-                },
-                {
-                    "date": "2024-08-16",
-                    "downloads": 47
-                },
-                {
-                    "date": "2024-08-17",
-                    "downloads": 61
-                },
-                {
-                    "date": "2024-08-18",
-                    "downloads": 23
-                },
-                {
-                    "date": "2024-08-19",
-                    "downloads": 68
-                },
-                {
-                    "date": "2024-08-20",
-                    "downloads": 77
-                },
-                {
-                    "date": "2024-08-21",
-                    "downloads": 64
-                },
-                {
-                    "date": "2024-08-22",
-                    "downloads": 71
-                },
-                {
-                    "date": "2024-08-23",
-                    "downloads": 145
-                },
-                {
-                    "date": "2024-08-24",
-                    "downloads": 65
-                },
-                {
-                    "date": "2024-08-25",
-                    "downloads": 21
-                },
-                {
-                    "date": "2024-08-26",
-                    "downloads": 143
-                }
-            ]
-        },
-        {
-            "metadata": {
-                "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-core",
                 "language": "Javascript",
-                "no_of_downloads": 34661,
+                "no_of_downloads": 36060,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -192,19 +33,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.30344874012041584,
+                    "final": 0.3364715564466093,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.0711467992748552,
+                        "quality": 0.6372254813114135,
+                        "popularity": 0.08182070110433881,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 170
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1497
@@ -320,6 +157,169 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 1086
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 1569
+                }
+            ]
+        },
+        {
+            "metadata": {
+                "section_name": "npmjs",
+                "package_name": "@multiversx/sdk-dapp",
+                "language": "Javascript",
+                "no_of_downloads": 4869,
+                "libraries_io_score": {
+                    "basic_info_present": 1,
+                    "repository_present": 1,
+                    "readme_present": 1,
+                    "license_present": 1,
+                    "versions_present": 1,
+                    "follows_semver": 1,
+                    "recent_release": 1,
+                    "not_brand_new": 1,
+                    "one_point_oh": 1,
+                    "dependent_projects": 2,
+                    "dependent_repositories": 1,
+                    "stars": 2,
+                    "contributors": 1,
+                    "subscribers": 0,
+                    "all_prereleases": 0,
+                    "any_outdated_dependencies": -1,
+                    "is_deprecated": 0,
+                    "is_unmaintained": 0,
+                    "is_removed": 0
+                },
+                "site_score": {
+                    "final": 0.31625238197276023,
+                    "detail": {
+                        "quality": 0.6348272359662411,
+                        "popularity": 0.026107270046346345,
+                        "maintenance": 0.3333333333333333
+                    }
+                }
+            },
+            "downloads": [
+                {
+                    "date": "2024-07-29",
+                    "downloads": 60
+                },
+                {
+                    "date": "2024-07-30",
+                    "downloads": 106
+                },
+                {
+                    "date": "2024-07-31",
+                    "downloads": 62
+                },
+                {
+                    "date": "2024-08-01",
+                    "downloads": 317
+                },
+                {
+                    "date": "2024-08-02",
+                    "downloads": 658
+                },
+                {
+                    "date": "2024-08-03",
+                    "downloads": 458
+                },
+                {
+                    "date": "2024-08-04",
+                    "downloads": 23
+                },
+                {
+                    "date": "2024-08-05",
+                    "downloads": 151
+                },
+                {
+                    "date": "2024-08-06",
+                    "downloads": 263
+                },
+                {
+                    "date": "2024-08-07",
+                    "downloads": 341
+                },
+                {
+                    "date": "2024-08-08",
+                    "downloads": 407
+                },
+                {
+                    "date": "2024-08-09",
+                    "downloads": 272
+                },
+                {
+                    "date": "2024-08-10",
+                    "downloads": 91
+                },
+                {
+                    "date": "2024-08-11",
+                    "downloads": 77
+                },
+                {
+                    "date": "2024-08-12",
+                    "downloads": 85
+                },
+                {
+                    "date": "2024-08-13",
+                    "downloads": 164
+                },
+                {
+                    "date": "2024-08-14",
+                    "downloads": 205
+                },
+                {
+                    "date": "2024-08-15",
+                    "downloads": 90
+                },
+                {
+                    "date": "2024-08-16",
+                    "downloads": 47
+                },
+                {
+                    "date": "2024-08-17",
+                    "downloads": 61
+                },
+                {
+                    "date": "2024-08-18",
+                    "downloads": 23
+                },
+                {
+                    "date": "2024-08-19",
+                    "downloads": 68
+                },
+                {
+                    "date": "2024-08-20",
+                    "downloads": 77
+                },
+                {
+                    "date": "2024-08-21",
+                    "downloads": 64
+                },
+                {
+                    "date": "2024-08-22",
+                    "downloads": 71
+                },
+                {
+                    "date": "2024-08-23",
+                    "downloads": 145
+                },
+                {
+                    "date": "2024-08-24",
+                    "downloads": 65
+                },
+                {
+                    "date": "2024-08-25",
+                    "downloads": 21
+                },
+                {
+                    "date": "2024-08-26",
+                    "downloads": 143
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 254
                 }
             ]
         },
@@ -328,7 +328,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-network-providers",
                 "language": "Javascript",
-                "no_of_downloads": 13735,
+                "no_of_downloads": 14182,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -351,19 +351,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.3028264047673568,
+                    "final": 0.3030175395276072,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.06936869826611514,
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.06996070457556558,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 67
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 609
@@ -479,6 +475,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 450
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 514
                 }
             ]
         },
@@ -487,7 +487,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-dapp-swap",
                 "language": "Javascript",
-                "no_of_downloads": 669,
+                "no_of_downloads": 720,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -510,19 +510,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.3094960426470633,
+                    "final": 0.3094693127889655,
                     "detail": {
-                        "quality": 0.6349022673852778,
-                        "popularity": 0.0067391307566095114,
+                        "quality": 0.6348272359662411,
+                        "popularity": 0.0067270723783614044,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 16
@@ -638,6 +634,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 19
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 51
                 }
             ]
         },
@@ -646,7 +646,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-wallet",
                 "language": "Javascript",
-                "no_of_downloads": 27810,
+                "no_of_downloads": 29021,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -669,19 +669,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.30013033447758447,
+                    "final": 0.3001885059119173,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.061671909928832105,
-                        "maintenance": 0.3333270636998383
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.06195031217835316,
+                        "maintenance": 0.33326077254286046
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 109
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1180
@@ -797,6 +793,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 860
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 1320
                 }
             ]
         },
@@ -805,7 +805,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-transaction-decoder",
                 "language": "Javascript",
-                "no_of_downloads": 30184,
+                "no_of_downloads": 31445,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -828,19 +828,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.29202805678501126,
+                    "final": 0.2919996774840585,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.03851627545941361,
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.03848109873685504,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 127
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1283
@@ -956,6 +952,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 945
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 1388
                 }
             ]
         },
@@ -964,7 +964,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-native-auth-client",
                 "language": "Javascript",
-                "no_of_downloads": 5131,
+                "no_of_downloads": 5267,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -987,19 +987,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.29045542299835764,
+                    "final": 0.29065110466597055,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.043220693188113314,
-                        "maintenance": 0.32413567621419465
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.04319820839020035,
+                        "maintenance": 0.3247631584854511
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 50
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 203
@@ -1115,6 +1111,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 195
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 186
                 }
             ]
         },
@@ -1123,7 +1123,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-dapp-form",
                 "language": "Javascript",
-                "no_of_downloads": 751,
+                "no_of_downloads": 812,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 0,
@@ -1146,19 +1146,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2874520157695406,
+                    "final": 0.2872145398849826,
                     "detail": {
-                        "quality": 0.5455377913041366,
-                        "popularity": 0.020354319176094142,
+                        "quality": 0.544765045648784,
+                        "popularity": 0.02033817006765926,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 2
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 16
@@ -1274,6 +1270,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 42
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 63
                 }
             ]
         },
@@ -1282,7 +1282,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-hw-provider",
                 "language": "Javascript",
-                "no_of_downloads": 2557,
+                "no_of_downloads": 2634,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -1305,19 +1305,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2890299663496534,
+                    "final": 0.2892534874744964,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.04015928644502647,
-                        "maintenance": 0.32312434967526943
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.04014096561587043,
+                        "maintenance": 0.3238272092841405
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 29
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 88
@@ -1433,6 +1429,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 124
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 106
                 }
             ]
         },
@@ -1441,7 +1441,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-native-auth-server",
                 "language": "Javascript",
-                "no_of_downloads": 2184,
+                "no_of_downloads": 2227,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -1464,19 +1464,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.28814516072356944,
+                    "final": 0.28812216766954385,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.027422286712436923,
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.027402499266813124,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 21
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 190
@@ -1592,6 +1588,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 65
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 64
                 }
             ]
         },
@@ -1600,7 +1600,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-nestjs-monitoring",
                 "language": "Nestjs",
-                "no_of_downloads": 2349,
+                "no_of_downloads": 2420,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -1623,19 +1623,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.28369147553815904,
+                    "final": 0.2837653498568007,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.014697471896978682,
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.014954448373261257,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 27
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 134
@@ -1751,6 +1747,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 69
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 98
                 }
             ]
         },
@@ -1759,7 +1759,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-nestjs-cache",
                 "language": "Nestjs",
-                "no_of_downloads": 2168,
+                "no_of_downloads": 2239,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -1782,19 +1782,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.28355722557378626,
+                    "final": 0.28362786369209364,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.014313900570199356,
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.014561630759812573,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 20
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 130
@@ -1910,6 +1906,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 63
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 91
                 }
             ]
         },
@@ -1918,7 +1918,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-web-wallet-provider",
                 "language": "Javascript",
-                "no_of_downloads": 3475,
+                "no_of_downloads": 3582,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -1941,19 +1941,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2863411467801778,
+                    "final": 0.2863954683965329,
                     "detail": {
-                        "quality": 0.5220433999282665,
-                        "popularity": 0.042021216531227035,
-                        "maintenance": 0.32863057433076687
+                        "quality": 0.5218929668476039,
+                        "popularity": 0.04200158899559867,
+                        "maintenance": 0.3289343491251207
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 26
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 127
@@ -2069,6 +2065,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 141
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 133
                 }
             ]
         },
@@ -2077,7 +2077,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-wallet-connect-provider",
                 "language": "Javascript",
-                "no_of_downloads": 2998,
+                "no_of_downloads": 3085,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -2100,19 +2100,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.287838438695572,
+                    "final": 0.28778663979139313,
                     "detail": {
-                        "quality": 0.5220433999282665,
-                        "popularity": 0.041596434429786895,
+                        "quality": 0.5218929668476039,
+                        "popularity": 0.04157738020127242,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 36
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 94
@@ -2228,6 +2224,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 136
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 123
                 }
             ]
         },
@@ -2236,7 +2236,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-nestjs-auth",
                 "language": "Nestjs",
-                "no_of_downloads": 1390,
+                "no_of_downloads": 1442,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -2259,19 +2259,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2822070060190804,
+                    "final": 0.28222194695358194,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.01045613041389688,
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.010544725792636331,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 9
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 108
@@ -2387,6 +2383,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 40
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 61
                 }
             ]
         },
@@ -2395,7 +2395,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-extension-provider",
                 "language": "Javascript",
-                "no_of_downloads": 4355,
+                "no_of_downloads": 4461,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -2418,19 +2418,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2792493169899342,
+                    "final": 0.2800102711992393,
                     "detail": {
-                        "quality": 0.5220433999282665,
-                        "popularity": 0.04784466066727405,
-                        "maintenance": 0.3025447593654524
+                        "quality": 0.5218929668476039,
+                        "popularity": 0.047824009596867716,
+                        "maintenance": 0.30486850796015563
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 43
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 169
@@ -2546,6 +2542,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 192
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 149
                 }
             ]
         },
@@ -2554,7 +2554,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-dapp-sc-explorer",
                 "language": "Javascript",
-                "no_of_downloads": 145,
+                "no_of_downloads": 148,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -2577,19 +2577,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2816191466245861,
+                    "final": 0.28138412544562064,
                     "detail": {
-                        "quality": 0.5455377913041366,
-                        "popularity": 0.0036893434916769503,
-                        "maintenance": 0.3333329686035948
+                        "quality": 0.544765045648784,
+                        "popularity": 0.0036801890189390066,
+                        "maintenance": 0.33333298741244793
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1
@@ -2705,6 +2701,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 18
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 3
                 }
             ]
         },
@@ -2736,19 +2736,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2782246383935951,
+                    "final": 0.27826537557874703,
                     "detail": {
-                        "quality": 0.5289730725019579,
-                        "popularity": 0.00828950312943827,
-                        "maintenance": 0.3332325444220126
+                        "quality": 0.5288626363765077,
+                        "popularity": 0.008495060764509534,
+                        "maintenance": 0.3332380382806183
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 43
@@ -2864,6 +2860,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 2
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 0
                 }
             ]
         },
@@ -2895,19 +2895,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.27706228793029974,
+                    "final": 0.2768443583625261,
                     "detail": {
-                        "quality": 0.5095886918817316,
-                        "popularity": 0.02158368519450251,
-                        "maintenance": 0.3332325444220126
+                        "quality": 0.508622481858328,
+                        "popularity": 0.02178371544803218,
+                        "maintenance": 0.3332380382806183
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 9
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 5
@@ -3023,6 +3019,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 9
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 9
                 }
             ]
         },
@@ -3031,7 +3031,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-guardians-provider",
                 "language": "Javascript",
-                "no_of_downloads": 201,
+                "no_of_downloads": 221,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -3054,19 +3054,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2741699792612178,
+                    "final": 0.2741430299722138,
                     "detail": {
-                        "quality": 0.5220433999282665,
-                        "popularity": 0.0035800385025150337,
-                        "maintenance": 0.332296988019593
+                        "quality": 0.5218929668476039,
+                        "popularity": 0.0035709390360451755,
+                        "maintenance": 0.3323580321580481
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 3
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 3
@@ -3182,6 +3178,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 4
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 23
                 }
             ]
         },
@@ -3190,7 +3190,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-nestjs-common",
                 "language": "Nestjs",
-                "no_of_downloads": 2335,
+                "no_of_downloads": 2407,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -3213,19 +3213,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2645067844985005,
+                    "final": 0.2644350614010374,
                     "detail": {
-                        "quality": 0.47533036160027364,
-                        "popularity": 0.014974312433576532,
+                        "quality": 0.47479135755336277,
+                        "popularity": 0.015231392766748345,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 28
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 135
@@ -3341,6 +3337,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 72
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 100
                 }
             ]
         },
@@ -3349,7 +3349,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-nestjs-redis",
                 "language": "Nestjs",
-                "no_of_downloads": 2190,
+                "no_of_downloads": 2259,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -3372,19 +3372,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.26428942582658493,
+                    "final": 0.26421503782804856,
                     "detail": {
-                        "quality": 0.47533036160027364,
-                        "popularity": 0.014353287656674905,
+                        "quality": 0.47479135755336277,
+                        "popularity": 0.014602753986780265,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 20
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 138
@@ -3500,6 +3496,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 63
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 89
                 }
             ]
         },
@@ -3508,7 +3508,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-nestjs-http",
                 "language": "Nestjs",
-                "no_of_downloads": 1549,
+                "no_of_downloads": 1605,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -3531,19 +3531,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2635269236469854,
+                    "final": 0.26343495962344343,
                     "detail": {
-                        "quality": 0.47533036160027364,
-                        "popularity": 0.012174710000676114,
+                        "quality": 0.47479135755336277,
+                        "popularity": 0.012373959116479948,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 19
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 41
@@ -3659,6 +3655,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 40
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 75
                 }
             ]
         },
@@ -3667,7 +3667,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-epoch-watcher",
                 "language": "Javascript",
-                "no_of_downloads": 101,
+                "no_of_downloads": 102,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -3690,19 +3690,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.26542169849174535,
+                    "final": 0.26650955703684376,
                     "detail": {
-                        "quality": 0.5396023123584995,
-                        "popularity": 0.0038845203942707326,
-                        "maintenance": 0.2919469218462878
+                        "quality": 0.5395487541983086,
+                        "popularity": 0.0038752533172405905,
+                        "maintenance": 0.295110263189477
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1
@@ -3818,165 +3814,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 0
-                }
-            ]
-        },
-        {
-            "metadata": {
-                "section_name": "npmjs",
-                "package_name": "@multiversx/sdk-nestjs-rabbitmq",
-                "language": "Nestjs",
-                "no_of_downloads": 1462,
-                "libraries_io_score": {
-                    "basic_info_present": 1,
-                    "repository_present": 1,
-                    "readme_present": 1,
-                    "license_present": 1,
-                    "versions_present": 1,
-                    "follows_semver": 1,
-                    "recent_release": 1,
-                    "not_brand_new": 1,
-                    "one_point_oh": 1,
-                    "dependent_projects": 0,
-                    "dependent_repositories": 0,
-                    "stars": 1,
-                    "contributors": 1,
-                    "subscribers": 0,
-                    "all_prereleases": 0,
-                    "any_outdated_dependencies": -1,
-                    "is_deprecated": 0,
-                    "is_unmaintained": 0,
-                    "is_removed": 0
-                },
-                "site_score": {
-                    "final": 0.26241427188038435,
-                    "detail": {
-                        "quality": 0.47533036160027364,
-                        "popularity": 0.008995704953244671,
-                        "maintenance": 0.3333333333333333
-                    }
-                }
-            },
-            "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 9
                 },
                 {
-                    "date": "2024-07-29",
-                    "downloads": 105
-                },
-                {
-                    "date": "2024-07-30",
-                    "downloads": 32
-                },
-                {
-                    "date": "2024-07-31",
-                    "downloads": 43
-                },
-                {
-                    "date": "2024-08-01",
-                    "downloads": 29
-                },
-                {
-                    "date": "2024-08-02",
-                    "downloads": 106
-                },
-                {
-                    "date": "2024-08-03",
-                    "downloads": 60
-                },
-                {
-                    "date": "2024-08-04",
-                    "downloads": 6
-                },
-                {
-                    "date": "2024-08-05",
-                    "downloads": 57
-                },
-                {
-                    "date": "2024-08-06",
-                    "downloads": 55
-                },
-                {
-                    "date": "2024-08-07",
-                    "downloads": 82
-                },
-                {
-                    "date": "2024-08-08",
-                    "downloads": 55
-                },
-                {
-                    "date": "2024-08-09",
-                    "downloads": 50
-                },
-                {
-                    "date": "2024-08-10",
-                    "downloads": 5
-                },
-                {
-                    "date": "2024-08-11",
-                    "downloads": 3
-                },
-                {
-                    "date": "2024-08-12",
-                    "downloads": 79
-                },
-                {
-                    "date": "2024-08-13",
-                    "downloads": 70
-                },
-                {
-                    "date": "2024-08-14",
-                    "downloads": 87
-                },
-                {
-                    "date": "2024-08-15",
-                    "downloads": 7
-                },
-                {
-                    "date": "2024-08-16",
-                    "downloads": 46
-                },
-                {
-                    "date": "2024-08-17",
+                    "date": "2024-08-27",
                     "downloads": 1
-                },
-                {
-                    "date": "2024-08-18",
-                    "downloads": 3
-                },
-                {
-                    "date": "2024-08-19",
-                    "downloads": 100
-                },
-                {
-                    "date": "2024-08-20",
-                    "downloads": 132
-                },
-                {
-                    "date": "2024-08-21",
-                    "downloads": 78
-                },
-                {
-                    "date": "2024-08-22",
-                    "downloads": 63
-                },
-                {
-                    "date": "2024-08-23",
-                    "downloads": 55
-                },
-                {
-                    "date": "2024-08-24",
-                    "downloads": 2
-                },
-                {
-                    "date": "2024-08-25",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-26",
-                    "downloads": 42
                 }
             ]
         },
@@ -3985,7 +3826,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-webview-provider",
                 "language": "Javascript",
-                "no_of_downloads": 2259,
+                "no_of_downloads": 2318,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -4008,19 +3849,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.26391357162606316,
+                    "final": 0.26385865148207566,
                     "detail": {
-                        "quality": 0.45023783627735847,
-                        "popularity": 0.03478729736053991,
+                        "quality": 0.4494865638808515,
+                        "popularity": 0.035274330431867285,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 22
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 67
@@ -4136,6 +3973,169 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 110
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 81
+                }
+            ]
+        },
+        {
+            "metadata": {
+                "section_name": "npmjs",
+                "package_name": "@multiversx/sdk-nestjs-rabbitmq",
+                "language": "Nestjs",
+                "no_of_downloads": 1514,
+                "libraries_io_score": {
+                    "basic_info_present": 1,
+                    "repository_present": 1,
+                    "readme_present": 1,
+                    "license_present": 1,
+                    "versions_present": 1,
+                    "follows_semver": 1,
+                    "recent_release": 1,
+                    "not_brand_new": 1,
+                    "one_point_oh": 1,
+                    "dependent_projects": 0,
+                    "dependent_repositories": 0,
+                    "stars": 1,
+                    "contributors": 1,
+                    "subscribers": 0,
+                    "all_prereleases": 0,
+                    "any_outdated_dependencies": -1,
+                    "is_deprecated": 0,
+                    "is_unmaintained": 0,
+                    "is_removed": 0
+                },
+                "site_score": {
+                    "final": 0.2622473583825284,
+                    "detail": {
+                        "quality": 0.47479135755336277,
+                        "popularity": 0.008980812713865399,
+                        "maintenance": 0.3333333333333333
+                    }
+                }
+            },
+            "downloads": [
+                {
+                    "date": "2024-07-29",
+                    "downloads": 105
+                },
+                {
+                    "date": "2024-07-30",
+                    "downloads": 32
+                },
+                {
+                    "date": "2024-07-31",
+                    "downloads": 43
+                },
+                {
+                    "date": "2024-08-01",
+                    "downloads": 29
+                },
+                {
+                    "date": "2024-08-02",
+                    "downloads": 106
+                },
+                {
+                    "date": "2024-08-03",
+                    "downloads": 60
+                },
+                {
+                    "date": "2024-08-04",
+                    "downloads": 6
+                },
+                {
+                    "date": "2024-08-05",
+                    "downloads": 57
+                },
+                {
+                    "date": "2024-08-06",
+                    "downloads": 55
+                },
+                {
+                    "date": "2024-08-07",
+                    "downloads": 82
+                },
+                {
+                    "date": "2024-08-08",
+                    "downloads": 55
+                },
+                {
+                    "date": "2024-08-09",
+                    "downloads": 50
+                },
+                {
+                    "date": "2024-08-10",
+                    "downloads": 5
+                },
+                {
+                    "date": "2024-08-11",
+                    "downloads": 3
+                },
+                {
+                    "date": "2024-08-12",
+                    "downloads": 79
+                },
+                {
+                    "date": "2024-08-13",
+                    "downloads": 70
+                },
+                {
+                    "date": "2024-08-14",
+                    "downloads": 87
+                },
+                {
+                    "date": "2024-08-15",
+                    "downloads": 7
+                },
+                {
+                    "date": "2024-08-16",
+                    "downloads": 46
+                },
+                {
+                    "date": "2024-08-17",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-18",
+                    "downloads": 3
+                },
+                {
+                    "date": "2024-08-19",
+                    "downloads": 100
+                },
+                {
+                    "date": "2024-08-20",
+                    "downloads": 132
+                },
+                {
+                    "date": "2024-08-21",
+                    "downloads": 78
+                },
+                {
+                    "date": "2024-08-22",
+                    "downloads": 63
+                },
+                {
+                    "date": "2024-08-23",
+                    "downloads": 55
+                },
+                {
+                    "date": "2024-08-24",
+                    "downloads": 2
+                },
+                {
+                    "date": "2024-08-25",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-26",
+                    "downloads": 42
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 61
                 }
             ]
         },
@@ -4144,7 +4144,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-nestjs-elastic",
                 "language": "Nestjs",
-                "no_of_downloads": 1073,
+                "no_of_downloads": 1094,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -4167,19 +4167,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2618679121365922,
+                    "final": 0.2617016954360593,
                     "detail": {
-                        "quality": 0.47533036160027364,
-                        "popularity": 0.0074346771138384385,
+                        "quality": 0.47479135755336277,
+                        "popularity": 0.007421775723953791,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 16
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 31
@@ -4295,6 +4291,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 25
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 37
                 }
             ]
         },
@@ -4303,7 +4303,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-web-wallet-cross-window-provider",
                 "language": "Javascript",
-                "no_of_downloads": 3402,
+                "no_of_downloads": 3471,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -4326,19 +4326,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2652759302326794,
+                    "final": 0.2652292346591862,
                     "detail": {
-                        "quality": 0.45023783627735847,
-                        "popularity": 0.03867975052230059,
+                        "quality": 0.4494865638808515,
+                        "popularity": 0.039190282366468834,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 22
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 71
@@ -4454,6 +4450,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 136
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 91
                 }
             ]
         },
@@ -4462,7 +4462,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-metamask-proxy-provider",
                 "language": "Javascript",
-                "no_of_downloads": 1458,
+                "no_of_downloads": 1517,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -4485,19 +4485,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2607624530721817,
+                    "final": 0.26067267054202703,
                     "detail": {
-                        "quality": 0.45023783627735847,
-                        "popularity": 0.025784101492307157,
+                        "quality": 0.4494865638808515,
+                        "popularity": 0.026171527746014077,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 0
@@ -4613,6 +4609,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 94
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 59
                 }
             ]
         },
@@ -4621,7 +4621,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-bls-wasm",
                 "language": "Javascript",
-                "no_of_downloads": 27206,
+                "no_of_downloads": 28388,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -4644,19 +4644,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2523385945892247,
+                    "final": 0.2530576111134051,
                     "detail": {
-                        "quality": 0.4347060165997916,
-                        "popularity": 0.04581749666108256,
-                        "maintenance": 0.3025447593654524
+                        "quality": 0.43386470884518585,
+                        "popularity": 0.04626920192512815,
+                        "maintenance": 0.30486850796015563
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 103
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1164
@@ -4772,6 +4768,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 842
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 1285
                 }
             ]
         },
@@ -4780,7 +4780,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-dapp-utils",
                 "language": "Javascript",
-                "no_of_downloads": 2249,
+                "no_of_downloads": 2314,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -4803,19 +4803,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.253973468487436,
+                    "final": 0.2538998464200396,
                     "detail": {
-                        "quality": 0.4239717865612082,
-                        "popularity": 0.030475162330187,
-                        "maintenance": 0.33175893058145167
+                        "quality": 0.4230894690847655,
+                        "popularity": 0.030926344125899008,
+                        "maintenance": 0.33185367214441525
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 18
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 63
@@ -4931,6 +4927,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 107
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 83
                 }
             ]
         },
@@ -4939,7 +4939,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-wallet-cli",
                 "language": "Javascript",
-                "no_of_downloads": 26,
+                "no_of_downloads": 27,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -4962,19 +4962,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.25586361563451876,
+                    "final": 0.2568985081935151,
                     "detail": {
-                        "quality": 0.5100349854635593,
-                        "popularity": 0.001919135283572222,
-                        "maintenance": 0.2919469218462878
+                        "quality": 0.5098052619290961,
+                        "popularity": 0.0019095357099122997,
+                        "maintenance": 0.295110263189477
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 1
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 4
@@ -5090,6 +5086,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 0
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 2
                 }
             ]
         },
@@ -5098,7 +5098,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-exchange",
                 "language": "Javascript",
-                "no_of_downloads": 220,
+                "no_of_downloads": 227,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -5121,19 +5121,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2503561747201114,
+                    "final": 0.25033117789201453,
                     "detail": {
-                        "quality": 0.45023783627735847,
-                        "popularity": 0.004639011005447234,
-                        "maintenance": 0.3247461999571353
+                        "quality": 0.4494865638808515,
+                        "popularity": 0.004629173091358336,
+                        "maintenance": 0.32532856613081046
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 47
@@ -5249,6 +5245,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 4
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 7
                 }
             ]
         },
@@ -5257,7 +5257,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-opera-provider",
                 "language": "Javascript",
-                "no_of_downloads": 1964,
+                "no_of_downloads": 2022,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -5280,19 +5280,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.24122496953573083,
+                    "final": 0.24206133284835624,
                     "detail": {
-                        "quality": 0.4239717865612082,
-                        "popularity": 0.03386288834619323,
-                        "maintenance": 0.2919469218462878
+                        "quality": 0.4230894690847655,
+                        "popularity": 0.03384542859031332,
+                        "maintenance": 0.295110263189477
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 10
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 53
@@ -5408,6 +5404,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 99
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 68
                 }
             ]
         },
@@ -5416,7 +5416,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-dapp-staking",
                 "language": "Javascript",
-                "no_of_downloads": 103,
+                "no_of_downloads": 120,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 0,
@@ -5439,19 +5439,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.2426470973718805,
+                    "final": 0.24239797647588204,
                     "detail": {
-                        "quality": 0.41770170750231284,
-                        "popularity": 0.003052809286464503,
-                        "maintenance": 0.3321945767740689
+                        "quality": 0.4168031152658259,
+                        "popularity": 0.0030438734751507515,
+                        "maintenance": 0.33226196051380436
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1
@@ -5567,6 +5563,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 2
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 17
                 }
             ]
         },
@@ -5575,7 +5575,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-data-api-client",
                 "language": "Javascript",
-                "no_of_downloads": 263,
+                "no_of_downloads": 282,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 0,
@@ -5598,19 +5598,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.22779512788464018,
+                    "final": 0.22771539372979482,
                     "detail": {
-                        "quality": 0.3692435483223072,
-                        "popularity": 0.0069015013039288925,
-                        "maintenance": 0.3274472512330655
+                        "quality": 0.36837082258043696,
+                        "popularity": 0.007034858215405555,
+                        "maintenance": 0.32783413308649084
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 13
@@ -5726,324 +5722,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 2
-                }
-            ]
-        },
-        {
-            "metadata": {
-                "section_name": "npmjs",
-                "package_name": "@multiversx/sdk-nestjs",
-                "language": "Nestjs",
-                "no_of_downloads": 213,
-                "libraries_io_score": {
-                    "basic_info_present": 1,
-                    "repository_present": 1,
-                    "readme_present": 1,
-                    "license_present": 1,
-                    "versions_present": 1,
-                    "follows_semver": 1,
-                    "recent_release": 0,
-                    "not_brand_new": 1,
-                    "one_point_oh": 0,
-                    "dependent_projects": 0,
-                    "dependent_repositories": 0,
-                    "stars": 1,
-                    "contributors": 1,
-                    "subscribers": 0,
-                    "all_prereleases": 0,
-                    "any_outdated_dependencies": -1,
-                    "is_deprecated": 0,
-                    "is_unmaintained": 0,
-                    "is_removed": 0
-                },
-                "site_score": {
-                    "final": 0.22631803150773694,
-                    "detail": {
-                        "quality": 0.36060044685828335,
-                        "popularity": 0.004755770051774113,
-                        "maintenance": 0.33278107980608856
-                    }
-                }
-            },
-            "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 3
                 },
                 {
-                    "date": "2024-07-29",
-                    "downloads": 5
-                },
-                {
-                    "date": "2024-07-30",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-07-31",
-                    "downloads": 12
-                },
-                {
-                    "date": "2024-08-01",
-                    "downloads": 2
-                },
-                {
-                    "date": "2024-08-02",
-                    "downloads": 61
-                },
-                {
-                    "date": "2024-08-03",
-                    "downloads": 68
-                },
-                {
-                    "date": "2024-08-04",
-                    "downloads": 2
-                },
-                {
-                    "date": "2024-08-05",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-06",
-                    "downloads": 3
-                },
-                {
-                    "date": "2024-08-07",
-                    "downloads": 4
-                },
-                {
-                    "date": "2024-08-08",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-09",
-                    "downloads": 10
-                },
-                {
-                    "date": "2024-08-10",
-                    "downloads": 5
-                },
-                {
-                    "date": "2024-08-11",
-                    "downloads": 3
-                },
-                {
-                    "date": "2024-08-12",
-                    "downloads": 6
-                },
-                {
-                    "date": "2024-08-13",
-                    "downloads": 4
-                },
-                {
-                    "date": "2024-08-14",
-                    "downloads": 12
-                },
-                {
-                    "date": "2024-08-15",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-16",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-17",
-                    "downloads": 3
-                },
-                {
-                    "date": "2024-08-18",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-19",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-20",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-21",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-22",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-23",
-                    "downloads": 3
-                },
-                {
-                    "date": "2024-08-24",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-25",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-26",
-                    "downloads": 0
-                }
-            ]
-        },
-        {
-            "metadata": {
-                "section_name": "npmjs",
-                "package_name": "@multiversx/sdk-js-web-wallet-io",
-                "language": "Javascript",
-                "no_of_downloads": 624,
-                "libraries_io_score": {
-                    "basic_info_present": 1,
-                    "repository_present": 0,
-                    "readme_present": 0,
-                    "license_present": 1,
-                    "versions_present": 1,
-                    "follows_semver": 1,
-                    "recent_release": 1,
-                    "not_brand_new": 0,
-                    "one_point_oh": 0,
-                    "dependent_projects": 0,
-                    "dependent_repositories": 0,
-                    "stars": 0,
-                    "contributors": 0,
-                    "subscribers": 0,
-                    "all_prereleases": 0,
-                    "any_outdated_dependencies": -1,
-                    "is_deprecated": 0,
-                    "is_unmaintained": 0,
-                    "is_removed": 0
-                },
-                "site_score": {
-                    "final": 0.23316610147509667,
-                    "detail": {
-                        "quality": 0.3761970843899821,
-                        "popularity": 0.010400884261243954,
-                        "maintenance": 0.3333333333333333
-                    }
-                }
-            },
-            "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-07-29",
-                    "downloads": 2
-                },
-                {
-                    "date": "2024-07-30",
-                    "downloads": 2
-                },
-                {
-                    "date": "2024-07-31",
-                    "downloads": 7
-                },
-                {
-                    "date": "2024-08-01",
-                    "downloads": 66
-                },
-                {
-                    "date": "2024-08-02",
-                    "downloads": 246
-                },
-                {
-                    "date": "2024-08-03",
-                    "downloads": 31
-                },
-                {
-                    "date": "2024-08-04",
-                    "downloads": 4
-                },
-                {
-                    "date": "2024-08-05",
-                    "downloads": 25
-                },
-                {
-                    "date": "2024-08-06",
-                    "downloads": 11
-                },
-                {
-                    "date": "2024-08-07",
-                    "downloads": 8
-                },
-                {
-                    "date": "2024-08-08",
-                    "downloads": 27
-                },
-                {
-                    "date": "2024-08-09",
-                    "downloads": 86
-                },
-                {
-                    "date": "2024-08-10",
-                    "downloads": 11
-                },
-                {
-                    "date": "2024-08-11",
-                    "downloads": 5
-                },
-                {
-                    "date": "2024-08-12",
-                    "downloads": 8
-                },
-                {
-                    "date": "2024-08-13",
-                    "downloads": 1
-                },
-                {
-                    "date": "2024-08-14",
-                    "downloads": 5
-                },
-                {
-                    "date": "2024-08-15",
-                    "downloads": 2
-                },
-                {
-                    "date": "2024-08-16",
-                    "downloads": 10
-                },
-                {
-                    "date": "2024-08-17",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-18",
-                    "downloads": 3
-                },
-                {
-                    "date": "2024-08-19",
-                    "downloads": 2
-                },
-                {
-                    "date": "2024-08-20",
-                    "downloads": 7
-                },
-                {
-                    "date": "2024-08-21",
-                    "downloads": 9
-                },
-                {
-                    "date": "2024-08-22",
-                    "downloads": 20
-                },
-                {
-                    "date": "2024-08-23",
-                    "downloads": 12
-                },
-                {
-                    "date": "2024-08-24",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-25",
-                    "downloads": 0
-                },
-                {
-                    "date": "2024-08-26",
-                    "downloads": 14
+                    "date": "2024-08-27",
+                    "downloads": 19
                 }
             ]
         },
@@ -6052,7 +5734,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-transaction-processor",
                 "language": "Javascript",
-                "no_of_downloads": 576,
+                "no_of_downloads": 591,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -6075,19 +5757,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.22445587055275468,
+                    "final": 0.22634274771262292,
                     "detail": {
-                        "quality": 0.45023783627735847,
-                        "popularity": 0.006495543198421899,
-                        "maintenance": 0.24888879871456995
+                        "quality": 0.4494865638808515,
+                        "popularity": 0.006483771046776955,
+                        "maintenance": 0.2549355962342729
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 6
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 15
@@ -6203,6 +5881,328 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 9
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 21
+                }
+            ]
+        },
+        {
+            "metadata": {
+                "section_name": "npmjs",
+                "package_name": "@multiversx/sdk-nestjs",
+                "language": "Nestjs",
+                "no_of_downloads": 271,
+                "libraries_io_score": {
+                    "basic_info_present": 1,
+                    "repository_present": 1,
+                    "readme_present": 1,
+                    "license_present": 1,
+                    "versions_present": 1,
+                    "follows_semver": 1,
+                    "recent_release": 0,
+                    "not_brand_new": 1,
+                    "one_point_oh": 0,
+                    "dependent_projects": 0,
+                    "dependent_repositories": 0,
+                    "stars": 1,
+                    "contributors": 1,
+                    "subscribers": 0,
+                    "all_prereleases": 0,
+                    "any_outdated_dependencies": -1,
+                    "is_deprecated": 0,
+                    "is_unmaintained": 0,
+                    "is_removed": 0
+                },
+                "site_score": {
+                    "final": 0.22607145514995258,
+                    "detail": {
+                        "quality": 0.3597531897973194,
+                        "popularity": 0.004745828714412907,
+                        "maintenance": 0.33281273760203506
+                    }
+                }
+            },
+            "downloads": [
+                {
+                    "date": "2024-07-29",
+                    "downloads": 5
+                },
+                {
+                    "date": "2024-07-30",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-07-31",
+                    "downloads": 12
+                },
+                {
+                    "date": "2024-08-01",
+                    "downloads": 2
+                },
+                {
+                    "date": "2024-08-02",
+                    "downloads": 61
+                },
+                {
+                    "date": "2024-08-03",
+                    "downloads": 68
+                },
+                {
+                    "date": "2024-08-04",
+                    "downloads": 2
+                },
+                {
+                    "date": "2024-08-05",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-06",
+                    "downloads": 3
+                },
+                {
+                    "date": "2024-08-07",
+                    "downloads": 4
+                },
+                {
+                    "date": "2024-08-08",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-09",
+                    "downloads": 10
+                },
+                {
+                    "date": "2024-08-10",
+                    "downloads": 5
+                },
+                {
+                    "date": "2024-08-11",
+                    "downloads": 3
+                },
+                {
+                    "date": "2024-08-12",
+                    "downloads": 6
+                },
+                {
+                    "date": "2024-08-13",
+                    "downloads": 4
+                },
+                {
+                    "date": "2024-08-14",
+                    "downloads": 12
+                },
+                {
+                    "date": "2024-08-15",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-16",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-17",
+                    "downloads": 3
+                },
+                {
+                    "date": "2024-08-18",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-19",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-20",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-21",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-22",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-23",
+                    "downloads": 3
+                },
+                {
+                    "date": "2024-08-24",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-25",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-26",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 61
+                }
+            ]
+        },
+        {
+            "metadata": {
+                "section_name": "npmjs",
+                "package_name": "@multiversx/sdk-js-web-wallet-io",
+                "language": "Javascript",
+                "no_of_downloads": 642,
+                "libraries_io_score": {
+                    "basic_info_present": 1,
+                    "repository_present": 0,
+                    "readme_present": 0,
+                    "license_present": 1,
+                    "versions_present": 1,
+                    "follows_semver": 1,
+                    "recent_release": 1,
+                    "not_brand_new": 0,
+                    "one_point_oh": 0,
+                    "dependent_projects": 0,
+                    "dependent_repositories": 0,
+                    "stars": 0,
+                    "contributors": 0,
+                    "subscribers": 0,
+                    "all_prereleases": 0,
+                    "any_outdated_dependencies": -1,
+                    "is_deprecated": 0,
+                    "is_unmaintained": 0,
+                    "is_removed": 0
+                },
+                "site_score": {
+                    "final": 0.23319239909921885,
+                    "detail": {
+                        "quality": 0.37530747038847323,
+                        "popularity": 0.01123854661717211,
+                        "maintenance": 0.3333333333333333
+                    }
+                }
+            },
+            "downloads": [
+                {
+                    "date": "2024-07-29",
+                    "downloads": 2
+                },
+                {
+                    "date": "2024-07-30",
+                    "downloads": 2
+                },
+                {
+                    "date": "2024-07-31",
+                    "downloads": 7
+                },
+                {
+                    "date": "2024-08-01",
+                    "downloads": 66
+                },
+                {
+                    "date": "2024-08-02",
+                    "downloads": 246
+                },
+                {
+                    "date": "2024-08-03",
+                    "downloads": 31
+                },
+                {
+                    "date": "2024-08-04",
+                    "downloads": 4
+                },
+                {
+                    "date": "2024-08-05",
+                    "downloads": 25
+                },
+                {
+                    "date": "2024-08-06",
+                    "downloads": 11
+                },
+                {
+                    "date": "2024-08-07",
+                    "downloads": 8
+                },
+                {
+                    "date": "2024-08-08",
+                    "downloads": 27
+                },
+                {
+                    "date": "2024-08-09",
+                    "downloads": 86
+                },
+                {
+                    "date": "2024-08-10",
+                    "downloads": 11
+                },
+                {
+                    "date": "2024-08-11",
+                    "downloads": 5
+                },
+                {
+                    "date": "2024-08-12",
+                    "downloads": 8
+                },
+                {
+                    "date": "2024-08-13",
+                    "downloads": 1
+                },
+                {
+                    "date": "2024-08-14",
+                    "downloads": 5
+                },
+                {
+                    "date": "2024-08-15",
+                    "downloads": 2
+                },
+                {
+                    "date": "2024-08-16",
+                    "downloads": 10
+                },
+                {
+                    "date": "2024-08-17",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-18",
+                    "downloads": 3
+                },
+                {
+                    "date": "2024-08-19",
+                    "downloads": 2
+                },
+                {
+                    "date": "2024-08-20",
+                    "downloads": 7
+                },
+                {
+                    "date": "2024-08-21",
+                    "downloads": 9
+                },
+                {
+                    "date": "2024-08-22",
+                    "downloads": 20
+                },
+                {
+                    "date": "2024-08-23",
+                    "downloads": 12
+                },
+                {
+                    "date": "2024-08-24",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-25",
+                    "downloads": 0
+                },
+                {
+                    "date": "2024-08-26",
+                    "downloads": 14
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 18
                 }
             ]
         },
@@ -6211,7 +6211,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-metamask-provider",
                 "language": "Javascript",
-                "no_of_downloads": 1790,
+                "no_of_downloads": 1841,
                 "libraries_io_score": {
                     "basic_info_present": 0,
                     "repository_present": 0,
@@ -6234,19 +6234,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.22409423116385385,
+                    "final": 0.2240401328782664,
                     "detail": {
-                        "quality": 0.3234345615176371,
-                        "popularity": 0.02970627440541739,
+                        "quality": 0.3227387534718088,
+                        "popularity": 0.030148114771591718,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 7
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 37
@@ -6362,6 +6358,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 88
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 58
                 }
             ]
         },
@@ -6393,19 +6393,15 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.21001807415664359,
+                    "final": 0.20989449396894047,
                     "detail": {
-                        "quality": 0.30490128195867505,
-                        "popularity": 0.005374869237616848,
-                        "maintenance": 0.3333328152453577
+                        "quality": 0.3042981658989196,
+                        "popularity": 0.005538712859129654,
+                        "maintenance": 0.33333284199591207
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 1
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 3
@@ -6521,6 +6517,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 6
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 1
                 }
             ]
         },
@@ -6529,7 +6529,7 @@
                 "section_name": "npmjs",
                 "package_name": "@multiversx/sdk-dapp-core",
                 "language": "Javascript",
-                "no_of_downloads": 175,
+                "no_of_downloads": 194,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -6546,25 +6546,21 @@
                     "contributors": 0,
                     "subscribers": 0,
                     "all_prereleases": 0,
-                    "any_outdated_dependencies": -1,
+                    "any_outdated_dependencies": 0,
                     "is_deprecated": 0,
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.19784534171381812,
+                    "final": 0.19756060457457175,
                     "detail": {
-                        "quality": 0.2609548988301176,
-                        "popularity": 0.008263443994617682,
+                        "quality": 0.26012893610427273,
+                        "popularity": 0.008157877361780821,
                         "maintenance": 0.3333333333333333
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 0
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 2
@@ -6680,6 +6676,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 12
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 19
                 }
             ]
         },
@@ -6688,7 +6688,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-sdk",
                 "language": "Rust",
-                "no_of_downloads": 3831,
+                "no_of_downloads": 3842,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -6710,13 +6710,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 128
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 85
@@ -6832,6 +6831,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 246
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 139
                 }
             ]
         },
@@ -6840,7 +6843,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-chain-vm",
                 "language": "Rust",
-                "no_of_downloads": 5222,
+                "no_of_downloads": 4658,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -6862,13 +6865,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 714
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 105
@@ -6984,6 +6986,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 286
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 150
                 }
             ]
         },
@@ -6992,7 +6998,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-chain-vm-executor",
                 "language": "Rust",
-                "no_of_downloads": 2604,
+                "no_of_downloads": 2725,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -7014,13 +7020,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 32
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 74
@@ -7136,6 +7141,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 206
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 153
                 }
             ]
         },
@@ -7144,7 +7153,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-sc-codec",
                 "language": "Rust",
-                "no_of_downloads": 5646,
+                "no_of_downloads": 5525,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -7166,13 +7175,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 335
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 145
@@ -7288,6 +7296,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 302
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 214
                 }
             ]
         },
@@ -7296,7 +7308,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-sc-meta",
                 "language": "Rust",
-                "no_of_downloads": 7956,
+                "no_of_downloads": 7647,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -7318,13 +7330,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 514
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 157
@@ -7440,6 +7451,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 372
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 205
                 }
             ]
         },
@@ -7448,7 +7463,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-sc-modules",
                 "language": "Rust",
-                "no_of_downloads": 5174,
+                "no_of_downloads": 4118,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -7470,13 +7485,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 1082
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 46
@@ -7592,6 +7606,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 175
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 26
                 }
             ]
         },
@@ -7600,7 +7618,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-sc-snippets",
                 "language": "Rust",
-                "no_of_downloads": 6496,
+                "no_of_downloads": 5499,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -7622,13 +7640,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 1096
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 56
@@ -7744,6 +7761,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 278
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 99
                 }
             ]
         },
@@ -7752,7 +7773,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-chain-scenario-format",
                 "language": "Rust",
-                "no_of_downloads": 3670,
+                "no_of_downloads": 3653,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -7774,13 +7795,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 156
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 90
@@ -7896,6 +7916,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 226
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 139
                 }
             ]
         },
@@ -7904,7 +7928,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-sc",
                 "language": "Rust",
-                "no_of_downloads": 8628,
+                "no_of_downloads": 8145,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -7926,13 +7950,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 706
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 163
@@ -8048,6 +8071,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 393
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 223
                 }
             ]
         },
@@ -8056,7 +8083,7 @@
                 "section_name": "crates.io",
                 "package_name": "multiversx-sc-codec-derive",
                 "language": "Rust",
-                "no_of_downloads": 5434,
+                "no_of_downloads": 5532,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -8078,13 +8105,12 @@
                     "is_unmaintained": 0,
                     "is_removed": 0
                 },
-                "site_score": {}
+                "site_score": {
+                    "final": 0,
+                    "detail": {}
+                }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 115
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 143
@@ -8200,6 +8226,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 305
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 213
                 }
             ]
         },
@@ -8208,7 +8238,7 @@
                 "section_name": "pypi",
                 "package_name": "multiversx-sdk",
                 "language": "Python",
-                "no_of_downloads": 1140,
+                "no_of_downloads": 1171,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -8241,10 +8271,6 @@
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 11
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 64
@@ -8360,166 +8386,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 62
-                }
-            ]
-        },
-        {
-            "metadata": {
-                "section_name": "pypi",
-                "package_name": "multiversx-sdk-wallet",
-                "language": "Python",
-                "no_of_downloads": 4337,
-                "libraries_io_score": {
-                    "basic_info_present": 1,
-                    "repository_present": 1,
-                    "readme_present": 1,
-                    "license_present": 1,
-                    "versions_present": 1,
-                    "follows_semver": 1,
-                    "recent_release": 1,
-                    "not_brand_new": 1,
-                    "one_point_oh": 1,
-                    "dependent_projects": 0,
-                    "dependent_repositories": 0,
-                    "stars": 0,
-                    "contributors": 1,
-                    "subscribers": 0,
-                    "all_prereleases": 0,
-                    "any_outdated_dependencies": -1,
-                    "is_deprecated": 0,
-                    "is_unmaintained": -5,
-                    "is_removed": 0
                 },
-                "site_score": {
-                    "final": 0.67,
-                    "detail": {
-                        "security": "No known security issues",
-                        "popularity": "Recognized",
-                        "maintenance": "Sustainable",
-                        "community": "Limited"
-                    }
-                }
-            },
-            "downloads": [
                 {
-                    "date": "2024-07-28",
+                    "date": "2024-08-27",
                     "downloads": 42
-                },
-                {
-                    "date": "2024-07-29",
-                    "downloads": 251
-                },
-                {
-                    "date": "2024-07-30",
-                    "downloads": 140
-                },
-                {
-                    "date": "2024-07-31",
-                    "downloads": 178
-                },
-                {
-                    "date": "2024-08-01",
-                    "downloads": 124
-                },
-                {
-                    "date": "2024-08-02",
-                    "downloads": 121
-                },
-                {
-                    "date": "2024-08-03",
-                    "downloads": 91
-                },
-                {
-                    "date": "2024-08-04",
-                    "downloads": 30
-                },
-                {
-                    "date": "2024-08-05",
-                    "downloads": 114
-                },
-                {
-                    "date": "2024-08-06",
-                    "downloads": 185
-                },
-                {
-                    "date": "2024-08-07",
-                    "downloads": 204
-                },
-                {
-                    "date": "2024-08-08",
-                    "downloads": 152
-                },
-                {
-                    "date": "2024-08-09",
-                    "downloads": 159
-                },
-                {
-                    "date": "2024-08-10",
-                    "downloads": 80
-                },
-                {
-                    "date": "2024-08-11",
-                    "downloads": 49
-                },
-                {
-                    "date": "2024-08-12",
-                    "downloads": 222
-                },
-                {
-                    "date": "2024-08-13",
-                    "downloads": 127
-                },
-                {
-                    "date": "2024-08-14",
-                    "downloads": 138
-                },
-                {
-                    "date": "2024-08-15",
-                    "downloads": 80
-                },
-                {
-                    "date": "2024-08-16",
-                    "downloads": 178
-                },
-                {
-                    "date": "2024-08-17",
-                    "downloads": 99
-                },
-                {
-                    "date": "2024-08-18",
-                    "downloads": 60
-                },
-                {
-                    "date": "2024-08-19",
-                    "downloads": 181
-                },
-                {
-                    "date": "2024-08-20",
-                    "downloads": 196
-                },
-                {
-                    "date": "2024-08-21",
-                    "downloads": 169
-                },
-                {
-                    "date": "2024-08-22",
-                    "downloads": 206
-                },
-                {
-                    "date": "2024-08-23",
-                    "downloads": 254
-                },
-                {
-                    "date": "2024-08-24",
-                    "downloads": 81
-                },
-                {
-                    "date": "2024-08-25",
-                    "downloads": 30
-                },
-                {
-                    "date": "2024-08-26",
-                    "downloads": 396
                 }
             ]
         },
@@ -8528,7 +8398,7 @@
                 "section_name": "pypi",
                 "package_name": "multiversx-sdk-cli",
                 "language": "Python",
-                "no_of_downloads": 11121,
+                "no_of_downloads": 11675,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -8561,10 +8431,6 @@
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 46
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 250
@@ -8680,6 +8546,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 902
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 600
                 }
             ]
         },
@@ -8688,7 +8558,7 @@
                 "section_name": "pypi",
                 "package_name": "multiversx-sdk-core",
                 "language": "Python",
-                "no_of_downloads": 5134,
+                "no_of_downloads": 5534,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -8711,20 +8581,16 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.67,
+                    "final": 0.7,
                     "detail": {
                         "security": "No known security issues",
                         "popularity": "Recognized",
-                        "maintenance": "Sustainable",
+                        "maintenance": "Healthy",
                         "community": "Limited"
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 31
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 252
@@ -8840,6 +8706,170 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 567
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 431
+                }
+            ]
+        },
+        {
+            "metadata": {
+                "section_name": "pypi",
+                "package_name": "multiversx-sdk-wallet",
+                "language": "Python",
+                "no_of_downloads": 4480,
+                "libraries_io_score": {
+                    "basic_info_present": 1,
+                    "repository_present": 1,
+                    "readme_present": 1,
+                    "license_present": 1,
+                    "versions_present": 1,
+                    "follows_semver": 1,
+                    "recent_release": 1,
+                    "not_brand_new": 1,
+                    "one_point_oh": 1,
+                    "dependent_projects": 0,
+                    "dependent_repositories": 0,
+                    "stars": 0,
+                    "contributors": 1,
+                    "subscribers": 0,
+                    "all_prereleases": 0,
+                    "any_outdated_dependencies": -1,
+                    "is_deprecated": 0,
+                    "is_unmaintained": -5,
+                    "is_removed": 0
+                },
+                "site_score": {
+                    "final": 0.7,
+                    "detail": {
+                        "security": "No known security issues",
+                        "popularity": "Recognized",
+                        "maintenance": "Healthy",
+                        "community": "Limited"
+                    }
+                }
+            },
+            "downloads": [
+                {
+                    "date": "2024-07-29",
+                    "downloads": 251
+                },
+                {
+                    "date": "2024-07-30",
+                    "downloads": 140
+                },
+                {
+                    "date": "2024-07-31",
+                    "downloads": 178
+                },
+                {
+                    "date": "2024-08-01",
+                    "downloads": 124
+                },
+                {
+                    "date": "2024-08-02",
+                    "downloads": 121
+                },
+                {
+                    "date": "2024-08-03",
+                    "downloads": 91
+                },
+                {
+                    "date": "2024-08-04",
+                    "downloads": 30
+                },
+                {
+                    "date": "2024-08-05",
+                    "downloads": 114
+                },
+                {
+                    "date": "2024-08-06",
+                    "downloads": 185
+                },
+                {
+                    "date": "2024-08-07",
+                    "downloads": 204
+                },
+                {
+                    "date": "2024-08-08",
+                    "downloads": 152
+                },
+                {
+                    "date": "2024-08-09",
+                    "downloads": 159
+                },
+                {
+                    "date": "2024-08-10",
+                    "downloads": 80
+                },
+                {
+                    "date": "2024-08-11",
+                    "downloads": 49
+                },
+                {
+                    "date": "2024-08-12",
+                    "downloads": 222
+                },
+                {
+                    "date": "2024-08-13",
+                    "downloads": 127
+                },
+                {
+                    "date": "2024-08-14",
+                    "downloads": 138
+                },
+                {
+                    "date": "2024-08-15",
+                    "downloads": 80
+                },
+                {
+                    "date": "2024-08-16",
+                    "downloads": 178
+                },
+                {
+                    "date": "2024-08-17",
+                    "downloads": 99
+                },
+                {
+                    "date": "2024-08-18",
+                    "downloads": 60
+                },
+                {
+                    "date": "2024-08-19",
+                    "downloads": 181
+                },
+                {
+                    "date": "2024-08-20",
+                    "downloads": 196
+                },
+                {
+                    "date": "2024-08-21",
+                    "downloads": 169
+                },
+                {
+                    "date": "2024-08-22",
+                    "downloads": 206
+                },
+                {
+                    "date": "2024-08-23",
+                    "downloads": 254
+                },
+                {
+                    "date": "2024-08-24",
+                    "downloads": 81
+                },
+                {
+                    "date": "2024-08-25",
+                    "downloads": 30
+                },
+                {
+                    "date": "2024-08-26",
+                    "downloads": 396
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 185
                 }
             ]
         },
@@ -8848,7 +8878,7 @@
                 "section_name": "pypi",
                 "package_name": "multiversx-sdk-rust-contract-builder",
                 "language": "Python",
-                "no_of_downloads": 162,
+                "no_of_downloads": 163,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -8956,6 +8986,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 8
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 1
                 }
             ]
         },
@@ -8964,7 +8998,7 @@
                 "section_name": "pypi",
                 "package_name": "multiversx-sdk-network-providers",
                 "language": "Python",
-                "no_of_downloads": 4681,
+                "no_of_downloads": 4843,
                 "libraries_io_score": {
                     "basic_info_present": 1,
                     "repository_present": 1,
@@ -8987,20 +9021,16 @@
                     "is_removed": 0
                 },
                 "site_score": {
-                    "final": 0.59,
+                    "final": 0.67,
                     "detail": {
                         "security": "No known security issues",
                         "popularity": "Small",
-                        "maintenance": "Sustainable",
+                        "maintenance": "Healthy",
                         "community": "Limited"
                     }
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 26
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 247
@@ -9116,6 +9146,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 387
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 188
                 }
             ]
         },
@@ -9157,10 +9191,6 @@
                 }
             },
             "downloads": [
-                {
-                    "date": "2024-07-28",
-                    "downloads": 1
-                },
                 {
                     "date": "2024-07-29",
                     "downloads": 1
@@ -9236,6 +9266,10 @@
                 {
                     "date": "2024-08-26",
                     "downloads": 5
+                },
+                {
+                    "date": "2024-08-27",
+                    "downloads": 1
                 }
             ]
         }
