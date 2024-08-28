@@ -4,7 +4,6 @@ import glob
 from typing import Any, Dict
 import dash
 from dash import dcc, html, Input, Output
-# from dash import dash_table
 from dotenv.main import load_dotenv
 import plotly.graph_objs as go
 from fetch_data import DownloadsFetcher, PackageDownloads
@@ -14,7 +13,7 @@ from utils import Repository
 load_dotenv()
 
 app = dash.Dash(__name__)
-
+background_color = '#e6f7ff'
 directory = os.environ.get("JSON_FOLDER")
 json_files = glob.glob(os.path.join(directory, 'blue*.json'))
 json_files.sort(reverse=True)
@@ -22,12 +21,25 @@ json_files.sort(reverse=True)
 dropdown_options = [{'label': os.path.basename(file), 'value': file} for file in json_files]
 
 # Layout of the Dash app
-app.layout = html.Div(children=[
-    dcc.Dropdown(
-        id='file-selector',
-        options=dropdown_options,
-        value=dropdown_options[0]['value'],  # Set default value as the first file
-        clearable=False
+app.layout = html.Div(style={'backgroundColor': background_color}, children=[
+    html.Div(
+        style={
+            'display': 'flex',
+            'alignItems': 'center'
+        },
+        children=[
+            html.H1(
+                'BLUE REPORT',
+                style={'marginRight': '20px'}
+            ),
+            dcc.Dropdown(
+                id='file-selector',
+                options=dropdown_options,
+                value=dropdown_options[0]['value'],  # Set default value as the newest file generated
+                clearable=False,
+                style={'width': '50%'}
+            )
+        ]
     ),
 
     # Container for dynamic content
