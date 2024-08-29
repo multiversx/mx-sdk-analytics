@@ -1,7 +1,7 @@
 {
     "include": [],
     "exclude": [
-        "**/__pycache__", "Output"
+        "**/__pycache__",
     ],
     "ignore": [],
     "defineConstant": {

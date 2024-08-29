@@ -1,17 +1,14 @@
 from enum import Enum
-from typing import List
 
 
 class Language(Enum):
     JAVASCRIPT = 'Javascript'
-    TYPESCRIPT = 'Typescript'
-    NESTJS = 'Nestjs'
     RUST = 'Rust'
     PYTHON = 'Python'
 
 
-class Repository(Enum):
-    NPM = ('npmjs', [Language.JAVASCRIPT, Language.TYPESCRIPT, Language.NESTJS])
+class PackagesRegistry(Enum):
+    NPM = ('npmjs', [Language.JAVASCRIPT])
     CARGO = ('crates.io', [Language.RUST])
     PYPI = ('pypi', [Language.PYTHON])
 

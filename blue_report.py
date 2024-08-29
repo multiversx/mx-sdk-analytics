@@ -1,24 +1,22 @@
 from datetime import datetime, timedelta
 import os
-import glob
+from pathlib import Path
 from typing import Any, Dict
 import dash
 from dash import dcc, html, Input, Output
 from dotenv.main import load_dotenv
 import plotly.graph_objs as go
 from fetch_data import DownloadsFetcher, PackageDownloads
-from utils import Repository
-
+from utils import PackagesRegistry
 
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6f7ff'
 directory = os.environ.get("JSON_FOLDER")
-json_files = glob.glob(os.path.join(directory, 'blue*.json'))
-json_files.sort(reverse=True)
 
-dropdown_options = [{'label': os.path.basename(file), 'value': file} for file in json_files]
+json_files = sorted(Path(directory).glob("blue*.json"), reverse=True)
+dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
 
 # Layout of the Dash app
 app.layout = html.Div(style={'backgroundColor': background_color}, children=[
@@ -47,7 +45,7 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
 ])
 
 
-def create_table(fetcher: DownloadsFetcher, section: Repository):
+def create_table(fetcher: DownloadsFetcher, section: PackagesRegistry):
     header_row = [
         html.Th("Package"),
         html.Th(["Downloads", html.Br(), "last month"]),
@@ -63,7 +61,7 @@ def create_table(fetcher: DownloadsFetcher, section: Repository):
     packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
-        package_statistics = package.calculate_monthly_statistics_from_daily_downloads(fetcher.end_date)
+        package_statistics = package.create_summary_of_monthly_statistics_from_daily_downloads(fetcher.end_date)
         row = [
             html.Td(package.package_name),
             html.Td(package_statistics['last_month_downloads'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
@@ -78,7 +76,7 @@ def create_table(fetcher: DownloadsFetcher, section: Repository):
     return html.Table(table_header + table_rows)
 
 
-def create_package_info_box(fetcher: DownloadsFetcher, section: Repository):
+def create_package_info_box(fetcher: DownloadsFetcher, section: PackagesRegistry):
     info_boxes = []
     packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
@@ -94,7 +92,7 @@ def create_package_info_box(fetcher: DownloadsFetcher, section: Repository):
     return html.Div(info_boxes)
 
 
-def create_graph(fetcher: DownloadsFetcher, section: Repository) -> Dict[str, Any]:
+def create_graph(fetcher: DownloadsFetcher, section: PackagesRegistry) -> Dict[str, Any]:
     packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
@@ -145,7 +143,7 @@ def update_report(selected_file: str):
                 html.H2("Libraries.io warnings"),
                 create_package_info_box(fetcher, repo)
             ])
-            for repo in Repository
+            for repo in PackagesRegistry
         ])
     ])
 
