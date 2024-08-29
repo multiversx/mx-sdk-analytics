@@ -38,7 +38,7 @@ def main():
     if args.week:
         year = datetime.now().year
         # end_date = datetime.strptime(f'{year} {args.week} 0', '%Y %W %w').strftime(date_format)
-        end_date = datetime.fromisocalendar(year, args.week, 0).strftime(date_format)
+        end_date = datetime.fromisocalendar(year, args.week, 7).strftime(date_format)
 
     print(f"Gathering data for: {end_date}...")
     print(f"week= {datetime.strptime(end_date, date_format).isocalendar().week}, weekday= {datetime.strptime(end_date, date_format).isocalendar().weekday}")

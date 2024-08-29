@@ -254,9 +254,6 @@ class DownloadsFetcher:
         print("writting json ...")
         report_name = Path(self.rep_folder) / f"blue{self.end_date}.json"
         report_name.write_text(json.dumps(self.to_dict(), indent=4))
-        # report_name = f"{self.rep_folder}/blue{self.end_date}.json"
-        # with open(report_name, 'w') as file:
-        #     file.write(json.dumps(self.to_dict(), indent=4))
 
     def get_npm_package_names(self, pattern: str) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
         size = 20
