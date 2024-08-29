@@ -6,7 +6,17 @@ Tool for data gathering and analysis (on SDKs usage).
 - JSON_FOLDER (Folder where generated json files are stored after gathering data from Repository sites - "./Output" for development mode) 
 
 ## INSTALL
-pip install -r requirements.txt
+Create a virtual environment and install the dependencies:
+`
+python3 -m venv ./venv
+source ./venv/bin/activate
+pip install -r ./requirements.txt --upgrade
+`
+
+## INSTALL DEVELOPMENT DEPENDENCIES
+
+pip install -r ./requirements-dev.txt --upgrade
+
 
 ## RUN
 ### GATHER-REPOSITORY-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
