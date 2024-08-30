@@ -9,7 +9,7 @@ import requests
 from tqdm import tqdm
 
 from utils import Language, PackagesRegistry
-from constants import CRATES_SEARCH_PREFIX, DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK, NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX, date_format
+from constants import CRATES_SEARCH_PREFIX, DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK, NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX, DATE_FORMAT
 
 # in order to permit calculations of scores in future implementations, the score must be a dictionary of individual composit scores
 # the general score is calculated as a weighted means of composit scores, which in turn will be weighted means of individual scores.
@@ -133,7 +133,7 @@ class PackageDownloads:
     def create_summary_of_monthly_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
         last_month_downloads = reduce(lambda acc, dd: acc + dd.downloads, self.downloads, 0)
         avg_daily_downloads = last_month_downloads / DAYS_IN_MONTHLY_REPORT
-        seven_days_before = (datetime.strptime(end_date, date_format).date() - timedelta(DAYS_IN_WEEK - 1)).strftime(date_format)
+        seven_days_before = (datetime.strptime(end_date, DATE_FORMAT).date() - timedelta(DAYS_IN_WEEK - 1)).strftime(DATE_FORMAT)
         last_week_downloads = reduce(lambda acc, dd: acc + dd.downloads, [item for item in self.downloads if item.date >= seven_days_before], 0)
         return {
             "last_month_downloads": last_month_downloads,
@@ -369,9 +369,9 @@ class DownloadsFetcher:
     @staticmethod
     def from_package_sites(date: str) -> 'DownloadsFetcher':
         result = DownloadsFetcher()
-        end_date = datetime.strptime(date, date_format)
+        end_date = datetime.strptime(date, DATE_FORMAT)
         start_date = end_date - timedelta(DAYS_IN_MONTHLY_REPORT - 1)
-        result.start_date = start_date.strftime(date_format)
+        result.start_date = start_date.strftime(DATE_FORMAT)
         result.end_date = date
 
         print("fetching from npm ...")

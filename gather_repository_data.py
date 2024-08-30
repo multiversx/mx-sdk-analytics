@@ -3,12 +3,12 @@ from dotenv.main import load_dotenv
 from fetch_data import DownloadsFetcher
 import argparse
 
-from constants import date_format
+from constants import DATE_FORMAT
 
 
 def validate_date(date_str: str):
     try:
-        datetime.strptime(date_str, date_format)
+        datetime.strptime(date_str, DATE_FORMAT)
         return date_str
     except ValueError:
         raise argparse.ArgumentTypeError(f"Not a valid date: '{date_str}'. Expected format: YYYY-mm-dd.")
@@ -32,16 +32,15 @@ def main():
     )
     args = parser.parse_args()
 
-    end_date = (datetime.now() - timedelta(1)).strftime(date_format)
+    end_date = (datetime.now() - timedelta(1)).strftime(DATE_FORMAT)
     if args.date:
         end_date = args.date
     if args.week:
         year = datetime.now().year
-        # end_date = datetime.strptime(f'{year} {args.week} 0', '%Y %W %w').strftime(date_format)
-        end_date = datetime.fromisocalendar(year, args.week, 7).strftime(date_format)
+        end_date = datetime.fromisocalendar(year, args.week, 7).strftime(DATE_FORMAT)
 
     print(f"Gathering data for: {end_date}...")
-    print(f"week= {datetime.strptime(end_date, date_format).isocalendar().week}, weekday= {datetime.strptime(end_date, date_format).isocalendar().weekday}")
+    print(f"week= {datetime.strptime(end_date, DATE_FORMAT).isocalendar().week}, weekday= {datetime.strptime(end_date, DATE_FORMAT).isocalendar().weekday}")
 
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
