@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from functools import reduce
 import json
-import os
 # from pathlib import Path
 from typing import Any, Dict, List
 from bs4 import BeautifulSoup, Tag
@@ -53,9 +52,9 @@ class PackageRegistryPackageObject(PackageObject):
     @staticmethod
     def from_crates_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageRegistryPackageObject':
         def add_or_update_downloads(my_list: List[PackageRegistryDailyDownloads], elem: PackageRegistryDailyDownloads):
-            if elem.date in my_list:
+            if elem.date in map(lambda x: x.date, my_list):
                 existing_item = next(
-                    item for item in my_list if item == elem.date)
+                    item for item in my_list if item.date == elem.date)
                 existing_item.downloads += elem.downloads
             else:
                 my_list.append(elem)
@@ -206,14 +205,6 @@ class PackageRegistryFetcherObject(FetcherObject):
         data['data'] = [entry for entry in data['data']
                         if self.start_date <= entry['date'] <= self.end_date]
         return data
-
-    def fetch_libraries_io_score(self, package_name: str, site: str) -> json:
-        libraries_io_api_key = os.environ.get("LIBRARIES_IO_API_KEY")
-        package = package_name.replace('/', '%2F')
-        url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.json()
 
     @staticmethod
     def from_package_sites(date: str) -> 'PackageRegistryFetcherObject':

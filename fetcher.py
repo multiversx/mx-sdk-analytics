@@ -47,29 +47,15 @@ class DailyDownloads:
     def __str__(self) -> str:
         return f"{self.date} - {self.downloads} downloads"
 
-    def __eq__(self, value: object) -> bool:
-        if isinstance(value, DailyDownloads):
-            return value.date == self.date and value.downloads == self.downloads
-        if isinstance(value, str):
-            return (value == self.date)
-        return False
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "date": self.date,
             "downloads": self.downloads
         }
 
-    def add_or_update_downloads_in_list(self, my_list: List['DailyDownloads']) -> None:
-        if self.date in my_list:
-            existing_item = next(item for item in my_list if item == self.date)
-            existing_item.downloads += self.downloads
-        else:
-            my_list.append(self)
-
-    @staticmethod
-    def from_json_file(response: Dict[str, Any]):
-        result = DailyDownloads()
+    @classmethod
+    def from_json_file(cls, response: Dict[str, Any]) -> 'DailyDownloads':
+        result = cls()
         result.date = response.get('date', '1980-01-01')
         result.downloads = response.get('downloads', 0)
         return result
@@ -125,9 +111,9 @@ class PackageObject:
                               if value < 0 or value == 0 and "present" in key)
         return negatives
 
-    @staticmethod
-    def from_json_file(response: Dict[str, Any]) -> 'PackageObject':
-        result = PackageObject()
+    @classmethod
+    def from_json_file(cls, response: Dict[str, Any]) -> 'PackageObject':
+        result = cls()
         raw_downloads = response.get('downloads', [])
         result.downloads = [DailyDownloads.from_json_file(
             item) for item in raw_downloads]
