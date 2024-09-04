@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List
 import requests
-from constants import DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK, DATE_FORMAT
+from constants import DAYS_IN_WEEK, DATE_FORMAT
 
 # in order to permit calculations of scores in future implementations, the score must be a dictionary of individual composit scores
 # the general score is calculated as a weighted means of composit scores, which in turn will be weighted means of individual scores.
@@ -91,9 +91,9 @@ class PackageObject:
             "downloads": [item.to_dict() for item in self.downloads]
         }
 
-    def create_summary_of_monthly_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
+    def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration: int) -> Dict[str, Any]:
         last_month_downloads = reduce(lambda acc, dd: acc + dd.downloads, self.downloads, 0)
-        avg_daily_downloads = last_month_downloads / DAYS_IN_MONTHLY_REPORT
+        avg_daily_downloads = last_month_downloads / report_duration
         seven_days_before = (datetime.strptime(end_date, DATE_FORMAT).date() - timedelta(DAYS_IN_WEEK - 1)).strftime(DATE_FORMAT)
         last_week_downloads = reduce(lambda acc, dd: acc + dd.downloads, [item for item in self.downloads if item.date >= seven_days_before], 0)
         return {

@@ -36,6 +36,7 @@ class PackageRegistryDailyDownloads(DailyDownloads):
 
 
 class PackageRegistryPackageObject(PackageObject):
+
     @staticmethod
     def from_npm_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageRegistryPackageObject':
         result = PackageRegistryPackageObject()
@@ -91,9 +92,9 @@ class PackageRegistryPackageObject(PackageObject):
             lambda acc, dd: acc + dd.downloads, result.downloads, 0)
         return result
 
-    @staticmethod
-    def from_json_file(response: Dict[str, Any]) -> 'PackageRegistryPackageObject':
-        return super(response)
+    @property
+    def daily_activity_type(self):
+        return PackageRegistryDailyDownloads
 
 
 class PackageRegistryFetcherObject(FetcherObject):
@@ -102,6 +103,9 @@ class PackageRegistryFetcherObject(FetcherObject):
 
     def write_json(self):
         super().write_json(repo_type=Reports.BLUE.value)
+
+    def create_summary_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
+        return super().create_summary_statistics_from_daily_downloads(end_date, report_duration=DAYS_IN_MONTHLY_REPORT)
 
     def get_npm_package_names(self, pattern: str) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
         size = 20
@@ -205,6 +209,10 @@ class PackageRegistryFetcherObject(FetcherObject):
         data['data'] = [entry for entry in data['data']
                         if self.start_date <= entry['date'] <= self.end_date]
         return data
+
+    @property
+    def package_class(self):
+        return PackageRegistryPackageObject
 
     @staticmethod
     def from_package_sites(date: str) -> 'PackageRegistryFetcherObject':

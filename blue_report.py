@@ -7,7 +7,7 @@ from dash import dcc, html, Input, Output
 from dotenv.main import load_dotenv
 import plotly.graph_objs as go
 from fetch_data import DownloadsFetcher, PackageDownloads
-from utils import PackagesRegistry
+from utils import PackagesRegistry, Reports
 
 load_dotenv()
 
@@ -143,7 +143,7 @@ def update_report(selected_file: str):
                 html.H2("Libraries.io warnings"),
                 create_package_info_box(fetcher, repo)
             ])
-            for repo in PackagesRegistry
+            for repo in PackagesRegistry if Reports.BLUE in repo.reports
         ])
     ])
 

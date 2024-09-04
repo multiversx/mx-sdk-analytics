@@ -44,12 +44,17 @@ class GithubDailyDownloads(DailyDownloads):
 class GithubPackageObject(PackageObject):
     def __init__(self) -> None:
         super().__init__()
-        self.views: List[DailyDownloads] = []
+        self.main_page_statistics = {}
+        self.views: List[GithubDailyDownloads] = []
 
     def to_dict(self) -> Dict[str, Any]:
         temp_dict = super().to_dict()
+        temp_dict['metadata']['main_page_statistics'] = self.main_page_statistics
         temp_dict['views'] = [item.to_dict() for item in self.views]
         return temp_dict
+
+    def create_summary_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
+        return super().create_summary_statistics_from_daily_downloads(end_date, report_duration=DAYS_IN_TWO_WEEKS_REPORT)
 
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackageObject':
@@ -63,14 +68,15 @@ class GithubPackageObject(PackageObject):
         result.package_name = response.get('package', package)
         result.package_language = lang
         result.package_site = PackagesRegistry.GITHUB.repo_name
-        result.no_of_downloads = reduce(
-            lambda acc, dd: acc + dd.downloads, result.downloads, 0)
+        result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
+        result.main_page_statistics = response.get('main_page_statistics', {})
         return result
 
     @classmethod
     def from_json_file(cls, response: Dict[str, Any]) -> 'GithubPackageObject':
         result = super().from_json_file(response)
         result.views = [GithubDailyDownloads.from_json_file(item) for item in response.get('views', [])]
+        result.main_page_statistics = response.get('metadata', {}).get('main_page_statistics', {})
         return result
 
     @property
@@ -181,8 +187,7 @@ class GithubFetcherObject(FetcherObject):
                 fetched = {"downloads": fetched_downloads, "visits": fetched_visits}
                 package_downloads = GithubPackageObject.from_github_fetched_data(
                     package_name, Language.JAVASCRIPT.value, fetched)
-                # package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
-                # package_downloads.site_score = ScoreObject.from_json(packages[package_name])
+                package_downloads.main_page_statistics = packages[package_name]
                 package_downloads.site_score = ScoreObject.from_json(result.fetch_github_package_community_score(package_name))
                 result.downloads.append(package_downloads)
                 pbar.update(1)

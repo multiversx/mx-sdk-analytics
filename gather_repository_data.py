@@ -5,6 +5,10 @@ import argparse
 
 from constants import DATE_FORMAT
 
+from utils import Reports
+
+from packages_registry_fetcher import PackageRegistryFetcherObject
+
 
 def validate_date(date_str: str):
     try:
@@ -45,7 +49,7 @@ def main():
 
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
-    fetcher = DownloadsFetcher.from_package_sites(end_date)
+    fetcher = PackageRegistryFetcherObject.from_package_sites(end_date)
     fetcher.write_json()
 
 
