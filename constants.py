@@ -7,4 +7,5 @@ NPM_SEARCH_PREFIX = "@multiversx/sdk"
 CRATES_SEARCH_PREFIX = "multiversx"
 PYPI_SEARCH_PREFIX = "multiversx-sdk"
 GITHUB_SEARCH_PREFIX = "sdk"
+
 GITHUB_ORGANIZATION = "multiversx"

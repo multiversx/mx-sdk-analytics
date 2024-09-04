@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup, Tag
 import requests
 from tqdm import tqdm
 
-from utils import Language, PackagesRegistry
-from constants import DAYS_IN_TWO_WEEKS_REPORT, GITHUB_SEARCH_PREFIX, DATE_FORMAT
+from utils import Language, PackagesRegistry, Reports
+from constants import DAYS_IN_TWO_WEEKS_REPORT, GITHUB_ORGANIZATION, GITHUB_SEARCH_PREFIX, DATE_FORMAT
 from fetcher import DailyDownloads, FetcherObject, PackageObject, ScoreObject
 
 
@@ -48,14 +48,14 @@ class GithubPackageObject(PackageObject):
 
     def to_dict(self) -> Dict[str, Any]:
         temp_dict = super().to_dict()
-        temp_dict['views'] = self.views
+        temp_dict['views'] = [item.to_dict() for item in self.views]
         return temp_dict
 
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackageObject':
         result = GithubPackageObject()
-        raw_downloads = response.get('downloads', [])
-        raw_views = response.get('views', [])
+        raw_downloads = response.get('downloads').get('clones', [])
+        raw_views = response.get('visits').get('views', [])
         result.downloads = [GithubDailyDownloads.from_github_fetched_data(
             item) for item in raw_downloads]
         result.views = [GithubDailyDownloads.from_github_fetched_data(
@@ -70,62 +70,99 @@ class GithubPackageObject(PackageObject):
     @classmethod
     def from_json_file(cls, response: Dict[str, Any]) -> 'GithubPackageObject':
         result = super().from_json_file(response)
-        result.views = response.get('views', [])
+        result.views = [GithubDailyDownloads.from_json_file(item) for item in response.get('views', [])]
         return result
+
+    @property
+    def daily_activity_type(self):
+        return GithubDailyDownloads
 
 
 class GithubFetcherObject(FetcherObject):
+    def __init__(self) -> None:
+        super().__init__()
+
     def write_report(self):
         super().write_report("rep")
 
     def write_json(self):
-        super().write_json(repo_type="green")
-# https://api.github.com/search/repositories?q=sdk+in:name+user:multiversx&sort=stars&order=desc
+        super().write_json(repo_type=Reports.GREEN.value)
 
-    def get_github_package_names(self, pattern: str) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
-        size = 20
+    def get_github_package_names(self, pattern: str) -> Dict[str, Any]:        # github api - query search result
+        def build_package_main_page_score(item: Dict[str, Any]) -> Dict[str, Any]:
+            return {
+                'stargazers_count': item.get('stargazers_count', 0),
+                'forks_count': item.get('forks_count', 0),
+                'watchers_count': item.get('watchers_count', 0),
+                'has_issues': item.get('has_issues', 0),
+                'has_projects': item.get('has_projects', 0),
+                'has_downloads': item.get('has_downloads', 0),
+                'has_wiki': item.get('has_wiki', 0),
+                'has_pages': item.get('has_pages', 0),
+                'has_discussions': item.get('has_discussions', 0),
+            }
         page = 0
+        size = 100
         scores_dict = {}
+        owner = GITHUB_ORGANIZATION
         while True:
-            url = f"https://registry.npmjs.org/-/v1/search?text={pattern}&size={size}&from={page * size}"
+            url = f"https://api.github.com/search/repositories?q={pattern}+in:name+user:{owner}&per_page={size}&page={page}&sort=stars&order=desc"
             response = requests.get(url)
             response.raise_for_status()
             data = response.json()
-            package_info = data.get('objects', [])
-            # also gets npmjs scores in the form "{package_name}": {package_score}
-            scores_dict.update({item.get('package', {}).get('name'): item.get('score', {}) for item in package_info
-                                if pattern in item.get('package', {}).get('name')})
-            if len(data['objects']) < size:
+            package_info = data.get('items', [])
+            # also gets main page scores in the form "{package_name}": {package_score}
+            scores_dict.update({item.get('name'): build_package_main_page_score(item) for item in package_info})
+            if len(data['items']) < size:
                 break
             page += 1
         return scores_dict
 
     def fetch_github_downloads(self, package_name: str):
-        url = f"https://api.npmjs.org/downloads/range/{self.start_date}:{self.end_date}/{package_name}"
-        response = requests.get(url)
-        response.raise_for_status()
+        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
+        owner = GITHUB_ORGANIZATION
+        headers = {"Authorization": f"Bearer {bearer_token}"}
+        url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/clones"
+        response = requests.get(url, headers=headers)
+        if response.status_code == 403:
+            print(package_name)
+        else:
+            response.raise_for_status()
         return response.json()
 
-    def fetch_github_package_score(self, package_name: str) -> json:
-        score_details = {}
-        url = f"https://snyk.io/advisor/python/{package_name}"
-        response = requests.get(url)
-        response.raise_for_status()
+    def fetch_github_visits(self, package_name: str):
+        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
+        owner = GITHUB_ORGANIZATION
+        headers = {"Authorization": f"Bearer {bearer_token}"}
+        url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/views"
+        response = requests.get(url, headers=headers)
+        if response.status_code == 403:
+            print(package_name)
+        else:
+            response.raise_for_status()
+        return response.json()
 
-        soup = BeautifulSoup(response.text, 'html.parser')
-        title_tags: List[Tag] = [item for item in soup.find_all('title')]
-        for title_tag in title_tags:
-            title_text = title_tag.text
-            if "package health:" in title_text.lower():
-                health_score: int = title_text.split(':')[-1].split('/')[0].strip()
-                score_details['final'] = int(health_score) / 100
-        score_details['detail'] = {}
-        scores_list = soup.find('ul', class_='scores')
-        for li in scores_list.find_all('li'):
-            category = li.find('span').text.strip()
-            status = li.find('span', class_='vue--pill__body').text.strip()
-            score_details['detail'][category] = status
-        return score_details
+    def fetch_github_package_community_score(self, package_name: str) -> Dict[str, Any]:
+        score = {}
+        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
+        owner = GITHUB_ORGANIZATION
+        headers = {"Authorization": f"Bearer {bearer_token}"}
+        url = f"https://api.github.com/repos/{owner}/{package_name}/community/profile"
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        health_score: int = data.get('health_percentage', 0)
+        score['final'] = health_score / 100
+        score['detail'] = {}
+        for item in ['description', 'documentation']:
+            score['detail'][f"has_{item}"] = 0 if data.get(item, '') is None else 1
+        for item in ['code_of_conduct', 'contributing', 'issue_template', 'pull_request_template', 'license', 'readme']:
+            score['detail'][f"has_{item}"] = 0 if data.get('files', {}).get(item, '') is None else 1
+        timestamp = data.get('updated_at', '')
+        format = "%Y-%m-%dT%H:%M:%SZ"
+        score['detail']['updated_at'] = datetime.strptime(timestamp, format).strftime(DATE_FORMAT) if timestamp else ''
+        score['detail']['content_reports_enabled'] = 1 if data.get('content_reports_enabled', '') else 0
+        return score
 
     @staticmethod
     def from_package_sites(date: str) -> 'GithubFetcherObject':
@@ -140,10 +177,26 @@ class GithubFetcherObject(FetcherObject):
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages.keys():
                 fetched_downloads = result.fetch_github_downloads(package_name)
+                fetched_visits = result.fetch_github_visits(package_name)
+                fetched = {"downloads": fetched_downloads, "visits": fetched_visits}
                 package_downloads = GithubPackageObject.from_github_fetched_data(
-                    package_name, Language.JAVASCRIPT.value, fetched_downloads)
-                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
-                package_downloads.site_score = ScoreObject.from_json(packages[package_name])
+                    package_name, Language.JAVASCRIPT.value, fetched)
+                # package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
+                # package_downloads.site_score = ScoreObject.from_json(packages[package_name])
+                package_downloads.site_score = ScoreObject.from_json(result.fetch_github_package_community_score(package_name))
                 result.downloads.append(package_downloads)
                 pbar.update(1)
         return result
+
+    @staticmethod
+    def get_github_rate_limit(token: str):
+        rate_limit_url = "https://api.github.com/rate_limit"
+        response = requests.get(rate_limit_url, headers={"Authorization": f"token {token}"})
+        print(response.json())
+        reset_time = int(response.headers.get("X-RateLimit-Reset"))
+        remaining = int(response.headers.get("X-RateLimit-Remaining"))
+        print(f"Rate limit will reset at {reset_time}. You have {remaining} requests left.")
+
+    @property
+    def package_class(self):
+        return GithubPackageObject

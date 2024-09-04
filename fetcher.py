@@ -115,7 +115,7 @@ class PackageObject:
     def from_json_file(cls, response: Dict[str, Any]) -> 'PackageObject':
         result = cls()
         raw_downloads = response.get('downloads', [])
-        result.downloads = [DailyDownloads.from_json_file(
+        result.downloads = [result.daily_activity_type.from_json_file(
             item) for item in raw_downloads]
         meta: Dict[str, Any] = response.get('metadata', '')
         result.package_name = meta.get('package_name', '')
@@ -125,6 +125,10 @@ class PackageObject:
         result.libraries_io_score = meta.get('libraries_io_score', {})
         result.site_score = ScoreObject.from_json(meta.get('site_score', {}))
         return result
+
+    @property
+    def daily_activity_type(self):
+        return DailyDownloads
 
 
 class FetcherObject:
@@ -169,14 +173,18 @@ class FetcherObject:
         response.raise_for_status()
         return response.json()
 
-    @staticmethod
-    def from_json_file(file_name: str) -> 'FetcherObject':
+    @property
+    def package_class(self):
+        return PackageObject
+
+    @classmethod
+    def from_json_file(cls, file_name: str) -> 'FetcherObject':
         with open(file_name, 'r') as file:
             json_data: Dict[str, Any] = json.load(file)
-        result = FetcherObject()
+        result = cls()
         meta: Dict[str, Any] = json_data.get('metadata')
         result.start_date = meta.get('start_date', '')
         result.end_date = meta.get('end_date', '')
-        result.downloads = [PackageObject.from_json_file(
+        result.downloads = [result.package_class.from_json_file(
             item) for item in json_data.get('records', [])]
         return result

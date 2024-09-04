@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup, Tag
 import requests
 from tqdm import tqdm
 
-from utils import Language, PackagesRegistry
+from utils import Language, PackagesRegistry, Reports
 from constants import CRATES_SEARCH_PREFIX, DAYS_IN_MONTHLY_REPORT, NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX, DATE_FORMAT
 from fetcher import DailyDownloads, FetcherObject, PackageObject, ScoreObject
 
@@ -101,7 +101,7 @@ class PackageRegistryFetcherObject(FetcherObject):
         super().write_report("rep")
 
     def write_json(self):
-        super().write_json(repo_type="blue")
+        super().write_json(repo_type=Reports.BLUE.value)
 
     def get_npm_package_names(self, pattern: str) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
         size = 20

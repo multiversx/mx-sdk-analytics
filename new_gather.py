@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
+import os
 from dotenv.main import load_dotenv
 import argparse
 
 from constants import DATE_FORMAT
 from packages_registry_fetcher import PackageRegistryFetcherObject
+
+from github_fetcher import GithubFetcherObject
 
 
 def validate_date(date_str: str):
@@ -44,8 +47,12 @@ def main():
 
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
-    fetcher = PackageRegistryFetcherObject.from_package_sites(end_date)
-    fetcher.write_json()
+    # pm_fetcher = PackageRegistryFetcherObject.from_package_sites(end_date)
+    # pm_fetcher.write_json()
+    # GithubFetcherObject.get_github_rate_limit(token=os.environ.get("GITHUB_TOKEN"))
+
+    git_fetcher = GithubFetcherObject.from_package_sites(end_date)
+    git_fetcher.write_json()
 
 
 if __name__ == "__main__":
