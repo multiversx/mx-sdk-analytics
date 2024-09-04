@@ -1,18 +1,20 @@
-from datetime import datetime, timedelta
-from functools import reduce
 import json
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
-from bs4 import BeautifulSoup, Tag
+
 import requests
+from bs4 import BeautifulSoup, Tag
 from tqdm import tqdm
 
+from constants import (CRATES_SEARCH_PREFIX, DATE_FORMAT,
+                       DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK, NPM_SEARCH_PREFIX,
+                       PYPI_SEARCH_PREFIX)
 from utils import Language, PackagesRegistry
-from constants import CRATES_SEARCH_PREFIX, DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK, NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX, DATE_FORMAT
 
-# in order to permit calculations of scores in future implementations, the score must be a dictionary of individual composit scores
-# the general score is calculated as a weighted means of composit scores, which in turn will be weighted means of individual scores.
+# in order to allow calculations of scores in future implementations, the score must be a dictionary of individual composite scores
+# the general score is calculated as a weighted means of composite scores, which in turn will be weighted means of individual scores.
 #
 # NPM: final_score = weightedMean([[quality, 6],[popularity, 7],[maintenance, 7]]);
 # NPM: quality = weightedMean([[carefulness, 7],[tests, 7],[health, 4],[branding, 2]]);
@@ -21,55 +23,41 @@ from constants import CRATES_SEARCH_PREFIX, DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK
 # PYPI: health_score = weightedMean([[security, 6],[popularity, 6],[maintanance, 4],[community, 4]]);
 
 
-class ScoreObject:
+class Score:
     def __init__(self) -> None:
         self.final: float = 0
         self.detail: Dict[str, Any] = {}
 
     def __repr__(self) -> str:
-        return ", ".join(f"{key} = {float(value):.2f}" if isinstance(value, (float, int)) else f"{key} = {value}" for key, value in self.detail.items())
+        return ', '.join(f"{key} = {float(value):.2f}" if isinstance(value, (float, int)) else f"{key} = {value}" for key, value in self.detail.items())
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "final": self.final,
-            "detail": self.detail
+            'final': self.final,
+            'detail': self.detail
         }
 
     @staticmethod
-    def from_json(info: Dict[str, Any]) -> 'ScoreObject':
-        response = ScoreObject()
-        response.final = info.get("final", 0)
-        response.detail = info.get("detail", {})
+    def from_json(info: Dict[str, Any]) -> 'Score':
+        response = Score()
+        response.final = info.get('final', 0)
+        response.detail = info.get('detail', {})
         return response
 
 
 class DailyDownloads:
     def __init__(self) -> None:
-        self.date = "1980-01-01"
+        self.date = '1980-01-01'
         self.downloads = 0
 
     def __str__(self) -> str:
         return f"{self.date} - {self.downloads} downloads"
 
-    def __eq__(self, value: object) -> bool:
-        if isinstance(value, DailyDownloads):
-            return value.date == self.date and value.downloads == self.downloads
-        if isinstance(value, str):
-            return (value == self.date)
-        return False
-
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "date": self.date,
-            "downloads": self.downloads
+            'date': self.date,
+            'downloads': self.downloads
         }
-
-    def add_or_update_downloads_in_list(self, my_list: List['DailyDownloads']) -> None:
-        if self.date in my_list:
-            existing_item = next(item for item in my_list if item == self.date)
-            existing_item.downloads += self.downloads
-        else:
-            my_list.append(self)
 
     @staticmethod
     def from_npm_fetched_data(response: Dict[str, Any]) -> 'DailyDownloads':
@@ -108,45 +96,44 @@ class PackageDownloads:
         self.downloads: List[DailyDownloads] = []
         self.no_of_downloads = 0
         self.libraries_io_score: json = {}
-        self.site_score = ScoreObject()
+        self.site_score = Score()
 
     def __str__(self):
-        print_str = f"PACKAGE = {self.package_name} - language = {self.package_language} - site = {
-            self.package_site} - downloads = {self.no_of_downloads}\n"
+        print_str = f"PACKAGE = {self.package_name} - language = {self.package_language} - site = {self.package_site} - downloads = {self.no_of_downloads}\n"
         print_str += "\n".join(str(item) for item in self.downloads)
         print_str += "\n"
         return print_str
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "metadata": {
-                "section_name": self.package_site,
-                "package_name": self.package_name,
-                "language": self.package_language,
-                "no_of_downloads": self.no_of_downloads,
-                "libraries_io_score": self.libraries_io_score,
-                "site_score": self.site_score.to_dict()
+            'metadata': {
+                'section_name': self.package_site,
+                'package_name': self.package_name,
+                'language': self.package_language,
+                'no_of_downloads': self.no_of_downloads,
+                'libraries_io_score': self.libraries_io_score,
+                'site_score': self.site_score.to_dict()
             },
-            "downloads": [item.to_dict() for item in self.downloads]
+            'downloads': [item.to_dict() for item in self.downloads]
         }
 
     def create_summary_of_monthly_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
-        last_month_downloads = reduce(lambda acc, dd: acc + dd.downloads, self.downloads, 0)
+        last_month_downloads = sum(dd.downloads for dd in self.downloads)
         avg_daily_downloads = last_month_downloads / DAYS_IN_MONTHLY_REPORT
         seven_days_before = (datetime.strptime(end_date, DATE_FORMAT).date() - timedelta(DAYS_IN_WEEK - 1)).strftime(DATE_FORMAT)
-        last_week_downloads = reduce(lambda acc, dd: acc + dd.downloads, [item for item in self.downloads if item.date >= seven_days_before], 0)
+        last_week_downloads = sum(dd.downloads for dd in [item for item in self.downloads if item.date >= seven_days_before])
         return {
-            "last_month_downloads": last_month_downloads,
-            "last_week_downloads": last_week_downloads,
-            "avg_daily_downloads": avg_daily_downloads,
-            "libraries_io_score": reduce(lambda acc, value: acc + value, self.libraries_io_score.values(), 0),
-            "libraries_io_negatives": self.analyse_libraries_io_score(),
-            "site_score": f"{self.site_score.final:.2f}",
-            "site_score_details": repr(self.site_score)
+            'last_month_downloads': last_month_downloads,
+            'last_week_downloads': last_week_downloads,
+            'avg_daily_downloads': avg_daily_downloads,
+            'libraries_io_score': sum(value for value in self.libraries_io_score.values()),
+            'libraries_io_negatives': self.analyse_libraries_io_score(),
+            'site_score': f"{self.site_score.final:.2f}",
+            'site_score_details': repr(self.site_score)
         }
 
     def analyse_libraries_io_score(self):
-        negatives = ", ".join(f"{key} = {value}" for key, value in self.libraries_io_score.items()
+        negatives = ', '.join(f"{key} = {value}" for key, value in self.libraries_io_score.items()
                               if value < 0 or value == 0 and "present" in key)
         return negatives
 
@@ -159,16 +146,15 @@ class PackageDownloads:
         result.package_name = response.get('package', package)
         result.package_language = lang
         result.package_site = PackagesRegistry.NPM.repo_name
-        result.no_of_downloads = reduce(
-            lambda acc, dd: acc + dd.downloads, result.downloads, 0)
+        result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
     @staticmethod
     def from_crates_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageDownloads':
         def add_or_update_downloads(my_list: List[DailyDownloads], elem: DailyDownloads):
-            if elem.date in my_list:
+            if elem.date in [item.date for item in my_list]:
                 existing_item = next(
-                    item for item in my_list if item == elem.date)
+                    item for item in my_list if item.date == elem.date)
                 existing_item.downloads += elem.downloads
             else:
                 my_list.append(elem)
@@ -179,7 +165,7 @@ class PackageDownloads:
         for elem in raw_downloads:
             new_download_data = DailyDownloads.from_crates_fetched_data(elem)
             add_or_update_downloads(result.downloads, new_download_data)
-        raw_downloads = response.get("meta", {}).get("extra_downloads", [])
+        raw_downloads = response.get('meta', {}).get('extra_downloads', [])
 
         for elem in raw_downloads:
             new_download_data = DailyDownloads.from_crates_fetched_data(elem)
@@ -188,8 +174,7 @@ class PackageDownloads:
         result.package_language = lang
         result.package_name = package
         result.package_site = PackagesRegistry.CARGO.repo_name
-        result.no_of_downloads = reduce(
-            lambda acc, dd: acc + dd.downloads, result.downloads, 0)
+        result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
     @staticmethod
@@ -197,12 +182,11 @@ class PackageDownloads:
         result = PackageDownloads()
         raw_downloads = response.get('data', [])
         result.downloads = [DailyDownloads.from_pypi_fetched_data(item) for item in filter(
-            lambda x: x.get('category', '') == "with_mirrors", raw_downloads)]
+            lambda x: x.get('category', '') == 'with_mirrors', raw_downloads)]
         result.package_language = lang
         result.package_name = response.get('package', package)
         result.package_site = PackagesRegistry.PYPI.repo_name
-        result.no_of_downloads = reduce(
-            lambda acc, dd: acc + dd.downloads, result.downloads, 0)
+        result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
     @staticmethod
@@ -217,7 +201,7 @@ class PackageDownloads:
         result.package_language = meta.get('language', '')
         result.no_of_downloads = meta.get('no_of_downloads', '')
         result.libraries_io_score = meta.get('libraries_io_score', {})
-        result.site_score = ScoreObject.from_json(meta.get('site_score', {}))
+        result.site_score = Score.from_json(meta.get('site_score', {}))
         return result
 
 
@@ -226,23 +210,22 @@ class DownloadsFetcher:
         self.start_date = ''
         self.end_date = ''
         self.downloads: List[PackageDownloads] = []
-        self.rep_folder = os.environ.get("JSON_FOLDER")
+        self.rep_folder = os.environ.get('JSON_FOLDER')
 
     def __str__(self):
-        print_str = f"DOWNLOADS REPORT ({
-            self.start_date} - {self.end_date})\n\n"
+        print_str = f"DOWNLOADS REPORT ({self.start_date} - {self.end_date})\n\n"
         print_str += "\n".join(str(item) for item in self.downloads)
         print_str += "\n"
         return print_str
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "metadata": {
-                "report_type": "blue",
-                "start_date": self.start_date,
-                "end_date": self.end_date,
+            'metadata': {
+                'report_type': 'blue',
+                'start_date': self.start_date,
+                'end_date': self.end_date,
             },
-            "records": [item.to_dict() for item in self.downloads]
+            'records': [item.to_dict() for item in self.downloads]
         }
 
     def write_report(self):
@@ -273,9 +256,11 @@ class DownloadsFetcher:
             page += 1
         return scores_dict
 
-    def fetch_npm_downloads(self, package_name: str):
+    def fetch_npm_downloads(self, package_name: str) -> Dict[str, Any]:
         url = f"https://api.npmjs.org/downloads/range/{self.start_date}:{self.end_date}/{package_name}"
         response = requests.get(url)
+        if 'not found' in response.text:
+            return {}
         response.raise_for_status()
         return response.json()
 
@@ -315,9 +300,9 @@ class DownloadsFetcher:
             url = f"https://pypi.org/search/?q={pattern}&page={page}"
             response = requests.get(url)
             response.raise_for_status()
-            soup = BeautifulSoup(response.text, "html.parser")
-            package_info = [item for item in soup.find_all("a", class_="package-snippet")]
-            new_package_names = [item.find("span", class_="package-snippet__name").text.strip() for item in package_info]
+            soup = BeautifulSoup(response.text, 'html.parser')
+            package_info = [item for item in soup.find_all('a', class_='package-snippet')]
+            new_package_names = [item.find('span', class_='package-snippet__name').text.strip() for item in package_info]
             if not new_package_names:
                 break
             new_package_names = [item for item in new_package_names if pattern in item]
@@ -327,7 +312,7 @@ class DownloadsFetcher:
             page += 1
         return package_names
 
-    def fetch_pypi_package_score(self, package_name: str) -> json:
+    def fetch_pypi_package_score(self, package_name: str) -> Dict[str, Any]:
         score_details = {}
         url = f"https://snyk.io/advisor/python/{package_name}"
         response = requests.get(url)
@@ -336,7 +321,7 @@ class DownloadsFetcher:
             title_tags: List[Tag] = [item for item in soup.find_all('title')]
             for title_tag in title_tags:
                 title_text = title_tag.text
-                if "package health:" in title_text.lower():
+                if 'package health:' in title_text.lower():
                     health_score: int = title_text.split(':')[-1].split('/')[0].strip()
                     score_details['final'] = int(health_score) / 100
             score_details['detail'] = {}
@@ -358,8 +343,8 @@ class DownloadsFetcher:
                         if self.start_date <= entry['date'] <= self.end_date]
         return data
 
-    def fetch_libraries_io_score(self, package_name: str, site: str) -> json:
-        libraries_io_api_key = os.environ.get("LIBRARIES_IO_API_KEY")
+    def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
+        libraries_io_api_key = os.environ.get('LIBRARIES_IO_API_KEY')
         package = package_name.replace('/', '%2F')
         url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
         response = requests.get(url)
@@ -382,7 +367,7 @@ class DownloadsFetcher:
                 package_downloads = PackageDownloads.from_npm_fetched_data(
                     package_name, Language.JAVASCRIPT.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
-                package_downloads.site_score = ScoreObject.from_json(packages[package_name])
+                package_downloads.site_score = Score.from_json(packages[package_name])
                 result.downloads.append(package_downloads)
                 pbar.update(1)
 
@@ -405,7 +390,7 @@ class DownloadsFetcher:
                 package_downloads = PackageDownloads.from_pypi_fetched_data(
                     package_name, Language.PYTHON.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.PYPI.name)
-                package_downloads.site_score = ScoreObject.from_json(result.fetch_pypi_package_score(package_name))
+                package_downloads.site_score = Score.from_json(result.fetch_pypi_package_score(package_name))
                 result.downloads.append(package_downloads)
                 pbar.update(1)
         return result

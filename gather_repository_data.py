@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
-from dotenv.main import load_dotenv
-from fetch_data import DownloadsFetcher
 import argparse
+from datetime import datetime, timedelta
+
+from dotenv.main import load_dotenv
 
 from constants import DATE_FORMAT
+from fetch_data import DownloadsFetcher
 
 
 def validate_date(date_str: str):
