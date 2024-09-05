@@ -89,7 +89,7 @@ def create_package_info_box(fetcher: GithubFetcherObject, section: PackagesRegis
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
-        info = package.analyse_libraries_io_score()
+        info = package.analyse_package()
         if info:
             info_boxes.append(html.Div([
                 html.H3(package.package_name),

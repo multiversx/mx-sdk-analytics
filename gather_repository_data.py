@@ -5,9 +5,6 @@ from dotenv.main import load_dotenv
 
 from constants import DATE_FORMAT
 from fetch_data import DownloadsFetcher
-import argparse
-
-from constants import DATE_FORMAT
 
 from utils import Reports
 

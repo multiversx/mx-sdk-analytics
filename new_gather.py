@@ -49,7 +49,7 @@ def main():
     load_dotenv()
     # pm_fetcher = PackageRegistryFetcherObject.from_package_sites(end_date)
     # pm_fetcher.write_json()
-    # GithubFetcherObject.get_github_rate_limit(token=os.environ.get("GITHUB_TOKEN"))
+    # GithubFetcherObject.get_github_rate_limit(token=os.environ.get("MX_GITHUB_TOKEN"))
 
     git_fetcher = GithubFetcherObject.from_package_sites(end_date)
     git_fetcher.write_json()

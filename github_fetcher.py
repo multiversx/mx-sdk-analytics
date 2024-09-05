@@ -56,6 +56,13 @@ class GithubPackageObject(PackageObject):
     def create_summary_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
         return super().create_summary_statistics_from_daily_downloads(end_date, report_duration=DAYS_IN_TWO_WEEKS_REPORT)
 
+    def analyse_package(self):
+        main_negatives = ", ".join(f"{key} = {value}" for key, value in self.main_page_statistics.items()
+                                   if value == 0 and "has" in key)
+        score_negatives = ", ".join(f"{key} = {value}" for key, value in self.site_score.detail.items()
+                                    if "has" in key and int(value) == 0)
+        return ", ".join([main_negatives, score_negatives])
+
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackageObject':
         result = GithubPackageObject()
