@@ -1,5 +1,9 @@
+import argparse
 from datetime import datetime, timedelta
+
 from dotenv.main import load_dotenv
+
+from constants import DATE_FORMAT
 from fetch_data import DownloadsFetcher
 import argparse
 
@@ -41,7 +45,6 @@ def main():
         end_date = args.date
     if args.week:
         year = datetime.now().year
-        # end_date = datetime.strptime(f'{year} {args.week} 0', '%Y %W %w').strftime(date_format)
         end_date = datetime.fromisocalendar(year, args.week, 7).strftime(DATE_FORMAT)
 
     print(f"Gathering data for: {end_date}...")

@@ -3,7 +3,7 @@ Tool for data gathering and analysis (on SDKs usage).
 
 ## ENVIRONMENT VARIABLES
 - LIBRARIES_IO_API_KEY (Api key for the libraries.io account)
-- JSON_FOLDER (Folder where generated json files are stored after gathering data from Repository sites - "./Output" for development mode) 
+- JSON_FOLDER (Folder where generated json files are stored after gathering data from Repository sites - "./Output" for development mode)
 
 ## INSTALL
 Create a virtual environment and install the dependencies:
@@ -36,14 +36,13 @@ pip install -r ./requirements-dev.txt --upgrade
 - shows argument options
    ```
     python gather_repository_data --help
-   ```                     
+   ```
 
 ### BLUE-REPORT - script that renders the visual report for package usage. Report available at port 8050
 ```
    python blue_report.py
 ```
- 
- - renders the blue report from the most recent json file generated through gathering. 
+
+ - renders the blue report from the most recent json file generated through gathering.
  - the file rendered can be changed from a drop-down menu inside the report
  - different reporitory sites can be accesed through tabs in the report
-

@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict
+
 import dash
-from dash import dcc, html, Input, Output
-from dotenv.main import load_dotenv
 import plotly.graph_objs as go
+from dash import Input, Output, dcc, html
+from dotenv.main import load_dotenv
+
 from fetch_data import DownloadsFetcher, PackageDownloads
 from utils import PackagesRegistry, Reports
 
@@ -13,9 +15,9 @@ load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6f7ff'
-directory = os.environ.get("JSON_FOLDER")
+directory = os.environ.get('JSON_FOLDER')
 
-json_files = sorted(Path(directory).glob("blue*.json"), reverse=True)
+json_files = sorted(Path(directory).glob('blue*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
 
 # Layout of the Dash app
@@ -47,13 +49,13 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
 
 def create_table(fetcher: DownloadsFetcher, section: PackagesRegistry):
     header_row = [
-        html.Th("Package"),
-        html.Th(["Downloads", html.Br(), "last month"]),
-        html.Th(["Downloads", html.Br(), "last week"]),
-        html.Th(["Avg downloads", html.Br(), "per day"]),
-        html.Th(["Libraries.io", html.Br(), "Score"]),
-        html.Th(["Site", html.Br(), " Score"]),
-        html.Th("Site Score Details")
+        html.Th('Package'),
+        html.Th(['Downloads', html.Br(), 'last month']),
+        html.Th(['Downloads', html.Br(), 'last week']),
+        html.Th(['Avg downloads', html.Br(), 'per day']),
+        html.Th(['Libraries.io', html.Br(), 'Score']),
+        html.Th(['Site', html.Br(), ' Score']),
+        html.Th('Site Score Details')
     ]
 
     table_header = [html.Tr(header_row)]
@@ -69,7 +71,7 @@ def create_table(fetcher: DownloadsFetcher, section: PackagesRegistry):
             html.Td(int(package_statistics['avg_daily_downloads']), style={'textAlign': 'right'}),
             html.Td(package_statistics['libraries_io_score'], id=f"lio_{package.package_name}", style={'textAlign': 'right'}),
             html.Td(package_statistics['site_score'], style={'textAlign': 'right', 'width': '100px'}),
-            html.Td(" - " + package_statistics['site_score_details'], style={'textAlign': 'right', })
+            html.Td(' - ' + package_statistics['site_score_details'], style={'textAlign': 'right', })
         ]
         table_rows.append(html.Tr(row))
 
@@ -132,15 +134,15 @@ def update_report(selected_file: str):
         dcc.Tabs([
             dcc.Tab(label=repo.repo_name, children=[
                 html.H1(f"{repo.name} Package Downloads"),
-                html.H2("Download Data Table"),
+                html.H2('Download Data Table'),
                 create_table(fetcher, repo),
 
-                html.H2("Download Trends"),
+                html.H2('Download Trends'),
                 dcc.Graph(
                     id='downloads-graph',
                     figure=create_graph(fetcher, repo)
                 ),
-                html.H2("Libraries.io warnings"),
+                html.H2('Libraries.io warnings'),
                 create_package_info_box(fetcher, repo)
             ])
             for repo in PackagesRegistry if Reports.BLUE in repo.reports
@@ -149,4 +151,4 @@ def update_report(selected_file: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, host='0.0.0.0')
