@@ -6,6 +6,9 @@ DATE_FORMAT = '%Y-%m-%d'
 NPM_SEARCH_PREFIX = "@multiversx/sdk"
 CRATES_SEARCH_PREFIX = "multiversx"
 PYPI_SEARCH_PREFIX = "multiversx-sdk"
+
+NPM_PAGE_SIZE = 20
+CRATES_PAGE_SIZE = 20
 GITHUB_SEARCH_PREFIX = "sdk"
 
 GITHUB_ORGANIZATION = "multiversx"
