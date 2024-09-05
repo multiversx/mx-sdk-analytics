@@ -8,9 +8,9 @@ import requests
 from bs4 import BeautifulSoup, Tag
 from tqdm import tqdm
 
-from constants import (CRATES_SEARCH_PREFIX, DATE_FORMAT,
-                       DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK, NPM_SEARCH_PREFIX,
-                       PYPI_SEARCH_PREFIX)
+from constants import (CRATES_PAGE_SIZE, CRATES_SEARCH_PREFIX, DATE_FORMAT,
+                       DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK, NPM_PAGE_SIZE,
+                       NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX)
 from utils import Language, PackagesRegistry
 
 # in order to allow calculations of scores in future implementations, the score must be a dictionary of individual composite scores
@@ -38,7 +38,7 @@ class Score:
         }
 
     @staticmethod
-    def from_json(info: Dict[str, Any]) -> 'Score':
+    def from_dict(info: Dict[str, Any]) -> 'Score':
         response = Score()
         response.final = info.get('final', 0)
         response.detail = info.get('detail', {})
@@ -81,7 +81,7 @@ class DailyDownloads:
         return result
 
     @staticmethod
-    def from_json_file(response: Dict[str, Any]):
+    def from_generated_file(response: Dict[str, Any]):
         result = DailyDownloads()
         result.date = response.get('date', '1980-01-01')
         result.downloads = response.get('downloads', 0)
@@ -95,7 +95,7 @@ class PackageDownloads:
         self.package_site = ''
         self.downloads: List[DailyDownloads] = []
         self.no_of_downloads = 0
-        self.libraries_io_score: json = {}
+        self.libraries_io_score: Dict[str, Any] = {}
         self.site_score = Score()
 
     def __str__(self):
@@ -190,10 +190,10 @@ class PackageDownloads:
         return result
 
     @staticmethod
-    def from_json_file(response: Dict[str, Any]) -> 'PackageDownloads':
+    def from_generated_file(response: Dict[str, Any]) -> 'PackageDownloads':
         result = PackageDownloads()
         raw_downloads = response.get('downloads', [])
-        result.downloads = [DailyDownloads.from_json_file(
+        result.downloads = [DailyDownloads.from_generated_file(
             item) for item in raw_downloads]
         meta: Dict[str, Any] = response.get('metadata', '')
         result.package_name = meta.get('package_name', '')
@@ -201,7 +201,7 @@ class PackageDownloads:
         result.package_language = meta.get('language', '')
         result.no_of_downloads = meta.get('no_of_downloads', '')
         result.libraries_io_score = meta.get('libraries_io_score', {})
-        result.site_score = Score.from_json(meta.get('site_score', {}))
+        result.site_score = Score.from_dict(meta.get('site_score', {}))
         return result
 
 
@@ -239,8 +239,8 @@ class DownloadsFetcher:
         report_name.write_text(json.dumps(self.to_dict(), indent=4))
 
     def get_npm_package_names(self, pattern: str) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
-        size = 20
         page = 0
+        size = NPM_PAGE_SIZE
         scores_dict = {}
         while True:
             url = f"https://registry.npmjs.org/-/v1/search?text={pattern}&size={size}&from={page * size}"
@@ -265,7 +265,7 @@ class DownloadsFetcher:
         return response.json()
 
     def get_crates_package_names(self, pattern: str) -> List[str]:      # crates api (crates/api) - query search result
-        size = 20
+        size = CRATES_PAGE_SIZE
         page = 0
         package_names = []
 
@@ -367,7 +367,7 @@ class DownloadsFetcher:
                 package_downloads = PackageDownloads.from_npm_fetched_data(
                     package_name, Language.JAVASCRIPT.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
-                package_downloads.site_score = Score.from_json(packages[package_name])
+                package_downloads.site_score = Score.from_dict(packages[package_name])
                 result.downloads.append(package_downloads)
                 pbar.update(1)
 
@@ -390,19 +390,19 @@ class DownloadsFetcher:
                 package_downloads = PackageDownloads.from_pypi_fetched_data(
                     package_name, Language.PYTHON.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.PYPI.name)
-                package_downloads.site_score = Score.from_json(result.fetch_pypi_package_score(package_name))
+                package_downloads.site_score = Score.from_dict(result.fetch_pypi_package_score(package_name))
                 result.downloads.append(package_downloads)
                 pbar.update(1)
         return result
 
     @staticmethod
-    def from_json_file(file_name: str) -> 'DownloadsFetcher':
+    def from_generated_file(file_name: str) -> 'DownloadsFetcher':
         with open(file_name, 'r') as file:
             json_data: Dict[str, Any] = json.load(file)
         result = DownloadsFetcher()
         meta: Dict[str, Any] = json_data.get('metadata')
         result.start_date = meta.get('start_date', '')
         result.end_date = meta.get('end_date', '')
-        result.downloads = [PackageDownloads.from_json_file(
+        result.downloads = [PackageDownloads.from_generated_file(
             item) for item in json_data.get('records', [])]
         return result

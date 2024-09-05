@@ -129,7 +129,7 @@ def create_graph(fetcher: DownloadsFetcher, section: PackagesRegistry) -> Dict[s
     Input('file-selector', 'value')
 )
 def update_report(selected_file: str):
-    fetcher = DownloadsFetcher.from_json_file(selected_file)
+    fetcher = DownloadsFetcher.from_generated_file(selected_file)
     return html.Div([
         dcc.Tabs([
             dcc.Tab(label=repo.repo_name, children=[
