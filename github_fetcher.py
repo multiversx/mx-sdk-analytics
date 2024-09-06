@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
 import os
 # from pathlib import Path
 from typing import Any, Dict, List
-from bs4 import BeautifulSoup, Tag
+
 import requests
 from tqdm import tqdm
 
-from utils import FormattedDate, Language, PackagesRegistry, Reports
-from constants import DAYS_IN_TWO_WEEKS_REPORT, GITHUB_ORGANIZATION, GITHUB_PAGE_SIZE, GITHUB_SEARCH_PREFIX, DATE_FORMAT
+from constants import (DAYS_IN_TWO_WEEKS_REPORT, GITHUB_ORGANIZATION,
+                       GITHUB_PAGE_SIZE, GITHUB_SEARCH_PREFIX)
 from fetcher import DailyActivity, Fetcher, Package, Score
+from utils import FormattedDate, Language, PackagesRegistry, Reports
 
 
 class GithubDailyActivity(DailyActivity):
@@ -51,10 +51,10 @@ class GithubPackageObject(Package):
         temp_dict['views'] = [item.to_dict() for item in self.views]
         return temp_dict
 
-    # TODO Statistics for clones- uniques, statistics for visitors 
+    # TODO Statistics for clones- uniques, statistics for visitors
     def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration=DAYS_IN_TWO_WEEKS_REPORT) -> Dict[str, Any]:
         summary = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
-        
+
         return summary
 
     def analyse_package(self):
@@ -64,7 +64,7 @@ class GithubPackageObject(Package):
                                     if "has" in key and int(value) == 0)
         return main_negatives + (', ' if main_negatives else '') + score_negatives
 
-    # TODO: language from github api 
+    # TODO: language from github api
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackageObject':
         result = GithubPackageObject()
