@@ -1,13 +1,9 @@
-from datetime import datetime, timedelta
-import os
-from dotenv.main import load_dotenv
 import argparse
 
-from constants import DATE_FORMAT
-from packages_registry_fetcher import PackageRegistryFetcherObject
+from dotenv.main import load_dotenv
 
 from github_fetcher import GithubFetcherObject
-
+from package_managers_fetcher import PackageManagersFetcher
 from utils import FormattedDate
 
 
@@ -20,15 +16,16 @@ def validate_date(date_str: str):
     except ValueError:
         raise argparse.ArgumentTypeError(f"Not a valid date: '{date_str}'. Expected date before {FormattedDate.now()}, format: YYYY-mm-dd.")
 
+
 def validate_week(week_str: str):
-    week_no=int(week_str)
+    week_no = int(week_str)
     try:
-        result_date=FormattedDate.from_week(week_no)
-        if result_date>FormattedDate.now():
+        result_date = FormattedDate.from_week(week_no)
+        if result_date > FormattedDate.now():
             raise ValueError()
         return week_no
     except ValueError:
-        max_week_no=FormattedDate.now().isocalendar().week - 1
+        max_week_no = FormattedDate.now().isocalendar().week - 1
         raise argparse.ArgumentTypeError(f"Not a valid week number: '{week_no}'. Expected number between 0 and {max_week_no}")
 
 
@@ -50,7 +47,7 @@ def main():
     )
     args = parser.parse_args()
 
-    end_date = FormattedDate.now()-1
+    end_date = FormattedDate.now() - 1
     if args.date:
         end_date = FormattedDate.from_string(args.date)
     if args.week:
@@ -61,9 +58,8 @@ def main():
 
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
-    # pm_fetcher = PackageRegistryFetcherObject.from_package_sites(end_date)
-    # pm_fetcher.write_json()
-    # GithubFetcherObject.get_github_rate_limit(token=os.environ.get("MX_GITHUB_TOKEN"))
+    pm_fetcher = PackageManagersFetcher.from_package_sites(str(end_date))
+    pm_fetcher.write_json()
 
     git_fetcher = GithubFetcherObject.from_package_sites(str(end_date))
     git_fetcher.write_json()

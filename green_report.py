@@ -1,26 +1,22 @@
-from datetime import datetime, timedelta
 import os
-import glob
 from pathlib import Path
 from typing import Any, Dict, List
+
 import dash
-from dash import dcc, html, Input, Output
-from dotenv.main import load_dotenv
 import plotly.graph_objs as go
+from dash import Input, Output, dcc, html
+from dotenv.main import load_dotenv
 
-from utils import PackagesRegistry, Reports
 from github_fetcher import GithubFetcherObject, GithubPackageObject
-
-from constants import DATE_FORMAT
-
+from utils import FormattedDate, PackagesRegistry, Reports
 
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6ffe6'
-directory = os.environ.get("JSON_FOLDER")
+directory = os.environ.get('JSON_FOLDER')
 
-json_files = sorted(Path(directory).glob(f"{"green"}*.json"), reverse=True)
+json_files = sorted(Path(directory).glob('green*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
 
 # Layout of the Dash app
@@ -52,14 +48,14 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
 
 def create_table(fetcher: GithubFetcherObject, section: PackagesRegistry):
     header_row = [
-        html.Th("Package"),
-        html.Th(["Downloads", html.Br(), "last 2 weeks"]),
-        html.Th(["Downloads", html.Br(), "last week"]),
-        html.Th(["Avg downloads", html.Br(), "per day"]),
-        html.Th(["Stars", html.Br(), ""]),
-        html.Th(["Forks", html.Br(), ""]),
-        html.Th(["Watchers", html.Br(), ""]),
-        html.Th(["Health", html.Br(), " Score"]),
+        html.Th('Package'),
+        html.Th(['Downloads', html.Br(), 'last 2 weeks']),
+        html.Th(['Downloads', html.Br(), 'last week']),
+        html.Th(['Avg downloads', html.Br(), 'per day']),
+        html.Th(['Stars', html.Br(), '']),
+        html.Th(['Forks', html.Br(), '']),
+        html.Th(['Watchers', html.Br(), '']),
+        html.Th(['Health', html.Br(), ' Score']),
     ]
 
     table_header = [html.Tr(header_row)]
@@ -103,9 +99,9 @@ def create_downloads_graph(fetcher: GithubFetcherObject, section: PackagesRegist
     packages: List[GithubPackageObject] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
-    start_date = datetime.strptime(fetcher.start_date, DATE_FORMAT)
-    end_date = datetime.strptime(fetcher.end_date, DATE_FORMAT)
-    date_range = [(start_date + timedelta(days=x)).strftime(DATE_FORMAT) for x in range((end_date - start_date).days + 1)]
+    start_date = FormattedDate.from_string(fetcher.start_date)
+    end_date = FormattedDate.from_string(fetcher.end_date)
+    date_range = [str(start_date + x) for x in range(end_date.days_from(start_date) + 1)]
 
     traces = [
         go.Scatter(
@@ -132,9 +128,9 @@ def create_visits_graph(fetcher: GithubFetcherObject, section: PackagesRegistry)
     packages: list[GithubPackageObject] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     views_dict = {p.package_name: {d.date: d.downloads for d in p.views} for p in packages}
-    start_date = datetime.strptime(fetcher.start_date, DATE_FORMAT)
-    end_date = datetime.strptime(fetcher.end_date, DATE_FORMAT)
-    date_range = [(start_date + timedelta(days=x)).strftime(DATE_FORMAT) for x in range((end_date - start_date).days + 1)]
+    start_date = FormattedDate.from_string(fetcher.start_date)
+    end_date = FormattedDate.from_string(fetcher.end_date)
+    date_range = [str(start_date + x) for x in range(end_date.days_from(start_date) + 1)]
 
     traces = [
         go.Scatter(
@@ -167,9 +163,9 @@ def update_report(selected_file: str):
         dcc.Tabs([
             dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
                 html.H1(f"{repo.name} Repositories Downloads"),
-                html.H2("Download Data Table"),
+                html.H2('Download Data Table'),
                 create_table(fetcher, repo),
-                html.H2("Clones & Visits Trends"),
+                html.H2('Clones & Visits Trends'),
                 html.Div([
                     dcc.Graph(
                         id='downloads-graph',
@@ -182,7 +178,7 @@ def update_report(selected_file: str):
                         figure=create_visits_graph(fetcher, repo)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
-                html.H2("Health score warnings"),
+                html.H2('Health score warnings'),
                 create_package_info_box(fetcher, repo)
             ])
             for repo in [item for item in PackagesRegistry if Reports.GREEN in item.reports]
@@ -191,4 +187,4 @@ def update_report(selected_file: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8051)
+    app.run_server(debug=True, port=8051, host='0.0.0.0')

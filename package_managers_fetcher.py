@@ -1,115 +1,144 @@
-from datetime import datetime, timedelta
-from functools import reduce
-import json
-# from pathlib import Path
+
+import os
 from typing import Any, Dict, List
-from bs4 import BeautifulSoup, Tag
+
 import requests
+from bs4 import BeautifulSoup, Tag
 from tqdm import tqdm
 
-from utils import Language, PackagesRegistry, Reports
-from constants import CRATES_SEARCH_PREFIX, DAYS_IN_MONTHLY_REPORT, NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX, DATE_FORMAT
+from constants import (CRATES_PAGE_SIZE, CRATES_SEARCH_PREFIX,
+                       DAYS_IN_MONTHLY_REPORT, NPM_PAGE_SIZE,
+                       NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX)
 from fetcher import DailyActivity, Fetcher, Package, Score
+from utils import FormattedDate, Language, PackagesRegistry, Reports
 
 
-class PackageRegistryDailyDownloads(DailyActivity):
+class PackageManagersDailyActivity(DailyActivity):
     @staticmethod
-    def from_npm_fetched_data(response: Dict[str, Any]) -> 'PackageRegistryDailyDownloads':
-        result = PackageRegistryDailyDownloads()
+    def from_npm_fetched_data(response: Dict[str, Any]) -> 'PackageManagersDailyActivity':
+        result = PackageManagersDailyActivity()
         result.date = response.get('day', '1980-01-01')
         result.downloads = response.get('downloads', 0)
         return result
 
     @staticmethod
-    def from_pypi_fetched_data(response: Dict[str, Any]) -> 'PackageRegistryDailyDownloads':
-        result = PackageRegistryDailyDownloads()
+    def from_pypi_fetched_data(response: Dict[str, Any]) -> 'PackageManagersDailyActivity':
+        result = PackageManagersDailyActivity()
         result.date = response.get('date', '1980-01-01')
         result.downloads = response.get('downloads', 0)
         return result
 
     @staticmethod
-    def from_crates_fetched_data(response: Dict[str, Any]) -> 'PackageRegistryDailyDownloads':
-        result = PackageRegistryDailyDownloads()
+    def from_crates_fetched_data(response: Dict[str, Any]) -> 'PackageManagersDailyActivity':
+        result = PackageManagersDailyActivity()
         result.date = response.get('date', '1980-01-01')
         result.downloads = response.get('downloads', 0)
         return result
 
 
-class PackageRegistryPackageObject(Package):
+class PackageManagersPackage(Package):
+    def __init__(self) -> None:
+        super().__init__()
+        self.libraries_io_score: Dict[str, Any] = {}
+
+    def to_dict(self) -> Dict[str, Any]:
+        temp_dict = super().to_dict()
+        temp_dict['metadata']['libraries_io_score'] = self.libraries_io_score
+        return temp_dict
+
+    def analyse_libraries_io_score(self):
+        negatives = ', '.join(f"{key} = {value}" for key, value in self.libraries_io_score.items()
+                              if value < 0 or value == 0 and "present" in key)
+        return negatives
+
+    def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration: int = DAYS_IN_MONTHLY_REPORT) -> Dict[str, Any]:
+        summary = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
+        summary['libraries_io_score'] = sum(value for value in self.libraries_io_score.values())
+        summary['libraries_io_negatives'] = self.analyse_libraries_io_score(),
+        return summary
 
     @staticmethod
-    def from_npm_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageRegistryPackageObject':
-        result = PackageRegistryPackageObject()
+    def from_npm_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageManagersPackage':
+        result = PackageManagersPackage()
         raw_downloads = response.get('downloads', [])
-        result.downloads = [PackageRegistryDailyDownloads.from_npm_fetched_data(
-            item) for item in raw_downloads]
+        result.downloads = [PackageManagersDailyActivity.from_npm_fetched_data(item) for item in raw_downloads]
         result.package_name = response.get('package', package)
         result.package_language = lang
         result.package_site = PackagesRegistry.NPM.repo_name
-        result.no_of_downloads = reduce(
-            lambda acc, dd: acc + dd.downloads, result.downloads, 0)
+        result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
     @staticmethod
-    def from_crates_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageRegistryPackageObject':
-        def add_or_update_downloads(my_list: List[PackageRegistryDailyDownloads], elem: PackageRegistryDailyDownloads):
-            if elem.date in map(lambda x: x.date, my_list):
-                existing_item = next(
-                    item for item in my_list if item.date == elem.date)
+    def from_crates_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageManagersPackage':
+        def add_or_update_downloads(my_list: List[PackageManagersDailyActivity], elem: PackageManagersDailyActivity):
+            if elem.date in [item.date for item in my_list]:
+                existing_item = next(item for item in my_list if item.date == elem.date)
                 existing_item.downloads += elem.downloads
             else:
                 my_list.append(elem)
 
-        result = PackageRegistryPackageObject()
+        result = PackageManagersPackage()
         raw_downloads = response.get('version_downloads', [])
 
         for elem in raw_downloads:
-            new_download_data = PackageRegistryDailyDownloads.from_crates_fetched_data(elem)
+            new_download_data = PackageManagersDailyActivity.from_crates_fetched_data(elem)
             add_or_update_downloads(result.downloads, new_download_data)
-        raw_downloads = response.get("meta", {}).get("extra_downloads", [])
+        raw_downloads = response.get('meta', {}).get('extra_downloads', [])
 
         for elem in raw_downloads:
-            new_download_data = PackageRegistryDailyDownloads.from_crates_fetched_data(elem)
+            new_download_data = PackageManagersDailyActivity.from_crates_fetched_data(elem)
             add_or_update_downloads(result.downloads, new_download_data)
 
         result.package_language = lang
         result.package_name = package
         result.package_site = PackagesRegistry.CARGO.repo_name
-        result.no_of_downloads = reduce(
-            lambda acc, dd: acc + dd.downloads, result.downloads, 0)
+        result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
     @staticmethod
-    def from_pypi_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageRegistryPackageObject':
-        result = PackageRegistryPackageObject()
+    def from_pypi_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageManagersPackage':
+        result = PackageManagersPackage()
         raw_downloads = response.get('data', [])
-        result.downloads = [PackageRegistryDailyDownloads.from_pypi_fetched_data(item) for item in filter(
-            lambda x: x.get('category', '') == "with_mirrors", raw_downloads)]
+        result.downloads = [PackageManagersDailyActivity.from_pypi_fetched_data(item) for item in filter(
+            lambda x: x.get('category', '') == 'with_mirrors', raw_downloads)]
         result.package_language = lang
         result.package_name = response.get('package', package)
         result.package_site = PackagesRegistry.PYPI.repo_name
-        result.no_of_downloads = reduce(
-            lambda acc, dd: acc + dd.downloads, result.downloads, 0)
+        result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
+        return result
+
+    @classmethod
+    def from_generated_file(cls, response: Dict[str, Any]) -> 'PackageManagersPackage':
+        result = super().from_generated_file(response)
+        result.libraries_io_score = response.get('metadata', {}).get('libraries_io_score', {})
         return result
 
     @property
     def DAILY_ACTIVITY_TYPE(self):
-        return PackageRegistryDailyDownloads
+        return PackageManagersDailyActivity
 
 
-class PackageRegistryFetcherObject(Fetcher):
+class PackageManagersFetcher(Fetcher):
+    def __init__(self) -> None:
+        super().__init__()
+
     def write_report(self):
         super().write_report("rep")
 
     def write_json(self):
         super().write_json(repo_type=Reports.BLUE.value)
 
-    def create_summary_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
-        return super().create_summary_statistics_from_daily_downloads(end_date, report_duration=DAYS_IN_MONTHLY_REPORT)
+    def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
+        libraries_io_api_key = os.environ.get('LIBRARIES_IO_API_KEY')
+        package = package_name.replace('/', '%2F')
+        url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
 
     def get_npm_package_names(self, pattern: str) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
-        size = 20
         page = 0
+        size = NPM_PAGE_SIZE
         scores_dict = {}
         while True:
             url = f"https://registry.npmjs.org/-/v1/search?text={pattern}&size={size}&from={page * size}"
@@ -125,14 +154,16 @@ class PackageRegistryFetcherObject(Fetcher):
             page += 1
         return scores_dict
 
-    def fetch_npm_downloads(self, package_name: str):
+    def fetch_npm_downloads(self, package_name: str) -> Dict[str, Any]:
         url = f"https://api.npmjs.org/downloads/range/{self.start_date}:{self.end_date}/{package_name}"
         response = requests.get(url)
+        if 'not found' in response.text:
+            return {}
         response.raise_for_status()
         return response.json()
 
     def get_crates_package_names(self, pattern: str) -> List[str]:      # crates api (crates/api) - query search result
-        size = 20
+        size = CRATES_PAGE_SIZE
         page = 0
         package_names = []
 
@@ -154,7 +185,6 @@ class PackageRegistryFetcherObject(Fetcher):
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-        # filtered_data = data.copy()
         data['version_downloads'] = [entry for entry in data['version_downloads'] if self.start_date <= entry['date'] <= self.end_date]
         data['meta']['extra_downloads'] = [entry for entry in data['meta']['extra_downloads'] if self.start_date <= entry['date'] <= self.end_date]
         return data
@@ -167,9 +197,9 @@ class PackageRegistryFetcherObject(Fetcher):
             url = f"https://pypi.org/search/?q={pattern}&page={page}"
             response = requests.get(url)
             response.raise_for_status()
-            soup = BeautifulSoup(response.text, "html.parser")
-            package_info = [item for item in soup.find_all("a", class_="package-snippet")]
-            new_package_names = [item.find("span", class_="package-snippet__name").text.strip() for item in package_info]
+            soup = BeautifulSoup(response.text, 'html.parser')
+            package_info = [item for item in soup.find_all('a', class_='package-snippet')]
+            new_package_names = [item.find('span', class_='package-snippet__name').text.strip() for item in package_info]
             if not new_package_names:
                 break
             new_package_names = [item for item in new_package_names if pattern in item]
@@ -179,7 +209,7 @@ class PackageRegistryFetcherObject(Fetcher):
             page += 1
         return package_names
 
-    def fetch_pypi_package_score(self, package_name: str) -> json:
+    def fetch_pypi_package_score(self, package_name: str) -> Dict[str, Any]:
         score_details = {}
         url = f"https://snyk.io/advisor/python/{package_name}"
         response = requests.get(url)
@@ -188,7 +218,7 @@ class PackageRegistryFetcherObject(Fetcher):
             title_tags: List[Tag] = [item for item in soup.find_all('title')]
             for title_tag in title_tags:
                 title_text = title_tag.text
-                if "package health:" in title_text.lower():
+                if 'package health:' in title_text.lower():
                     health_score: int = title_text.split(':')[-1].split('/')[0].strip()
                     score_details['final'] = int(health_score) / 100
             score_details['detail'] = {}
@@ -212,22 +242,20 @@ class PackageRegistryFetcherObject(Fetcher):
 
     @property
     def PACKAGE_CLASS(self):
-        return PackageRegistryPackageObject
+        return PackageManagersPackage
 
     @staticmethod
-    def from_package_sites(date: str) -> 'PackageRegistryFetcherObject':
-        result = PackageRegistryFetcherObject()
-        end_date = datetime.strptime(date, DATE_FORMAT)
-        start_date = end_date - timedelta(DAYS_IN_MONTHLY_REPORT - 1)
-        result.start_date = start_date.strftime(DATE_FORMAT)
-        result.end_date = date
+    def from_package_sites(end_date: str) -> 'PackageManagersFetcher':
+        result = PackageManagersFetcher()
+        result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_MONTHLY_REPORT + 1)
+        result.end_date = end_date
 
         print("fetching from npm ...")
         packages = result.get_npm_package_names(NPM_SEARCH_PREFIX)
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages.keys():
                 fetched_downloads = result.fetch_npm_downloads(package_name)
-                package_downloads = PackageRegistryPackageObject.from_npm_fetched_data(
+                package_downloads = PackageManagersPackage.from_npm_fetched_data(
                     package_name, Language.JAVASCRIPT.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
                 package_downloads.site_score = Score.from_dict(packages[package_name])
@@ -239,7 +267,7 @@ class PackageRegistryFetcherObject(Fetcher):
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages:
                 fetched_downloads = result.fetch_crates_downloads(package_name)
-                package_downloads = PackageRegistryPackageObject.from_crates_fetched_data(
+                package_downloads = PackageManagersPackage.from_crates_fetched_data(
                     package_name, Language.RUST.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.CARGO.name)
                 result.downloads.append(package_downloads)
@@ -250,7 +278,7 @@ class PackageRegistryFetcherObject(Fetcher):
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages:
                 fetched_downloads = result.fetch_pypi_downloads(package_name)
-                package_downloads = PackageRegistryPackageObject.from_pypi_fetched_data(
+                package_downloads = PackageManagersPackage.from_pypi_fetched_data(
                     package_name, Language.PYTHON.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.PYPI.name)
                 package_downloads.site_score = Score.from_dict(result.fetch_pypi_package_score(package_name))

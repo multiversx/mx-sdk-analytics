@@ -1,5 +1,4 @@
 import os
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict
 
@@ -8,8 +7,9 @@ import plotly.graph_objs as go
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 
-from fetch_data import DownloadsFetcher, PackageDownloads
-from utils import PackagesRegistry, Reports
+from package_managers_fetcher import (PackageManagersFetcher,
+                                      PackageManagersPackage)
+from utils import FormattedDate, PackagesRegistry, Reports
 
 load_dotenv()
 
@@ -47,7 +47,7 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
 ])
 
 
-def create_table(fetcher: DownloadsFetcher, section: PackagesRegistry):
+def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
     header_row = [
         html.Th('Package'),
         html.Th(['Downloads', html.Br(), 'last month']),
@@ -60,10 +60,10 @@ def create_table(fetcher: DownloadsFetcher, section: PackagesRegistry):
 
     table_header = [html.Tr(header_row)]
     table_rows = []
-    packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
-        package_statistics = package.create_summary_of_monthly_statistics_from_daily_downloads(fetcher.end_date)
+        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
         row = [
             html.Td(package.package_name),
             html.Td(package_statistics['last_month_downloads'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
@@ -78,9 +78,9 @@ def create_table(fetcher: DownloadsFetcher, section: PackagesRegistry):
     return html.Table(table_header + table_rows)
 
 
-def create_package_info_box(fetcher: DownloadsFetcher, section: PackagesRegistry):
+def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRegistry):
     info_boxes = []
-    packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
@@ -94,14 +94,13 @@ def create_package_info_box(fetcher: DownloadsFetcher, section: PackagesRegistry
     return html.Div(info_boxes)
 
 
-def create_graph(fetcher: DownloadsFetcher, section: PackagesRegistry) -> Dict[str, Any]:
-    packages: list[PackageDownloads] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
+def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> Dict[str, Any]:
+    packages: list[PackageManagersPackage] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
-    date_format = '%Y-%m-%d'
-    start_date = datetime.strptime(fetcher.start_date, date_format)
-    end_date = datetime.strptime(fetcher.end_date, date_format)
-    date_range = [(start_date + timedelta(days=x)).strftime(date_format) for x in range((end_date - start_date).days + 1)]
+    start_date = FormattedDate.from_string(fetcher.start_date)
+    end_date = FormattedDate.from_string(fetcher.end_date)
+    date_range = [str(start_date + x) for x in range(end_date.days_from(start_date) + 1)]
 
     traces = [
         go.Scatter(
@@ -129,7 +128,7 @@ def create_graph(fetcher: DownloadsFetcher, section: PackagesRegistry) -> Dict[s
     Input('file-selector', 'value')
 )
 def update_report(selected_file: str):
-    fetcher = DownloadsFetcher.from_generated_file(selected_file)
+    fetcher = PackageManagersFetcher.from_generated_file(selected_file)
     return html.Div([
         dcc.Tabs([
             dcc.Tab(label=repo.repo_name, children=[

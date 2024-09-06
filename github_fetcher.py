@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-from functools import reduce
-import json
 import os
 # from pathlib import Path
 from typing import Any, Dict, List
@@ -8,12 +6,12 @@ from bs4 import BeautifulSoup, Tag
 import requests
 from tqdm import tqdm
 
-from utils import Language, PackagesRegistry, Reports
-from constants import DAYS_IN_TWO_WEEKS_REPORT, GITHUB_ORGANIZATION, GITHUB_SEARCH_PREFIX, DATE_FORMAT
+from utils import FormattedDate, Language, PackagesRegistry, Reports
+from constants import DAYS_IN_TWO_WEEKS_REPORT, GITHUB_ORGANIZATION, GITHUB_PAGE_SIZE, GITHUB_SEARCH_PREFIX, DATE_FORMAT
 from fetcher import DailyActivity, Fetcher, Package, Score
 
 
-class GithubDailyDownloads(DailyActivity):
+class GithubDailyActivity(DailyActivity):
     def __init__(self) -> None:
         super().__init__()
         self.uniques = 0
@@ -27,15 +25,15 @@ class GithubDailyDownloads(DailyActivity):
         return temp_dict
 
     @staticmethod
-    def from_github_fetched_data(response: Dict[str, Any]) -> 'GithubDailyDownloads':
-        result = GithubDailyDownloads()
+    def from_github_fetched_data(response: Dict[str, Any]) -> 'GithubDailyActivity':
+        result = GithubDailyActivity()
         result.date = response.get('timestamp', '1980-01-01')[:10]
         result.downloads = response.get('count', 0)
         result.uniques = response.get('uniques', 0)
         return result
 
     @classmethod
-    def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubDailyDownloads':
+    def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubDailyActivity':
         result = super().from_generated_file(response)
         result.uniques = response.get('uniques', 0)
         return result
@@ -44,8 +42,8 @@ class GithubDailyDownloads(DailyActivity):
 class GithubPackageObject(Package):
     def __init__(self) -> None:
         super().__init__()
-        self.main_page_statistics = {}
-        self.views: List[GithubDailyDownloads] = []
+        self.main_page_statistics: Dict[str, Any] = {}
+        self.views: List[GithubDailyActivity] = []
 
     def to_dict(self) -> Dict[str, Any]:
         temp_dict = super().to_dict()
@@ -53,27 +51,27 @@ class GithubPackageObject(Package):
         temp_dict['views'] = [item.to_dict() for item in self.views]
         return temp_dict
 
-    def create_summary_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
+    # TODO Statistics for clones- uniques, statistics for visitors 
+    def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration=DAYS_IN_TWO_WEEKS_REPORT) -> Dict[str, Any]:
+        summary = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
         
-        summary = super().create_summary_statistics_from_daily_downloads(end_date, report_duration=DAYS_IN_TWO_WEEKS_REPORT)
         return summary
 
     def analyse_package(self):
-        main_negatives = ", ".join(f"{key} = {value}" for key, value in self.main_page_statistics.items()
+        main_negatives = ', '.join(f"{key} = 0" for key, value in self.main_page_statistics.items()
                                    if value == 0 and "has" in key)
-        score_negatives = ", ".join(f"{key} = {value}" for key, value in self.site_score.detail.items()
+        score_negatives = ', '.join(f"{key} = {value}" for key, value in self.site_score.detail.items()
                                     if "has" in key and int(value) == 0)
         return main_negatives + (', ' if main_negatives else '') + score_negatives
 
+    # TODO: language from github api 
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackageObject':
         result = GithubPackageObject()
         raw_downloads = response.get('downloads').get('clones', [])
         raw_views = response.get('visits').get('views', [])
-        result.downloads = [GithubDailyDownloads.from_github_fetched_data(
-            item) for item in raw_downloads]
-        result.views = [GithubDailyDownloads.from_github_fetched_data(
-            item) for item in raw_views]
+        result.downloads = [GithubDailyActivity.from_github_fetched_data(item) for item in raw_downloads]
+        result.views = [GithubDailyActivity.from_github_fetched_data(item) for item in raw_views]
         result.package_name = response.get('package', package)
         result.package_language = lang
         result.package_site = PackagesRegistry.GITHUB.repo_name
@@ -84,13 +82,13 @@ class GithubPackageObject(Package):
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubPackageObject':
         result = super().from_generated_file(response)
-        result.views = [GithubDailyDownloads.from_generated_file(item) for item in response.get('views', [])]
+        result.views = [GithubDailyActivity.from_generated_file(item) for item in response.get('views', [])]
         result.main_page_statistics = response.get('metadata', {}).get('main_page_statistics', {})
         return result
 
     @property
     def DAILY_ACTIVITY_TYPE(self):
-        return GithubDailyDownloads
+        return GithubDailyActivity
 
 
 class GithubFetcherObject(Fetcher):
@@ -117,7 +115,7 @@ class GithubFetcherObject(Fetcher):
                 'has_discussions': item.get('has_discussions', 0),
             }
         page = 0
-        size = 100
+        size = GITHUB_PAGE_SIZE
         scores_dict = {}
         owner = GITHUB_ORGANIZATION
         while True:
@@ -175,17 +173,16 @@ class GithubFetcherObject(Fetcher):
             score['detail'][f"has_{item}"] = 0 if data.get('files', {}).get(item, '') is None else 1
         timestamp = data.get('updated_at', '')
         format = "%Y-%m-%dT%H:%M:%SZ"
-        score['detail']['updated_at'] = datetime.strptime(timestamp, format).strftime(DATE_FORMAT) if timestamp else ''
+        score['detail']['updated_at'] = str(FormattedDate.from_format(timestamp, format)) if timestamp else ''
         score['detail']['content_reports_enabled'] = 1 if data.get('content_reports_enabled', '') else 0
         return score
 
+    # TODO language implementation
     @staticmethod
-    def from_package_sites(date: str) -> 'GithubFetcherObject':
+    def from_package_sites(end_date: str) -> 'GithubFetcherObject':
         result = GithubFetcherObject()
-        end_date = datetime.strptime(date, DATE_FORMAT)
-        start_date = end_date - timedelta(DAYS_IN_TWO_WEEKS_REPORT - 1)
-        result.start_date = start_date.strftime(DATE_FORMAT)
-        result.end_date = date
+        result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_TWO_WEEKS_REPORT + 1)
+        result.end_date = end_date
 
         print("fetching from github ...")
         packages = result.get_github_package_names(GITHUB_SEARCH_PREFIX)

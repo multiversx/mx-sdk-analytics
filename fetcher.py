@@ -1,15 +1,10 @@
 import json
 import os
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
 
-import requests
-from bs4 import BeautifulSoup, Tag
-from tqdm import tqdm
-
-from constants import DATE_FORMAT, DAYS_IN_MONTHLY_REPORT, DAYS_IN_WEEK
-from utils import Language, PackagesRegistry
+from constants import DAYS_IN_WEEK
+from utils import FormattedDate
 
 # in order to allow calculations of scores in future implementations, the score must be a dictionary of individual composite scores
 # the general score is calculated as a weighted means of composite scores, which in turn will be weighted means of individual scores.
@@ -56,6 +51,7 @@ class DailyActivity:
             'date': self.date,
             'downloads': self.downloads
         }
+
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'DailyActivity':
         result = cls()
@@ -71,7 +67,6 @@ class Package:
         self.package_site = ''
         self.downloads: List[DailyActivity] = []
         self.no_of_downloads = 0
-        self.libraries_io_score: Dict[str, Any] = {}
         self.site_score = Score()
 
     def __str__(self):
@@ -82,41 +77,33 @@ class Package:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "metadata": {
-                "section_name": self.package_site,
-                "package_name": self.package_name,
-                "language": self.package_language,
-                "no_of_downloads": self.no_of_downloads,
-                "libraries_io_score": self.libraries_io_score,
-                "site_score": self.site_score.to_dict()
+            'metadata': {
+                'section_name': self.package_site,
+                'package_name': self.package_name,
+                'language': self.package_language,
+                'no_of_downloads': self.no_of_downloads,
+                'site_score': self.site_score.to_dict()
             },
-            "downloads": [item.to_dict() for item in self.downloads]
+            'downloads': [item.to_dict() for item in self.downloads]
         }
 
-    def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration: int = DAYS_IN_MONTHLY_REPORT) -> Dict[str, Any]:
+    def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration: int) -> Dict[str, Any]:
         last_month_downloads = sum(dd.downloads for dd in self.downloads)
         avg_daily_downloads = last_month_downloads / report_duration
-        seven_days_before = (datetime.strptime(end_date, DATE_FORMAT).date() - timedelta(DAYS_IN_WEEK - 1)).strftime(DATE_FORMAT)
+        seven_days_before = str(FormattedDate.from_string(end_date) - DAYS_IN_WEEK + 1)
         last_week_downloads = sum(dd.downloads for dd in [item for item in self.downloads if item.date >= seven_days_before])
         return {
             'last_month_downloads': last_month_downloads,
             'last_week_downloads': last_week_downloads,
             'avg_daily_downloads': avg_daily_downloads,
-            'libraries_io_score': sum(value for value in self.libraries_io_score.values()),
-            'libraries_io_negatives': self.analyse_libraries_io_score(),
             'site_score': f"{self.site_score.final:.2f}",
             'site_score_details': repr(self.site_score)
         }
 
-    def analyse_libraries_io_score(self):
-        negatives = ', '.join(f"{key} = {value}" for key, value in self.libraries_io_score.items()
-                              if value < 0 or value == 0 and "present" in key)
-        return negatives
-    
     @property
     def DAILY_ACTIVITY_TYPE(self):
         return DailyActivity
-    
+
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'Package':
         result = cls()
@@ -127,7 +114,6 @@ class Package:
         result.package_site = meta.get('section_name', '')
         result.package_language = meta.get('language', '')
         result.no_of_downloads = meta.get('no_of_downloads', '')
-        result.libraries_io_score = meta.get('libraries_io_score', {})
         result.site_score = Score.from_dict(meta.get('site_score', {}))
         return result
 
@@ -164,15 +150,7 @@ class Fetcher:
         print("writting json ...")
         report_name = Path(self.rep_folder) / f"{repo_type}{self.end_date}.json"
         report_name.write_text(json.dumps(self.to_dict(), indent=4))
-    
-    def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
-        libraries_io_api_key = os.environ.get('LIBRARIES_IO_API_KEY')
-        package = package_name.replace('/', '%2F')
-        url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.json()
-    
+
     @classmethod
     def from_generated_file(cls, file_name: str) -> 'Fetcher':
         with open(file_name, 'r') as file:
@@ -185,13 +163,5 @@ class Fetcher:
         return result
 
     @property
-    def PACKAGE_CLASS(self):    
-        return Package      #Overwritten in inherited classes
-
-'''
-def sum_activity_for_report_duration(activity_list: List[DailyActivity]):
-    return sum(dd.downloads for dd in activity_list)
-def sum_activity_for_seven_days(activity_list: List[DailyActivity], end_date:str):
-    seven_days_before = (datetime.strptime(end_date, DATE_FORMAT).date() - timedelta(DAYS_IN_WEEK - 1)).strftime(DATE_FORMAT)
-    return sum(dd.downloads for dd in [item for item in activity_list if item.date >= seven_days_before])
-'''
+    def PACKAGE_CLASS(self):
+        return Package      # Overwritten in inherited classes
