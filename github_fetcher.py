@@ -10,10 +10,10 @@ from tqdm import tqdm
 
 from utils import Language, PackagesRegistry, Reports
 from constants import DAYS_IN_TWO_WEEKS_REPORT, GITHUB_ORGANIZATION, GITHUB_SEARCH_PREFIX, DATE_FORMAT
-from fetcher import DailyDownloads, FetcherObject, PackageObject, ScoreObject
+from fetcher import DailyActivity, Fetcher, Package, Score
 
 
-class GithubDailyDownloads(DailyDownloads):
+class GithubDailyDownloads(DailyActivity):
     def __init__(self) -> None:
         super().__init__()
         self.uniques = 0
@@ -35,13 +35,13 @@ class GithubDailyDownloads(DailyDownloads):
         return result
 
     @classmethod
-    def from_json_file(cls, response: Dict[str, Any]) -> 'GithubDailyDownloads':
-        result = super().from_json_file(response)
+    def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubDailyDownloads':
+        result = super().from_generated_file(response)
         result.uniques = response.get('uniques', 0)
         return result
 
 
-class GithubPackageObject(PackageObject):
+class GithubPackageObject(Package):
     def __init__(self) -> None:
         super().__init__()
         self.main_page_statistics = {}
@@ -54,14 +54,16 @@ class GithubPackageObject(PackageObject):
         return temp_dict
 
     def create_summary_statistics_from_daily_downloads(self, end_date: str) -> Dict[str, Any]:
-        return super().create_summary_statistics_from_daily_downloads(end_date, report_duration=DAYS_IN_TWO_WEEKS_REPORT)
+        
+        summary = super().create_summary_statistics_from_daily_downloads(end_date, report_duration=DAYS_IN_TWO_WEEKS_REPORT)
+        return summary
 
     def analyse_package(self):
         main_negatives = ", ".join(f"{key} = {value}" for key, value in self.main_page_statistics.items()
                                    if value == 0 and "has" in key)
         score_negatives = ", ".join(f"{key} = {value}" for key, value in self.site_score.detail.items()
                                     if "has" in key and int(value) == 0)
-        return ", ".join([main_negatives, score_negatives])
+        return main_negatives + (', ' if main_negatives else '') + score_negatives
 
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackageObject':
@@ -80,18 +82,18 @@ class GithubPackageObject(PackageObject):
         return result
 
     @classmethod
-    def from_json_file(cls, response: Dict[str, Any]) -> 'GithubPackageObject':
-        result = super().from_json_file(response)
-        result.views = [GithubDailyDownloads.from_json_file(item) for item in response.get('views', [])]
+    def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubPackageObject':
+        result = super().from_generated_file(response)
+        result.views = [GithubDailyDownloads.from_generated_file(item) for item in response.get('views', [])]
         result.main_page_statistics = response.get('metadata', {}).get('main_page_statistics', {})
         return result
 
     @property
-    def daily_activity_type(self):
+    def DAILY_ACTIVITY_TYPE(self):
         return GithubDailyDownloads
 
 
-class GithubFetcherObject(FetcherObject):
+class GithubFetcherObject(Fetcher):
     def __init__(self) -> None:
         super().__init__()
 
@@ -195,7 +197,7 @@ class GithubFetcherObject(FetcherObject):
                 package_downloads = GithubPackageObject.from_github_fetched_data(
                     package_name, Language.JAVASCRIPT.value, fetched)
                 package_downloads.main_page_statistics = packages[package_name]
-                package_downloads.site_score = ScoreObject.from_json(result.fetch_github_package_community_score(package_name))
+                package_downloads.site_score = Score.from_dict(result.fetch_github_package_community_score(package_name))
                 result.downloads.append(package_downloads)
                 pbar.update(1)
         return result
@@ -210,5 +212,5 @@ class GithubFetcherObject(FetcherObject):
         print(f"Rate limit will reset at {reset_time}. You have {remaining} requests left.")
 
     @property
-    def package_class(self):
+    def PACKAGE_CLASS(self):
         return GithubPackageObject

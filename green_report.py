@@ -162,11 +162,11 @@ def create_visits_graph(fetcher: GithubFetcherObject, section: PackagesRegistry)
     Input('file-selector', 'value')
 )
 def update_report(selected_file: str):
-    fetcher = GithubFetcherObject.from_json_file(selected_file)
+    fetcher = GithubFetcherObject.from_generated_file(selected_file)
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=repo.repo_name, children=[
-                html.H1(f"{repo.name} Package Downloads"),
+            dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
+                html.H1(f"{repo.name} Repositories Downloads"),
                 html.H2("Download Data Table"),
                 create_table(fetcher, repo),
                 html.H2("Clones & Visits Trends"),
@@ -182,7 +182,7 @@ def update_report(selected_file: str):
                         figure=create_visits_graph(fetcher, repo)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
-                html.H2("Libraries.io warnings"),
+                html.H2("Health score warnings"),
                 create_package_info_box(fetcher, repo)
             ])
             for repo in [item for item in PackagesRegistry if Reports.GREEN in item.reports]

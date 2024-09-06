@@ -9,10 +9,10 @@ from tqdm import tqdm
 
 from utils import Language, PackagesRegistry, Reports
 from constants import CRATES_SEARCH_PREFIX, DAYS_IN_MONTHLY_REPORT, NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX, DATE_FORMAT
-from fetcher import DailyDownloads, FetcherObject, PackageObject, ScoreObject
+from fetcher import DailyActivity, Fetcher, Package, Score
 
 
-class PackageRegistryDailyDownloads(DailyDownloads):
+class PackageRegistryDailyDownloads(DailyActivity):
     @staticmethod
     def from_npm_fetched_data(response: Dict[str, Any]) -> 'PackageRegistryDailyDownloads':
         result = PackageRegistryDailyDownloads()
@@ -35,7 +35,7 @@ class PackageRegistryDailyDownloads(DailyDownloads):
         return result
 
 
-class PackageRegistryPackageObject(PackageObject):
+class PackageRegistryPackageObject(Package):
 
     @staticmethod
     def from_npm_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageRegistryPackageObject':
@@ -93,11 +93,11 @@ class PackageRegistryPackageObject(PackageObject):
         return result
 
     @property
-    def daily_activity_type(self):
+    def DAILY_ACTIVITY_TYPE(self):
         return PackageRegistryDailyDownloads
 
 
-class PackageRegistryFetcherObject(FetcherObject):
+class PackageRegistryFetcherObject(Fetcher):
     def write_report(self):
         super().write_report("rep")
 
@@ -211,7 +211,7 @@ class PackageRegistryFetcherObject(FetcherObject):
         return data
 
     @property
-    def package_class(self):
+    def PACKAGE_CLASS(self):
         return PackageRegistryPackageObject
 
     @staticmethod
@@ -230,7 +230,7 @@ class PackageRegistryFetcherObject(FetcherObject):
                 package_downloads = PackageRegistryPackageObject.from_npm_fetched_data(
                     package_name, Language.JAVASCRIPT.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
-                package_downloads.site_score = ScoreObject.from_json(packages[package_name])
+                package_downloads.site_score = Score.from_dict(packages[package_name])
                 result.downloads.append(package_downloads)
                 pbar.update(1)
 
@@ -253,7 +253,7 @@ class PackageRegistryFetcherObject(FetcherObject):
                 package_downloads = PackageRegistryPackageObject.from_pypi_fetched_data(
                     package_name, Language.PYTHON.value, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.PYPI.name)
-                package_downloads.site_score = ScoreObject.from_json(result.fetch_pypi_package_score(package_name))
+                package_downloads.site_score = Score.from_dict(result.fetch_pypi_package_score(package_name))
                 result.downloads.append(package_downloads)
                 pbar.update(1)
         return result

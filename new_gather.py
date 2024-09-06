@@ -8,13 +8,28 @@ from packages_registry_fetcher import PackageRegistryFetcherObject
 
 from github_fetcher import GithubFetcherObject
 
+from utils import FormattedDate
+
 
 def validate_date(date_str: str):
     try:
-        datetime.strptime(date_str, DATE_FORMAT)
+        result_date = FormattedDate.from_string(date_str)
+        if result_date > FormattedDate.now():
+            raise ValueError()
         return date_str
     except ValueError:
-        raise argparse.ArgumentTypeError(f"Not a valid date: '{date_str}'. Expected format: YYYY-mm-dd.")
+        raise argparse.ArgumentTypeError(f"Not a valid date: '{date_str}'. Expected date before {FormattedDate.now()}, format: YYYY-mm-dd.")
+
+def validate_week(week_str: str):
+    week_no=int(week_str)
+    try:
+        result_date=FormattedDate.from_week(week_no)
+        if result_date>FormattedDate.now():
+            raise ValueError()
+        return week_no
+    except ValueError:
+        max_week_no=FormattedDate.now().isocalendar().week - 1
+        raise argparse.ArgumentTypeError(f"Not a valid week number: '{week_no}'. Expected number between 0 and {max_week_no}")
 
 
 def main():
@@ -30,20 +45,19 @@ def main():
     )
     parser.add_argument(
         '--week',
-        type=int,
+        type=validate_week,
         help='Runs the script with end_date as sunday of the week provided.'
     )
     args = parser.parse_args()
 
-    end_date = (datetime.now() - timedelta(1)).strftime(DATE_FORMAT)
+    end_date = FormattedDate.now()-1
     if args.date:
-        end_date = args.date
+        end_date = FormattedDate.from_string(args.date)
     if args.week:
-        year = datetime.now().year
-        end_date = datetime.fromisocalendar(year, args.week, 7).strftime(DATE_FORMAT)
+        end_date = FormattedDate.from_week(args.week)
 
     print(f"Gathering data for: {end_date}...")
-    print(f"week= {datetime.strptime(end_date, DATE_FORMAT).isocalendar().week}, weekday= {datetime.strptime(end_date, DATE_FORMAT).isocalendar().weekday}")
+    print(end_date.get_week_and_day_string())
 
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
@@ -51,7 +65,7 @@ def main():
     # pm_fetcher.write_json()
     # GithubFetcherObject.get_github_rate_limit(token=os.environ.get("MX_GITHUB_TOKEN"))
 
-    git_fetcher = GithubFetcherObject.from_package_sites(end_date)
+    git_fetcher = GithubFetcherObject.from_package_sites(str(end_date))
     git_fetcher.write_json()
 
 
