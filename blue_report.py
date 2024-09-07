@@ -66,8 +66,8 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
         package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
         row = [
             html.Td(package.package_name),
-            html.Td(package_statistics['last_month_downloads'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
-            html.Td(package_statistics['last_week_downloads'], style={'textAlign': 'right'}),
+            html.Td(package_statistics['downloads_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(package_statistics['downloads_last_week'], style={'textAlign': 'right'}),
             html.Td(int(package_statistics['avg_daily_downloads']), style={'textAlign': 'right'}),
             html.Td(package_statistics['libraries_io_score'], id=f"lio_{package.package_name}", style={'textAlign': 'right'}),
             html.Td(package_statistics['site_score'], style={'textAlign': 'right', 'width': '100px'}),

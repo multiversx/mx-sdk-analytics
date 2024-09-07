@@ -39,9 +39,9 @@ class Score:
 
 
 class DailyActivity:
-    def __init__(self) -> None:
-        self.date = '1980-01-01'
-        self.downloads = 0
+    def __init__(self, date: str = '1980-01-01', count: int = 0) -> None:
+        self.date = date
+        self.downloads = count
 
     def __str__(self) -> str:
         return f"{self.date} - {self.downloads} downloads"
@@ -88,16 +88,20 @@ class Package:
         }
 
     def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration: int) -> Dict[str, Any]:
-        last_month_downloads = sum(dd.downloads for dd in self.downloads)
+        summary_dict = self.calculate_activity_statistics('downloads', self.downloads, end_date, report_duration)
+        summary_dict['site_score'] = f"{self.site_score.final:.2f}"
+        summary_dict['site_score_details'] = repr(self.site_score)
+        return summary_dict
+
+    def calculate_activity_statistics(self, name: str, activity: List[DailyActivity], end_date: str, report_duration: int) -> Dict[str, Any]:
+        last_month_downloads = sum(dd.downloads for dd in activity)
         avg_daily_downloads = last_month_downloads / report_duration
         seven_days_before = str(FormattedDate.from_string(end_date) - DAYS_IN_WEEK + 1)
-        last_week_downloads = sum(dd.downloads for dd in [item for item in self.downloads if item.date >= seven_days_before])
+        last_week_downloads = sum(dd.downloads for dd in [item for item in activity if item.date >= seven_days_before])
         return {
-            'last_month_downloads': last_month_downloads,
-            'last_week_downloads': last_week_downloads,
-            'avg_daily_downloads': avg_daily_downloads,
-            'site_score': f"{self.site_score.final:.2f}",
-            'site_score_details': repr(self.site_score)
+            f"{name}_total": last_month_downloads,
+            f"{name}_last_week": last_week_downloads,
+            f"avg_daily_{name}": avg_daily_downloads,
         }
 
     @property

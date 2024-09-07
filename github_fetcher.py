@@ -12,9 +12,9 @@ from utils import FormattedDate, Language, PackagesRegistry, Reports
 
 
 class GithubDailyActivity(DailyActivity):
-    def __init__(self) -> None:
-        super().__init__()
-        self.uniques = 0
+    def __init__(self, date: str = '1980-01-01', count: int = 0, uniques: int = 0) -> None:
+        super().__init__(date, count)
+        self.uniques = uniques
 
     def __str__(self) -> str:
         return super().__str__() + f", {self.uniques} uniques"
@@ -53,8 +53,20 @@ class GithubPackageObject(Package):
 
     # TODO Statistics for clones- uniques, statistics for visitors
     def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration=DAYS_IN_TWO_WEEKS_REPORT) -> Dict[str, Any]:
-        summary = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
-
+        temp_summary: Dict[str, Any] = {}
+        # clones - count
+        summary: Dict[str, Any] = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
+        # clones - uniques
+        temp_list = [DailyActivity(item.date, item.uniques) for item in self.downloads]
+        temp_summary = self.calculate_activity_statistics('downloaders', temp_list, end_date, report_duration)
+        summary.update(temp_summary)
+        # visits - count
+        temp_summary = self.calculate_activity_statistics('visits', self.views, end_date, report_duration)
+        summary.update(temp_summary)
+        # visits - uniques
+        temp_list = [DailyActivity(item.date, item.uniques) for item in self.views]
+        temp_summary = self.calculate_activity_statistics('visitors', temp_list, end_date, report_duration)
+        summary.update(temp_summary)
         return summary
 
     def analyse_package(self):
@@ -115,12 +127,15 @@ class GithubFetcherObject(Fetcher):
                 'has_discussions': item.get('has_discussions', 0),
             }
         page = 0
+        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
+        owner = GITHUB_ORGANIZATION
+        headers = {"Authorization": f"Bearer {bearer_token}"}
         size = GITHUB_PAGE_SIZE
         scores_dict = {}
-        owner = GITHUB_ORGANIZATION
+
         while True:
             url = f"https://api.github.com/search/repositories?q={pattern}+in:name+user:{owner}&per_page={size}&page={page}&sort=stars&order=desc"
-            response = requests.get(url)
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('items', [])

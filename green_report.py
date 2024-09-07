@@ -47,18 +47,43 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
 
 
 def create_table(fetcher: GithubFetcherObject, section: PackagesRegistry):
-    header_row = [
-        html.Th('Package'),
-        html.Th(['Downloads', html.Br(), 'last 2 weeks']),
-        html.Th(['Downloads', html.Br(), 'last week']),
-        html.Th(['Avg downloads', html.Br(), 'per day']),
-        html.Th(['Stars', html.Br(), '']),
-        html.Th(['Forks', html.Br(), '']),
-        html.Th(['Watchers', html.Br(), '']),
-        html.Th(['Health', html.Br(), ' Score']),
-    ]
+    header_row = html.Thead([
+        html.Tr([
+            html.Th('Package', rowSpan=3),
+            html.Th('Clones', colSpan=5),
+            html.Th('Visits', colSpan=5),
+            html.Th('No of Forks', rowSpan=3),
+            html.Th('No of Stars', rowSpan=3),
+            html.Th('No of Watchers', rowSpan=3),
+            html.Th('Site score', rowSpan=3),
+        ]),
+        html.Tr([
+            # Clones
+            html.Th('Total', colSpan=2),
+            html.Th('Last Week', colSpan=2),
+            html.Th(['Avg Daily', html.Br(), 'Downloads'], rowSpan=2),
+            # Visits
+            html.Th('Total', colSpan=2),
+            html.Th('Last Week', colSpan=2),
+            html.Th(['Avg Daily', html.Br(), 'Visits'], rowSpan=2),
+        ]),
+        html.Tr([
+            # Clones Total
+            html.Th('Downloads'),
+            html.Th('Downloaders'),
+            # Clones Last Week
+            html.Th('Downloads'),
+            html.Th('Downloaders'),
+            # Visits Total
+            html.Th('Visits'),
+            html.Th('Visitors'),
+            # Visits Last Week
+            html.Th('Visits'),
+            html.Th('Visitors'),
+        ])
+    ])
 
-    table_header = [html.Tr(header_row)]
+    table_header = [header_row]
     table_rows = []
     packages: list[GithubPackageObject] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
@@ -66,17 +91,28 @@ def create_table(fetcher: GithubFetcherObject, section: PackagesRegistry):
         package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
         row = [
             html.Td(package.package_name),
-            html.Td(package_statistics['last_month_downloads'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
-            html.Td(package_statistics['last_week_downloads'], style={'textAlign': 'right'}),
+            html.Td(package_statistics['downloads_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(package_statistics['downloaders_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(package_statistics['downloads_last_week'], style={'textAlign': 'right'}),
+            html.Td(package_statistics['downloaders_last_week'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
             html.Td(int(package_statistics['avg_daily_downloads']), style={'textAlign': 'right'}),
-            html.Td(int(package.main_page_statistics['stargazers_count']), style={'textAlign': 'right'}),
+            html.Td(package_statistics['visits_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(package_statistics['visitors_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(package_statistics['visits_last_week'], style={'textAlign': 'right'}),
+            html.Td(package_statistics['visitors_last_week'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(int(package_statistics['avg_daily_visits']), style={'textAlign': 'right'}),
+
             html.Td(int(package.main_page_statistics['forks_count']), style={'textAlign': 'right'}),
+            html.Td(int(package.main_page_statistics['stargazers_count']), style={'textAlign': 'right'}),
             html.Td(int(package.main_page_statistics['watchers_count']), style={'textAlign': 'right'}),
             html.Td(package_statistics['site_score'], style={'textAlign': 'right', 'width': '100px'}),
         ]
         table_rows.append(html.Tr(row))
 
-    return html.Table(table_header + table_rows)
+    return html.Table(table_header + table_rows, style={
+        'width': '98%',
+        'borderCollapse': 'collapse',
+    })
 
 
 def create_package_info_box(fetcher: GithubFetcherObject, section: PackagesRegistry):
@@ -163,7 +199,7 @@ def update_report(selected_file: str):
         dcc.Tabs([
             dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
                 html.H1(f"{repo.name} Repositories Downloads"),
-                html.H2('Download Data Table'),
+                html.H2('Two Weeks Download Data Table'),
                 create_table(fetcher, repo),
                 html.H2('Clones & Visits Trends'),
                 html.Div([
