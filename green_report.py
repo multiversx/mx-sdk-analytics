@@ -8,7 +8,7 @@ from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 
 from github_fetcher import GithubFetcher, GithubPackage
-from utils import FormattedDate, PackagesRegistry, Reports
+from utils import FormattedDate, Language, PackagesRegistry, Reports
 
 load_dotenv()
 
@@ -18,7 +18,7 @@ directory = os.environ.get('JSON_FOLDER')
 
 json_files = sorted(Path(directory).glob('green*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
-
+language_options = ['All'] + [lang.lang_name for lang in Language]
 # Layout of the Dash app
 app.layout = html.Div(style={'backgroundColor': background_color}, children=[
     html.Div(
@@ -37,7 +37,8 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
                 value=dropdown_options[0]['value'],  # Set default value as the newest file generated
                 clearable=False,
                 style={'width': '50%'}
-            )
+            ),
+            dcc.RadioItems(language_options, 'All', id='language-filter', inline=True),
         ]
     ),
 
@@ -46,7 +47,7 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
 ])
 
 
-def create_table(fetcher: GithubFetcher, section: PackagesRegistry):
+def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: str):
     header_row = html.Thead([
         html.Tr([
             html.Th('Package', rowSpan=3),
@@ -85,7 +86,8 @@ def create_table(fetcher: GithubFetcher, section: PackagesRegistry):
 
     table_header = [header_row]
     table_rows = []
-    packages: list[GithubPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[GithubPackage] = [item for item in fetcher.packages
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
         package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
@@ -115,9 +117,11 @@ def create_table(fetcher: GithubFetcher, section: PackagesRegistry):
     })
 
 
-def create_package_info_box(fetcher: GithubFetcher, section: PackagesRegistry):
+# Warning boxes for health score
+def create_package_info_box(fetcher: GithubFetcher, section: PackagesRegistry, language: str):
     info_boxes = []
-    packages: list[GithubPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[GithubPackage] = [item for item in fetcher.packages
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
@@ -131,8 +135,9 @@ def create_package_info_box(fetcher: GithubFetcher, section: PackagesRegistry):
     return html.Div(info_boxes)
 
 
-def create_downloads_graph(fetcher: GithubFetcher, section: PackagesRegistry) -> Dict[str, Any]:
-    packages: List[GithubPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+def create_downloads_graph(fetcher: GithubFetcher, section: PackagesRegistry, language: str) -> Dict[str, Any]:
+    packages: List[GithubPackage] = [item for item in fetcher.packages
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
@@ -160,8 +165,9 @@ def create_downloads_graph(fetcher: GithubFetcher, section: PackagesRegistry) ->
     }
 
 
-def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry) -> Dict[str, Any]:
-    packages: list[GithubPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry, language: str) -> Dict[str, Any]:
+    packages: list[GithubPackage] = [item for item in fetcher.packages
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     views_dict = {p.package_name: {d.date: d.downloads for d in p.views} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
@@ -191,31 +197,32 @@ def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry) -> Di
 
 @app.callback(
     Output('report-content', 'children'),
-    Input('file-selector', 'value')
+    [Input('file-selector', 'value'),
+     Input('language-filter', 'value')]
 )
-def update_report(selected_file: str):
+def update_report(selected_file: str, selected_language: str):
     fetcher = GithubFetcher.from_generated_file(selected_file)
     return html.Div([
         dcc.Tabs([
             dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
                 html.H1(f"{repo.name} Repositories Downloads"),
                 html.H2('Two Weeks Download Data Table'),
-                create_table(fetcher, repo),
+                create_table(fetcher, repo, selected_language),
                 html.H2('Clones & Visits Trends'),
                 html.Div([
                     dcc.Graph(
                         id='downloads-graph',
-                        figure=create_downloads_graph(fetcher, repo)
+                        figure=create_downloads_graph(fetcher, repo, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.Div([
                     dcc.Graph(
                         id='visits-graph',
-                        figure=create_visits_graph(fetcher, repo)
+                        figure=create_visits_graph(fetcher, repo, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.H2('Health score warnings'),
-                create_package_info_box(fetcher, repo)
+                create_package_info_box(fetcher, repo, selected_language)
             ])
             for repo in [item for item in PackagesRegistry if Reports.GREEN in item.reports]
         ])

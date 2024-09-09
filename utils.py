@@ -14,7 +14,7 @@ class Language(Enum):
     RUST = ('Rust', ['rs', 'rust'])
     PYTHON = ('Python', ['py'])
     CSHARP = ('C#', ['csharp'])
-    C = ('C', ['clang', 'cpp'])
+    C = ('C/C++', ['clang', 'cpp'])
     GO = ('Go', ['go'])
     PHP = ('PHP', ['php'])
     JAVA = ('Java', ['java'])
