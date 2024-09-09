@@ -2,7 +2,7 @@ import argparse
 
 from dotenv.main import load_dotenv
 
-from github_fetcher import GithubFetcherObject
+from github_fetcher import GithubFetcher
 from package_managers_fetcher import PackageManagersFetcher
 from utils import FormattedDate
 
@@ -61,7 +61,7 @@ def main():
     pm_fetcher = PackageManagersFetcher.from_package_sites(str(end_date))
     pm_fetcher.write_json()
 
-    git_fetcher = GithubFetcherObject.from_package_sites(str(end_date))
+    git_fetcher = GithubFetcher.from_package_sites(str(end_date))
     git_fetcher.write_json()
 
 

@@ -10,9 +10,19 @@ class Reports (Enum):
 
 
 class Language(Enum):
-    JAVASCRIPT = 'Javascript'
-    RUST = 'Rust'
-    PYTHON = 'Python'
+    JAVASCRIPT = ('Javascript', ['js', 'nestjs'])
+    RUST = ('Rust', ['rs', 'rust'])
+    PYTHON = ('Python', ['py'])
+    CSHARP = ('C#', ['csharp'])
+    C = ('C', ['clang', 'cpp'])
+    GO = ('Go', ['go'])
+    PHP = ('PHP', ['php'])
+    JAVA = ('Java', ['java'])
+    KOTLIN = ('Kotlin', ['kotlin'])
+
+    def __init__(self, lang_name: str, suffixes: list[str]):
+        self.lang_name = lang_name
+        self.suffixes = suffixes
 
 
 class PackagesRegistry(Enum):

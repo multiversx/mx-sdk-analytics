@@ -32,6 +32,8 @@ class Score:
 
     @staticmethod
     def from_dict(info: Dict[str, Any]) -> 'Score':
+        if not info:
+            return Score()
         response = Score()
         response.final = info.get('final', 0)
         response.detail = info.get('detail', {})
@@ -126,12 +128,12 @@ class Fetcher:
     def __init__(self) -> None:
         self.start_date = ''
         self.end_date = ''
-        self.downloads: List[Package] = []
+        self.packages: List[Package] = []
         self.rep_folder = os.environ.get("JSON_FOLDER")
 
     def __str__(self):
         print_str = f"DOWNLOADS REPORT ({self.start_date} - {self.end_date})\n\n"
-        print_str += "\n".join(str(item) for item in self.downloads)
+        print_str += "\n".join(str(item) for item in self.packages)
         print_str += "\n"
         return print_str
 
@@ -142,7 +144,7 @@ class Fetcher:
                 'start_date': self.start_date,
                 'end_date': self.end_date,
             },
-            'records': [item.to_dict() for item in self.downloads]
+            'records': [item.to_dict() for item in self.packages]
         }
 
     def write_report(self, repo_name: str = 'log'):
@@ -163,7 +165,7 @@ class Fetcher:
         meta: Dict[str, Any] = json_data.get('metadata')
         result.start_date = meta.get('start_date', '')
         result.end_date = meta.get('end_date', '')
-        result.downloads = [result.PACKAGE_CLASS.from_generated_file(item) for item in json_data.get('records', [])]
+        result.packages = [result.PACKAGE_CLASS.from_generated_file(item) for item in json_data.get('records', [])]
         return result
 
     @property

@@ -39,7 +39,7 @@ class GithubDailyActivity(DailyActivity):
         return result
 
 
-class GithubPackageObject(Package):
+class GithubPackage(Package):
     def __init__(self) -> None:
         super().__init__()
         self.main_page_statistics: Dict[str, Any] = {}
@@ -51,10 +51,9 @@ class GithubPackageObject(Package):
         temp_dict['views'] = [item.to_dict() for item in self.views]
         return temp_dict
 
-    # TODO Statistics for clones- uniques, statistics for visitors
     def create_summary_statistics_from_daily_downloads(self, end_date: str, report_duration=DAYS_IN_TWO_WEEKS_REPORT) -> Dict[str, Any]:
         temp_summary: Dict[str, Any] = {}
-        # clones - count
+        # clones - count, score etc.
         summary: Dict[str, Any] = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
         # clones - uniques
         temp_list = [DailyActivity(item.date, item.uniques) for item in self.downloads]
@@ -76,10 +75,9 @@ class GithubPackageObject(Package):
                                     if "has" in key and int(value) == 0)
         return main_negatives + (', ' if main_negatives else '') + score_negatives
 
-    # TODO: language from github api
     @staticmethod
-    def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackageObject':
-        result = GithubPackageObject()
+    def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackage':
+        result = GithubPackage()
         raw_downloads = response.get('downloads').get('clones', [])
         raw_views = response.get('visits').get('views', [])
         result.downloads = [GithubDailyActivity.from_github_fetched_data(item) for item in raw_downloads]
@@ -92,7 +90,7 @@ class GithubPackageObject(Package):
         return result
 
     @classmethod
-    def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubPackageObject':
+    def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubPackage':
         result = super().from_generated_file(response)
         result.views = [GithubDailyActivity.from_generated_file(item) for item in response.get('views', [])]
         result.main_page_statistics = response.get('metadata', {}).get('main_page_statistics', {})
@@ -103,7 +101,7 @@ class GithubPackageObject(Package):
         return GithubDailyActivity
 
 
-class GithubFetcherObject(Fetcher):
+class GithubFetcher(Fetcher):
     def __init__(self) -> None:
         super().__init__()
 
@@ -116,6 +114,7 @@ class GithubFetcherObject(Fetcher):
     def get_github_package_names(self, pattern: str) -> Dict[str, Any]:        # github api - query search result
         def build_package_main_page_score(item: Dict[str, Any]) -> Dict[str, Any]:
             return {
+                'language': item.get('language', ''),
                 'stargazers_count': item.get('stargazers_count', 0),
                 'forks_count': item.get('forks_count', 0),
                 'watchers_count': item.get('watchers_count', 0),
@@ -192,10 +191,20 @@ class GithubFetcherObject(Fetcher):
         score['detail']['content_reports_enabled'] = 1 if data.get('content_reports_enabled', '') else 0
         return score
 
-    # TODO language implementation
+    def github_package_language(self, package_name: str, language: str) -> Language:
+        packet_language = next(
+            (lang for lang in Language if any("-" + suffix in package_name for suffix in lang.suffixes)), None)
+        if not packet_language:
+            if language == 'Typescript':
+                return Language.JAVASCRIPT
+            else:
+                return next((lang for lang in Language if language and language.lower() == lang.lang_name.lower()), Language.JAVASCRIPT)
+        else:
+            return packet_language
+
     @staticmethod
-    def from_package_sites(end_date: str) -> 'GithubFetcherObject':
-        result = GithubFetcherObject()
+    def from_package_sites(end_date: str) -> 'GithubFetcher':
+        result = GithubFetcher()
         result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_TWO_WEEKS_REPORT + 1)
         result.end_date = end_date
 
@@ -206,23 +215,15 @@ class GithubFetcherObject(Fetcher):
                 fetched_downloads = result.fetch_github_downloads(package_name)
                 fetched_visits = result.fetch_github_visits(package_name)
                 fetched = {"downloads": fetched_downloads, "visits": fetched_visits}
-                package_downloads = GithubPackageObject.from_github_fetched_data(
-                    package_name, Language.JAVASCRIPT.value, fetched)
+                packet_language = result.github_package_language(package_name, packages[package_name]['language'])
+                package_downloads = GithubPackage.from_github_fetched_data(
+                    package_name, packet_language.lang_name, fetched)
                 package_downloads.main_page_statistics = packages[package_name]
                 package_downloads.site_score = Score.from_dict(result.fetch_github_package_community_score(package_name))
-                result.downloads.append(package_downloads)
+                result.packages.append(package_downloads)
                 pbar.update(1)
         return result
 
-    @staticmethod
-    def get_github_rate_limit(token: str):
-        rate_limit_url = "https://api.github.com/rate_limit"
-        response = requests.get(rate_limit_url, headers={"Authorization": f"token {token}"})
-        print(response.json())
-        reset_time = int(response.headers.get("X-RateLimit-Reset"))
-        remaining = int(response.headers.get("X-RateLimit-Remaining"))
-        print(f"Rate limit will reset at {reset_time}. You have {remaining} requests left.")
-
     @property
     def PACKAGE_CLASS(self):
-        return GithubPackageObject
+        return GithubPackage

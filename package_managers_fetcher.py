@@ -256,10 +256,10 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages.keys():
                 fetched_downloads = result.fetch_npm_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_npm_fetched_data(
-                    package_name, Language.JAVASCRIPT.value, fetched_downloads)
+                    package_name, Language.JAVASCRIPT.lang_name, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
                 package_downloads.site_score = Score.from_dict(packages[package_name])
-                result.downloads.append(package_downloads)
+                result.packages.append(package_downloads)
                 pbar.update(1)
 
         print("fetching from crates ...")
@@ -268,9 +268,9 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages:
                 fetched_downloads = result.fetch_crates_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_crates_fetched_data(
-                    package_name, Language.RUST.value, fetched_downloads)
+                    package_name, Language.RUST.lang_name, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.CARGO.name)
-                result.downloads.append(package_downloads)
+                result.packages.append(package_downloads)
                 pbar.update(1)
 
         print("fetching from pypi ...")
@@ -279,9 +279,9 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages:
                 fetched_downloads = result.fetch_pypi_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_pypi_fetched_data(
-                    package_name, Language.PYTHON.value, fetched_downloads)
+                    package_name, Language.PYTHON.lang_name, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.PYPI.name)
                 package_downloads.site_score = Score.from_dict(result.fetch_pypi_package_score(package_name))
-                result.downloads.append(package_downloads)
+                result.packages.append(package_downloads)
                 pbar.update(1)
         return result

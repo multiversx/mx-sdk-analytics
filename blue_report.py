@@ -60,7 +60,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
 
     table_header = [html.Tr(header_row)]
     table_rows = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
         package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
@@ -75,12 +75,15 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
         ]
         table_rows.append(html.Tr(row))
 
-    return html.Table(table_header + table_rows)
+    return html.Table(table_header + table_rows, style={
+        'width': '98%',
+        'borderCollapse': 'collapse',
+    })
 
 
 def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRegistry):
     info_boxes = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
@@ -95,7 +98,7 @@ def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRe
 
 
 def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> Dict[str, Any]:
-    packages: list[PackageManagersPackage] = [item for item in fetcher.downloads if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)

@@ -20,7 +20,7 @@ pip install -r ./requirements-dev.txt --upgrade
 
 
 ## RUN
-### GATHER-REPOSITORY-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
+### GATHER-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
 - fetch data for 1 month, until 1 day before current date
    ```
     python gather_repository_data.py
@@ -45,4 +45,12 @@ pip install -r ./requirements-dev.txt --upgrade
 
  - renders the blue report from the most recent json file generated through gathering.
  - the file rendered can be changed from a drop-down menu inside the report
- - different reporitory sites can be accesed through tabs in the report
+ - different repository sites can be accesed through tabs in the report
+
+### GREEN-REPORT - script that renders the visual report for GITHUB repository usage. Report available at port 8051
+```
+   python green_report.py
+```
+
+ - renders the green report from the most recent json file generated through gathering.
+ - the file rendered can be changed from a drop-down menu inside the report
