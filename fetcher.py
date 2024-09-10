@@ -107,14 +107,14 @@ class Package:
         }
 
     @property
-    def DAILY_ACTIVITY_TYPE(self):
+    def DAILY_ACTIVITY_CLASS(self):
         return DailyActivity
 
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'Package':
         result = cls()
         raw_downloads = response.get('downloads', [])
-        result.downloads = [result.DAILY_ACTIVITY_TYPE.from_generated_file(item) for item in raw_downloads]
+        result.downloads = [result.DAILY_ACTIVITY_CLASS.from_generated_file(item) for item in raw_downloads]
         meta: Dict[str, Any] = response.get('metadata', '')
         result.package_name = meta.get('package_name', '')
         result.package_site = meta.get('section_name', '')

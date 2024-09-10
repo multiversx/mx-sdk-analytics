@@ -97,13 +97,14 @@ class GithubPackage(Package):
         return result
 
     @property
-    def DAILY_ACTIVITY_TYPE(self):
+    def DAILY_ACTIVITY_CLASS(self):
         return GithubDailyActivity
 
 
 class GithubFetcher(Fetcher):
     def __init__(self) -> None:
         super().__init__()
+        self.error_403_packages = []
 
     def write_report(self):
         super().write_report("rep")
@@ -152,7 +153,7 @@ class GithubFetcher(Fetcher):
         url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/clones"
         response = requests.get(url, headers=headers)
         if response.status_code == 403:
-            print(package_name)
+            self.error_403_packages.append(package_name)
         else:
             response.raise_for_status()
         return response.json()
@@ -164,7 +165,7 @@ class GithubFetcher(Fetcher):
         url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/views"
         response = requests.get(url, headers=headers)
         if response.status_code == 403:
-            print(package_name)
+            pass    # already logged from downloads
         else:
             response.raise_for_status()
         return response.json()
@@ -222,6 +223,10 @@ class GithubFetcher(Fetcher):
                 package_downloads.site_score = Score.from_dict(result.fetch_github_package_community_score(package_name))
                 result.packages.append(package_downloads)
                 pbar.update(1)
+        if result.error_403_packages:
+            print("Packages that didn't allow access to traffic information: ")
+            for package_name in result.error_403_packages:
+                print(package_name)
         return result
 
     @property

@@ -114,7 +114,7 @@ class PackageManagersPackage(Package):
         return result
 
     @property
-    def DAILY_ACTIVITY_TYPE(self):
+    def DAILY_ACTIVITY_CLASS(self):
         return PackageManagersDailyActivity
 
 
