@@ -77,3 +77,6 @@ class FormattedDate(datetime):
     @staticmethod
     def from_format(date: str, format: str) -> 'FormattedDate':
         return FormattedDate.strptime(date, format)
+
+    def to_format(self, format: str) -> str:
+        return self.strftime(format)

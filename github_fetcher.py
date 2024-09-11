@@ -4,8 +4,9 @@ from typing import Any, Dict, List
 import requests
 from tqdm import tqdm
 
-from constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE, GITHUB_ORGANIZATION,
-                       GITHUB_PAGE_SIZE, GITHUB_SEARCH_PREFIX)
+from constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE,
+                       GITHUB_ORGANIZATION, GITHUB_PAGE_SIZE,
+                       GITHUB_SEARCH_PREFIX)
 from fetcher import DailyActivity, Fetcher, Package, Score
 from utils import FormattedDate, Language, PackagesRegistry, Reports
 
@@ -26,7 +27,9 @@ class GithubDailyActivity(DailyActivity):
     @staticmethod
     def from_github_fetched_data(response: Dict[str, Any]) -> 'GithubDailyActivity':
         result = GithubDailyActivity()
-        result.date = response.get('timestamp', DEFAULT_DATE)[:10]
+        format = "%Y-%m-%dT%H:%M:%SZ"
+        default_time_in_github_format = FormattedDate.from_string(DEFAULT_DATE).to_format(format)
+        result.date = str(FormattedDate.from_format(response.get('timestamp', default_time_in_github_format), format))
         result.downloads = response.get('count', 0)
         result.uniques = response.get('uniques', 0)
         return result
@@ -103,13 +106,17 @@ class GithubPackage(Package):
 class GithubFetcher(Fetcher):
     def __init__(self) -> None:
         super().__init__()
-        self.error_403_packages = []
+        self.forbidden_traffic_access_packages = []
 
     def write_report(self):
         super().write_report("rep")
 
     def write_json(self):
         super().write_json(repo_type=Reports.GREEN.value)
+
+    def _get_github_authorization_header(self) -> Dict[str, Any]:
+        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
+        return {"Authorization": f"Bearer {bearer_token}"}
 
     def get_github_package_names(self, pattern: str) -> Dict[str, Any]:        # github api - query search result
         def build_package_main_page_score(item: Dict[str, Any]) -> Dict[str, Any]:
@@ -126,18 +133,17 @@ class GithubFetcher(Fetcher):
                 'has_discussions': item.get('has_discussions', 0),
             }
         page = 0
-        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
-        owner = GITHUB_ORGANIZATION
-        headers = {"Authorization": f"Bearer {bearer_token}"}
         size = GITHUB_PAGE_SIZE
+        owner = GITHUB_ORGANIZATION
         scores_dict = {}
 
         while True:
             url = f"https://api.github.com/search/repositories?q={pattern}+in:name+user:{owner}&per_page={size}&page={page}&sort=stars&order=desc"
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=self._get_github_authorization_header())
             response.raise_for_status()
             data = response.json()
             package_info = data.get('items', [])
+
             # also gets main page scores in the form "{package_name}": {package_score}
             scores_dict.update({item.get('name'): build_package_main_page_score(item) for item in package_info})
             if len(data['items']) < size:
@@ -146,23 +152,19 @@ class GithubFetcher(Fetcher):
         return scores_dict
 
     def fetch_github_downloads(self, package_name: str):
-        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
         owner = GITHUB_ORGANIZATION
-        headers = {"Authorization": f"Bearer {bearer_token}"}
         url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/clones"
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=self._get_github_authorization_header())
         if response.status_code == 403:
-            self.error_403_packages.append(package_name)
+            self.forbidden_traffic_access_packages.append(package_name)
         else:
             response.raise_for_status()
         return response.json()
 
     def fetch_github_visits(self, package_name: str):
-        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
         owner = GITHUB_ORGANIZATION
-        headers = {"Authorization": f"Bearer {bearer_token}"}
         url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/views"
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=self._get_github_authorization_header())
         if response.status_code == 403:
             pass    # already logged from downloads
         else:
@@ -171,20 +173,21 @@ class GithubFetcher(Fetcher):
 
     def fetch_github_package_community_score(self, package_name: str) -> Dict[str, Any]:
         score = {}
-        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
         owner = GITHUB_ORGANIZATION
-        headers = {"Authorization": f"Bearer {bearer_token}"}
         url = f"https://api.github.com/repos/{owner}/{package_name}/community/profile"
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=self._get_github_authorization_header())
         response.raise_for_status()
         data = response.json()
+
         health_score: int = data.get('health_percentage', 0)
         score['final'] = health_score / 100
         score['detail'] = {}
+
         for item in ['description', 'documentation']:
             score['detail'][f"has_{item}"] = 0 if data.get(item, '') is None else 1
         for item in ['code_of_conduct', 'contributing', 'issue_template', 'pull_request_template', 'license', 'readme']:
             score['detail'][f"has_{item}"] = 0 if data.get('files', {}).get(item, '') is None else 1
+
         timestamp = data.get('updated_at', '')
         format = "%Y-%m-%dT%H:%M:%SZ"
         score['detail']['updated_at'] = str(FormattedDate.from_format(timestamp, format)) if timestamp else ''
@@ -215,15 +218,16 @@ class GithubFetcher(Fetcher):
                 fetched_visits = result.fetch_github_visits(package_name)
                 fetched = {"downloads": fetched_downloads, "visits": fetched_visits}
                 packet_language = result.github_package_language(package_name, packages[package_name]['language'])
+
                 package_downloads = GithubPackage.from_github_fetched_data(
                     package_name, packet_language.lang_name, fetched)
                 package_downloads.main_page_statistics = packages[package_name]
                 package_downloads.site_score = Score.from_dict(result.fetch_github_package_community_score(package_name))
                 result.packages.append(package_downloads)
                 pbar.update(1)
-        if result.error_403_packages:
+        if result.forbidden_traffic_access_packages:
             print("Packages that didn't allow access to traffic information: ")
-            for package_name in result.error_403_packages:
+            for package_name in result.forbidden_traffic_access_packages:
                 print(package_name)
         return result
 
