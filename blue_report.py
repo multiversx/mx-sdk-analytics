@@ -130,11 +130,11 @@ def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> 
     Output('report-content', 'children'),
     Input('file-selector', 'value')
 )
-def update_report(selected_file: str):
+def update_blue_report(selected_file: str):
     fetcher = PackageManagersFetcher.from_generated_file(selected_file)
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=repo.repo_name, children=[
+            dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
                 html.H1(f"{repo.name} Package Downloads"),
                 html.H2('Download Data Table'),
                 create_table(fetcher, repo),

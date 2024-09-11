@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List
 
-from constants import DAYS_IN_WEEK
+from constants import DAYS_IN_WEEK, DEFAULT_DATE
 from utils import FormattedDate
 
 # in order to allow calculations of scores in future implementations, the score must be a dictionary of individual composite scores
@@ -19,15 +19,15 @@ from utils import FormattedDate
 class Score:
     def __init__(self) -> None:
         self.final: float = 0
-        self.detail: Dict[str, Any] = {}
+        self.details: Dict[str, Any] = {}
 
     def __repr__(self) -> str:
-        return ', '.join(f"{key} = {float(value):.2f}" if isinstance(value, (float, int)) else f"{key} = {value}" for key, value in self.detail.items())
+        return ', '.join(f"{key} = {float(value):.2f}" if isinstance(value, (float, int)) else f"{key} = {value}" for key, value in self.details.items())
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             'final': self.final,
-            'detail': self.detail
+            'detail': self.details
         }
 
     @staticmethod
@@ -36,12 +36,12 @@ class Score:
             return Score()
         response = Score()
         response.final = info.get('final', 0)
-        response.detail = info.get('detail', {})
+        response.details = info.get('detail', {})
         return response
 
 
 class DailyActivity:
-    def __init__(self, date: str = '1980-01-01', count: int = 0) -> None:
+    def __init__(self, date: str = DEFAULT_DATE, count: int = 0) -> None:
         self.date = date
         self.downloads = count
 
@@ -57,7 +57,7 @@ class DailyActivity:
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'DailyActivity':
         result = cls()
-        result.date = response.get('date', '1980-01-01')
+        result.date = response.get('date', DEFAULT_DATE)
         result.downloads = response.get('downloads', 0)
         return result
 

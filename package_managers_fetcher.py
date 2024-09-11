@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup, Tag
 from tqdm import tqdm
 
 from constants import (CRATES_PAGE_SIZE, CRATES_SEARCH_PREFIX,
-                       DAYS_IN_MONTHLY_REPORT, NPM_PAGE_SIZE,
+                       DAYS_IN_MONTHLY_REPORT, DEFAULT_DATE, NPM_PAGE_SIZE,
                        NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX)
 from fetcher import DailyActivity, Fetcher, Package, Score
 from utils import FormattedDate, Language, PackagesRegistry, Reports
@@ -17,21 +17,21 @@ class PackageManagersDailyActivity(DailyActivity):
     @staticmethod
     def from_npm_fetched_data(response: Dict[str, Any]) -> 'PackageManagersDailyActivity':
         result = PackageManagersDailyActivity()
-        result.date = response.get('day', '1980-01-01')
+        result.date = response.get('day', DEFAULT_DATE)
         result.downloads = response.get('downloads', 0)
         return result
 
     @staticmethod
     def from_pypi_fetched_data(response: Dict[str, Any]) -> 'PackageManagersDailyActivity':
         result = PackageManagersDailyActivity()
-        result.date = response.get('date', '1980-01-01')
+        result.date = response.get('date', DEFAULT_DATE)
         result.downloads = response.get('downloads', 0)
         return result
 
     @staticmethod
     def from_crates_fetched_data(response: Dict[str, Any]) -> 'PackageManagersDailyActivity':
         result = PackageManagersDailyActivity()
-        result.date = response.get('date', '1980-01-01')
+        result.date = response.get('date', DEFAULT_DATE)
         result.downloads = response.get('downloads', 0)
         return result
 

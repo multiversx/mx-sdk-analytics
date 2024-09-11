@@ -1,18 +1,17 @@
 import os
-# from pathlib import Path
 from typing import Any, Dict, List
 
 import requests
 from tqdm import tqdm
 
-from constants import (DAYS_IN_TWO_WEEKS_REPORT, GITHUB_ORGANIZATION,
+from constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE, GITHUB_ORGANIZATION,
                        GITHUB_PAGE_SIZE, GITHUB_SEARCH_PREFIX)
 from fetcher import DailyActivity, Fetcher, Package, Score
 from utils import FormattedDate, Language, PackagesRegistry, Reports
 
 
 class GithubDailyActivity(DailyActivity):
-    def __init__(self, date: str = '1980-01-01', count: int = 0, uniques: int = 0) -> None:
+    def __init__(self, date: str = DEFAULT_DATE, count: int = 0, uniques: int = 0) -> None:
         super().__init__(date, count)
         self.uniques = uniques
 
@@ -27,7 +26,7 @@ class GithubDailyActivity(DailyActivity):
     @staticmethod
     def from_github_fetched_data(response: Dict[str, Any]) -> 'GithubDailyActivity':
         result = GithubDailyActivity()
-        result.date = response.get('timestamp', '1980-01-01')[:10]
+        result.date = response.get('timestamp', DEFAULT_DATE)[:10]
         result.downloads = response.get('count', 0)
         result.uniques = response.get('uniques', 0)
         return result
@@ -71,7 +70,7 @@ class GithubPackage(Package):
     def analyse_package(self):
         main_negatives = ', '.join(f"{key} = 0" for key, value in self.main_page_statistics.items()
                                    if value == 0 and "has" in key)
-        score_negatives = ', '.join(f"{key} = {value}" for key, value in self.site_score.detail.items()
+        score_negatives = ', '.join(f"{key} = {value}" for key, value in self.site_score.details.items()
                                     if "has" in key and int(value) == 0)
         return main_negatives + (', ' if main_negatives else '') + score_negatives
 
@@ -193,8 +192,7 @@ class GithubFetcher(Fetcher):
         return score
 
     def github_package_language(self, package_name: str, language: str) -> Language:
-        packet_language = next(
-            (lang for lang in Language if any("-" + suffix in package_name for suffix in lang.suffixes)), None)
+        packet_language = next((lang for lang in Language if any("-" + suffix in package_name for suffix in lang.suffixes)), None)
         if not packet_language:
             if language == 'Typescript':
                 return Language.JAVASCRIPT
