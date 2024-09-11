@@ -4,6 +4,7 @@ Tool for data gathering and analysis (on SDKs usage).
 ## ENVIRONMENT VARIABLES
 - LIBRARIES_IO_API_KEY (Api key for the libraries.io account)
 - JSON_FOLDER (Folder where generated json files are stored after gathering data from Repository sites - "./Output" for development mode)
+- MX_GITHUB_TOKEN (Github fine-grained personal access token that gives access to traffic and community api pages)
 
 ## INSTALL
 Create a virtual environment and install the dependencies:
@@ -21,21 +22,21 @@ pip install -r ./requirements-dev.txt --upgrade
 
 ## RUN
 ### GATHER-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
-- fetch data for 1 month, until 1 day before current date
+- fetch data for 1 month for package managers and two weeks for Github, until 1 day before current date
    ```
     python gather_repository_data.py
    ```
-- fetches data for 1 month, until Sunday of week {week_number}
+- fetches data for 1 month for package managers and two weeks for Github, until Sunday of week {week_number}
    ```
-    python gather_repository_data.py --week={week_number}
+    python gather_data.py --week={week_number}
    ```
-- fetches data for 1 month, until {date_string}
+- fetches data for 1 month for package managers and two weeks for Github, until {date_string}
    ```
-    python gather_repository_data.py --date={date_string}
+    python gather_data.py --date={date_string}
    ```
 - shows argument options
    ```
-    python gather_repository_data --help
+    python gather_data --help
    ```
 
 ### BLUE-REPORT - script that renders the visual report for package usage. Report available at port 8050
@@ -54,3 +55,4 @@ pip install -r ./requirements-dev.txt --upgrade
 
  - renders the green report from the most recent json file generated through gathering.
  - the file rendered can be changed from a drop-down menu inside the report
+ - language based filtering is possible through a menu in the upper part of the report page
