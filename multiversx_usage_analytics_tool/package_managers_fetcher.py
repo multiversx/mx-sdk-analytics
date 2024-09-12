@@ -4,12 +4,11 @@ from typing import Any, Dict, List
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from tqdm import tqdm
-
 from constants import (CRATES_PAGE_SIZE, CRATES_SEARCH_PREFIX,
                        DAYS_IN_MONTHLY_REPORT, DEFAULT_DATE, NPM_PAGE_SIZE,
                        NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX)
 from fetcher import DailyActivity, Fetcher, Package, Score
+from tqdm import tqdm
 from utils import FormattedDate, Language, PackagesRegistry, Reports
 
 
@@ -46,7 +45,7 @@ class PackageManagersPackage(Package):
         temp_dict['metadata']['libraries_io_score'] = self.libraries_io_score
         return temp_dict
 
-    def analyse_libraries_io_score(self):
+    def analyse_libraries_io_score(self) -> str:
         negatives = ', '.join(f"{key} = {value}" for key, value in self.libraries_io_score.items()
                               if value < 0 or value == 0 and "present" in key)
         return negatives
@@ -56,6 +55,9 @@ class PackageManagersPackage(Package):
         summary['libraries_io_score'] = sum(value for value in self.libraries_io_score.values())
         summary['libraries_io_negatives'] = self.analyse_libraries_io_score(),
         return summary
+
+    def get_daily_activity(self, item: Dict[str, Any]):
+        return PackageManagersDailyActivity.from_generated_file(item)
 
     @staticmethod
     def from_npm_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'PackageManagersPackage':
@@ -113,10 +115,6 @@ class PackageManagersPackage(Package):
         result.libraries_io_score = response.get('metadata', {}).get('libraries_io_score', {})
         return result
 
-    @property
-    def DAILY_ACTIVITY_CLASS(self):
-        return PackageManagersDailyActivity
-
 
 class PackageManagersFetcher(Fetcher):
     def __init__(self) -> None:
@@ -140,6 +138,7 @@ class PackageManagersFetcher(Fetcher):
         page = 0
         size = NPM_PAGE_SIZE
         scores_dict = {}
+
         while True:
             url = f"https://registry.npmjs.org/-/v1/search?text={pattern}&size={size}&from={page * size}"
             response = requests.get(url)
@@ -175,6 +174,7 @@ class PackageManagersFetcher(Fetcher):
             package_info = data.get('crates', [])
             new_package_names = [item.get('name') for item in package_info if pattern in item.get('name')]
             package_names.extend(new_package_names)
+
             if len(data['crates']) < size:
                 break
             page += 1
@@ -204,6 +204,7 @@ class PackageManagersFetcher(Fetcher):
                 break
             new_package_names = [item for item in new_package_names if pattern in item]
             package_names.extend(new_package_names)
+
             if not new_package_names:
                 break
             page += 1
@@ -213,6 +214,7 @@ class PackageManagersFetcher(Fetcher):
         score_details = {}
         url = f"https://snyk.io/advisor/python/{package_name}"
         response = requests.get(url)
+
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             title_tags: List[Tag] = [item for item in soup.find_all('title')]
@@ -240,9 +242,8 @@ class PackageManagersFetcher(Fetcher):
                         if self.start_date <= entry['date'] <= self.end_date]
         return data
 
-    @property
-    def PACKAGE_CLASS(self):
-        return PackageManagersPackage
+    def get_package(self, item: Dict[str, Any]) -> PackageManagersPackage:
+        return PackageManagersPackage.from_generated_file(item)
 
     @staticmethod
     def from_package_sites(end_date: str) -> 'PackageManagersFetcher':
@@ -252,6 +253,7 @@ class PackageManagersFetcher(Fetcher):
 
         print("fetching from npm ...")
         packages = result.get_npm_package_names(NPM_SEARCH_PREFIX)
+
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages.keys():
                 fetched_downloads = result.fetch_npm_downloads(package_name)
@@ -264,6 +266,7 @@ class PackageManagersFetcher(Fetcher):
 
         print("fetching from crates ...")
         packages = result.get_crates_package_names(CRATES_SEARCH_PREFIX)
+
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages:
                 fetched_downloads = result.fetch_crates_downloads(package_name)
@@ -275,6 +278,7 @@ class PackageManagersFetcher(Fetcher):
 
         print("fetching from pypi ...")
         packages = result.get_pypi_package_names(PYPI_SEARCH_PREFIX)
+
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages:
                 fetched_downloads = result.fetch_pypi_downloads(package_name)

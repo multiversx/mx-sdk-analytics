@@ -4,9 +4,9 @@ from typing import Any, Dict, List
 
 import dash
 import plotly.graph_objs as go
+from constants import GREEN_REPORT_PORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
-
 from github_fetcher import GithubFetcher, GithubPackage
 from utils import FormattedDate, Language, PackagesRegistry, Reports
 
@@ -36,9 +36,9 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
                 options=dropdown_options,
                 value=dropdown_options[0]['value'],  # Set default value as the newest file generated
                 clearable=False,
-                style={'width': '50%'}
+                style={'width': '40%'}
             ),
-            dcc.RadioItems(language_options, 'All', id='language-filter', inline=True),
+            dcc.RadioItems(language_options, 'All', id='language-filter', inline=True, style={'width': '40%'}),
         ]
     ),
 
@@ -200,7 +200,7 @@ def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry, langu
     [Input('file-selector', 'value'),
      Input('language-filter', 'value')]
 )
-def update_report(selected_file: str, selected_language: str):
+def update_green_report(selected_file: str, selected_language: str):
     fetcher = GithubFetcher.from_generated_file(selected_file)
     return html.Div([
         dcc.Tabs([
@@ -230,4 +230,4 @@ def update_report(selected_file: str, selected_language: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8051, host='0.0.0.0')
+    app.run_server(debug=True, port=GREEN_REPORT_PORT, host='0.0.0.0')

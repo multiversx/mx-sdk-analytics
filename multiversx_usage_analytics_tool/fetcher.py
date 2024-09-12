@@ -6,14 +6,16 @@ from typing import Any, Dict, List
 from constants import DAYS_IN_WEEK, DEFAULT_DATE
 from utils import FormattedDate
 
-# in order to allow calculations of scores in future implementations, the score must be a dictionary of individual composite scores
-# the general score is calculated as a weighted means of composite scores, which in turn will be weighted means of individual scores.
-#
-# NPM: final_score = weightedMean([[quality, 6],[popularity, 7],[maintenance, 7]]);
-# NPM: quality = weightedMean([[carefulness, 7],[tests, 7],[health, 4],[branding, 2]]);
-# NPM: maintanance = weightedMean([[releasesFrequency, 2],[commitsFrequency, 1],[openIssues, 1],[issuesDistribution, 2]]);
-# NPM: popularity = weightedMean([[communityInterest, 2],[downloadsCount, 2],[downloadsAcceleration, 1],// [scores.dependentsCount, 2]]);
-# PYPI: health_score = weightedMean([[security, 6],[popularity, 6],[maintanance, 4],[community, 4]]);
+'''
+in order to allow calculations of scores in future implementations, the score must be a dictionary of individual composite scores
+the general score is calculated as a weighted means of composite scores, which in turn will be weighted means of individual scores.
+
+NPM: final_score = weightedMean([[quality, 6],[popularity, 7],[maintenance, 7]]);
+NPM: quality = weightedMean([[carefulness, 7],[tests, 7],[health, 4],[branding, 2]]);
+NPM: maintanance = weightedMean([[releasesFrequency, 2],[commitsFrequency, 1],[openIssues, 1],[issuesDistribution, 2]]);
+NPM: popularity = weightedMean([[communityInterest, 2],[downloadsCount, 2],[downloadsAcceleration, 1],// [scores.dependentsCount, 2]]);
+PYPI: health_score = weightedMean([[security, 6],[popularity, 6],[maintanance, 4],[community, 4]]);
+'''
 
 
 class Score:
@@ -106,15 +108,14 @@ class Package:
             f"avg_daily_{name}": avg_daily_downloads,
         }
 
-    @property
-    def DAILY_ACTIVITY_CLASS(self):
-        return DailyActivity
+    def get_daily_activity(self, item: Dict[str, Any]):
+        return DailyActivity.from_generated_file(item)
 
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'Package':
         result = cls()
         raw_downloads = response.get('downloads', [])
-        result.downloads = [result.DAILY_ACTIVITY_CLASS.from_generated_file(item) for item in raw_downloads]
+        result.downloads = [result.get_daily_activity(item) for item in raw_downloads]
         meta: Dict[str, Any] = response.get('metadata', '')
         result.package_name = meta.get('package_name', '')
         result.package_site = meta.get('section_name', '')
@@ -157,6 +158,9 @@ class Fetcher:
         report_name = Path(self.rep_folder) / f"{repo_type}{self.end_date}.json"
         report_name.write_text(json.dumps(self.to_dict(), indent=4))
 
+    def get_package(self, item: Dict[str, Any]) -> Package:
+        return Package.from_generated_file(item)
+
     @classmethod
     def from_generated_file(cls, file_name: str) -> 'Fetcher':
         with open(file_name, 'r') as file:
@@ -165,9 +169,5 @@ class Fetcher:
         meta: Dict[str, Any] = json_data.get('metadata')
         result.start_date = meta.get('start_date', '')
         result.end_date = meta.get('end_date', '')
-        result.packages = [result.PACKAGE_CLASS.from_generated_file(item) for item in json_data.get('records', [])]
+        result.packages = [result.get_package(item) for item in json_data.get('records', [])]
         return result
-
-    @property
-    def PACKAGE_CLASS(self):
-        return Package      # Overwritten in inherited classes

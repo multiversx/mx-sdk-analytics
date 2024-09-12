@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import List
 
 from constants import DATE_FORMAT
 
@@ -19,6 +20,7 @@ class Language(Enum):
     PHP = ('PHP', ['php'])
     JAVA = ('Java', ['java'])
     KOTLIN = ('Kotlin', ['kotlin'])
+    UNKNOWN = ('Unknown', ['unknown'])
 
     def __init__(self, lang_name: str, suffixes: list[str]):
         self.lang_name = lang_name
@@ -31,7 +33,7 @@ class PackagesRegistry(Enum):
     PYPI = ('pypi', [Language.PYTHON], [Reports.BLUE])
     GITHUB = ('github', [Language.JAVASCRIPT, Language.PYTHON, Language.RUST], [Reports.GREEN])
 
-    def __init__(self, repo_name: str, languages: list[Language], reports: list[Reports]):
+    def __init__(self, repo_name: str, languages: List[Language], reports: List[Reports]):
         self.repo_name = repo_name
         self.languages = languages
         self.reports = reports

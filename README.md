@@ -12,6 +12,7 @@ Create a virtual environment and install the dependencies:
 python3 -m venv ./venv
 source ./venv/bin/activate
 pip install -r ./requirements.txt --upgrade
+export PYTHONPATH=.
 ```
 ## INSTALL DEVELOPMENT DEPENDENCIES
 
@@ -24,24 +25,24 @@ pip install -r ./requirements-dev.txt --upgrade
 ### GATHER-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
 - fetch data for 1 month for package managers and two weeks for Github, until 1 day before current date
    ```
-    python gather_repository_data.py
+    python ./multiversx_usage_analytics_tool/gather_repository_data.py
    ```
 - fetches data for 1 month for package managers and two weeks for Github, until Sunday of week {week_number}
    ```
-    python gather_data.py --week={week_number}
+    python ./multiversx_usage_analytics_tool/gather_data.py --week={week_number}
    ```
 - fetches data for 1 month for package managers and two weeks for Github, until {date_string}
    ```
-    python gather_data.py --date={date_string}
+    python ./multiversx_usage_analytics_tool/gather_data.py --date={date_string}
    ```
 - shows argument options
    ```
-    python gather_data --help
+    python ./multiversx_usage_analytics_tool/gather_data --help
    ```
 
 ### BLUE-REPORT - script that renders the visual report for package usage. Report available at port 8050
 ```
-   python blue_report.py
+   python ./multiversx_usage_analytics_tool/blue_report.py
 ```
 
  - renders the blue report from the most recent json file generated through gathering.
@@ -50,7 +51,7 @@ pip install -r ./requirements-dev.txt --upgrade
 
 ### GREEN-REPORT - script that renders the visual report for GITHUB repository usage. Report available at port 8051
 ```
-   python green_report.py
+   python ./multiversx_usage_analytics_tool/green_report.py
 ```
 
  - renders the green report from the most recent json file generated through gathering.

@@ -1,13 +1,13 @@
 import os
+from http import HTTPStatus
 from typing import Any, Dict, List
 
 import requests
-from tqdm import tqdm
-
 from constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE,
                        GITHUB_ORGANIZATION, GITHUB_PAGE_SIZE,
                        GITHUB_SEARCH_PREFIX)
 from fetcher import DailyActivity, Fetcher, Package, Score
+from tqdm import tqdm
 from utils import FormattedDate, Language, PackagesRegistry, Reports
 
 
@@ -70,12 +70,15 @@ class GithubPackage(Package):
         summary.update(temp_summary)
         return summary
 
-    def analyse_package(self):
+    def analyse_package(self) -> str:
         main_negatives = ', '.join(f"{key} = 0" for key, value in self.main_page_statistics.items()
                                    if value == 0 and "has" in key)
         score_negatives = ', '.join(f"{key} = {value}" for key, value in self.site_score.details.items()
                                     if "has" in key and int(value) == 0)
         return main_negatives + (', ' if main_negatives else '') + score_negatives
+
+    def get_daily_activity(self, item: Dict[str, Any]) -> GithubDailyActivity:         # override
+        return GithubDailyActivity.from_generated_file(item)
 
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackage':
@@ -94,13 +97,9 @@ class GithubPackage(Package):
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubPackage':
         result = super().from_generated_file(response)
-        result.views = [GithubDailyActivity.from_generated_file(item) for item in response.get('views', [])]
+        result.views = [result.get_daily_activity(item) for item in response.get('views', [])]
         result.main_page_statistics = response.get('metadata', {}).get('main_page_statistics', {})
         return result
-
-    @property
-    def DAILY_ACTIVITY_CLASS(self):
-        return GithubDailyActivity
 
 
 class GithubFetcher(Fetcher):
@@ -108,30 +107,34 @@ class GithubFetcher(Fetcher):
         super().__init__()
         self.forbidden_traffic_access_packages = []
 
-    def write_report(self):
+    def write_report(self) -> None:
         super().write_report("rep")
 
-    def write_json(self):
+    def write_json(self) -> None:
         super().write_json(repo_type=Reports.GREEN.value)
+
+    def get_package(self, item: Dict[str, Any]) -> GithubPackage:
+        return GithubPackage.from_generated_file(item)
+
+    def build_package_main_page_score(self, item: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            'language': item.get('language', ''),
+            'stargazers_count': item.get('stargazers_count', 0),
+            'forks_count': item.get('forks_count', 0),
+            'watchers_count': item.get('watchers_count', 0),
+            'has_issues': item.get('has_issues', 0),
+            'has_projects': item.get('has_projects', 0),
+            'has_downloads': item.get('has_downloads', 0),
+            'has_wiki': item.get('has_wiki', 0),
+            'has_pages': item.get('has_pages', 0),
+            'has_discussions': item.get('has_discussions', 0),
+        }
 
     def _get_github_authorization_header(self) -> Dict[str, Any]:
         bearer_token = os.environ.get("MX_GITHUB_TOKEN")
         return {"Authorization": f"Bearer {bearer_token}"}
 
     def get_github_package_names(self, pattern: str) -> Dict[str, Any]:        # github api - query search result
-        def build_package_main_page_score(item: Dict[str, Any]) -> Dict[str, Any]:
-            return {
-                'language': item.get('language', ''),
-                'stargazers_count': item.get('stargazers_count', 0),
-                'forks_count': item.get('forks_count', 0),
-                'watchers_count': item.get('watchers_count', 0),
-                'has_issues': item.get('has_issues', 0),
-                'has_projects': item.get('has_projects', 0),
-                'has_downloads': item.get('has_downloads', 0),
-                'has_wiki': item.get('has_wiki', 0),
-                'has_pages': item.get('has_pages', 0),
-                'has_discussions': item.get('has_discussions', 0),
-            }
         page = 0
         size = GITHUB_PAGE_SIZE
         owner = GITHUB_ORGANIZATION
@@ -145,27 +148,29 @@ class GithubFetcher(Fetcher):
             package_info = data.get('items', [])
 
             # also gets main page scores in the form "{package_name}": {package_score}
-            scores_dict.update({item.get('name'): build_package_main_page_score(item) for item in package_info})
+            scores_dict.update({item.get('name'): self.build_package_main_page_score(item) for item in package_info})
             if len(data['items']) < size:
                 break
             page += 1
         return scores_dict
 
-    def fetch_github_downloads(self, package_name: str):
+    def fetch_github_downloads(self, package_name: str) -> Dict[str, Any]:
         owner = GITHUB_ORGANIZATION
         url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/clones"
         response = requests.get(url, headers=self._get_github_authorization_header())
-        if response.status_code == 403:
+
+        if response.status_code == HTTPStatus.FORBIDDEN:
             self.forbidden_traffic_access_packages.append(package_name)
         else:
             response.raise_for_status()
         return response.json()
 
-    def fetch_github_visits(self, package_name: str):
+    def fetch_github_visits(self, package_name: str) -> Dict[str, Any]:
         owner = GITHUB_ORGANIZATION
         url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/views"
         response = requests.get(url, headers=self._get_github_authorization_header())
-        if response.status_code == 403:
+
+        if response.status_code == HTTPStatus.FORBIDDEN:
             pass    # already logged from downloads
         else:
             response.raise_for_status()
@@ -196,11 +201,12 @@ class GithubFetcher(Fetcher):
 
     def github_package_language(self, package_name: str, language: str) -> Language:
         packet_language = next((lang for lang in Language if any("-" + suffix in package_name for suffix in lang.suffixes)), None)
+
         if not packet_language:
-            if language == 'Typescript':
+            if language == 'TypeScript':
                 return Language.JAVASCRIPT
             else:
-                return next((lang for lang in Language if language and language.lower() == lang.lang_name.lower()), Language.JAVASCRIPT)
+                return next((lang for lang in Language if language and language.lower() == lang.lang_name.lower()), Language.UNKNOWN)
         else:
             return packet_language
 
@@ -212,6 +218,7 @@ class GithubFetcher(Fetcher):
 
         print("fetching from github ...")
         packages = result.get_github_package_names(GITHUB_SEARCH_PREFIX)
+
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages.keys():
                 fetched_downloads = result.fetch_github_downloads(package_name)
@@ -225,12 +232,9 @@ class GithubFetcher(Fetcher):
                 package_downloads.site_score = Score.from_dict(result.fetch_github_package_community_score(package_name))
                 result.packages.append(package_downloads)
                 pbar.update(1)
+
         if result.forbidden_traffic_access_packages:
             print("Packages that didn't allow access to traffic information: ")
             for package_name in result.forbidden_traffic_access_packages:
                 print(package_name)
         return result
-
-    @property
-    def PACKAGE_CLASS(self):
-        return GithubPackage

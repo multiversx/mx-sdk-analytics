@@ -1,32 +1,9 @@
 import argparse
 
 from dotenv.main import load_dotenv
-
 from github_fetcher import GithubFetcher
 from package_managers_fetcher import PackageManagersFetcher
 from utils import FormattedDate
-
-
-def validate_date(date_str: str):
-    try:
-        result_date = FormattedDate.from_string(date_str)
-        if result_date > FormattedDate.now():
-            raise ValueError()
-        return date_str
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"Not a valid date: '{date_str}'. Expected date before {FormattedDate.now()}, format: YYYY-mm-dd.")
-
-
-def validate_week(week_str: str):
-    week_no = int(week_str)
-    try:
-        result_date = FormattedDate.from_week(week_no)
-        if result_date > FormattedDate.now():
-            raise ValueError()
-        return week_no
-    except ValueError:
-        max_week_no = FormattedDate.now().isocalendar().week - 1
-        raise argparse.ArgumentTypeError(f"Not a valid week number: '{week_no}'. Expected number between 0 and {max_week_no}")
 
 
 def main():
@@ -63,6 +40,28 @@ def main():
 
     git_fetcher = GithubFetcher.from_package_sites(str(end_date))
     git_fetcher.write_json()
+
+
+def validate_date(date_str: str):
+    try:
+        result_date = FormattedDate.from_string(date_str)
+        if result_date > FormattedDate.now():
+            raise ValueError()
+        return date_str
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Not a valid date: '{date_str}'. Expected date before {FormattedDate.now()}, format: YYYY-mm-dd.")
+
+
+def validate_week(week_str: str):
+    week_no = int(week_str)
+    try:
+        result_date = FormattedDate.from_week(week_no)
+        if result_date > FormattedDate.now():
+            raise ValueError()
+        return week_no
+    except ValueError:
+        max_week_no = FormattedDate.now().isocalendar().week - 1
+        raise argparse.ArgumentTypeError(f"Not a valid week number: '{week_no}'. Expected number between 0 and {max_week_no}")
 
 
 if __name__ == "__main__":
