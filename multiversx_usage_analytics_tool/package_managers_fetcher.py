@@ -1,6 +1,6 @@
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -84,12 +84,12 @@ class PackageManagersPackage(Package):
 
         for elem in raw_downloads:
             new_download_data = PackageManagersDailyActivity.from_crates_fetched_data(elem)
-            add_or_update_downloads(result.downloads, new_download_data)
+            add_or_update_downloads(result.downloads, new_download_data)  # type: ignore
         raw_downloads = response.get('meta', {}).get('extra_downloads', [])
 
         for elem in raw_downloads:
             new_download_data = PackageManagersDailyActivity.from_crates_fetched_data(elem)
-            add_or_update_downloads(result.downloads, new_download_data)
+            add_or_update_downloads(result.downloads, new_download_data)  # type: ignore
 
         result.package_language = lang
         result.package_name = package
@@ -111,7 +111,7 @@ class PackageManagersPackage(Package):
 
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'PackageManagersPackage':
-        result = super().from_generated_file(response)
+        result = cast(PackageManagersPackage, super().from_generated_file(response))
         result.libraries_io_score = response.get('metadata', {}).get('libraries_io_score', {})
         return result
 
@@ -120,11 +120,11 @@ class PackageManagersFetcher(Fetcher):
     def __init__(self) -> None:
         super().__init__()
 
-    def write_report(self):
-        super().write_report("rep")
+    def write_report(self, repo_name: str = 'rep'):
+        return super().write_report(repo_name)
 
-    def write_json(self):
-        super().write_json(repo_type=Reports.BLUE.value)
+    def write_json(self, repo_type=Reports.BLUE.value):
+        super().write_json(repo_type)
 
     def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
         libraries_io_api_key = os.environ.get('LIBRARIES_IO_API_KEY')
@@ -221,11 +221,11 @@ class PackageManagersFetcher(Fetcher):
             for title_tag in title_tags:
                 title_text = title_tag.text
                 if 'package health:' in title_text.lower():
-                    health_score: int = title_text.split(':')[-1].split('/')[0].strip()
+                    health_score: int = title_text.split(':')[-1].split('/')[0].strip()  # type: ignore
                     score_details['final'] = int(health_score) / 100
             score_details['detail'] = {}
             scores_list = soup.find('ul', class_='scores')
-            for li in scores_list.find_all('li'):
+            for li in scores_list.find_all('li'):  # type: ignore
                 category = li.find('span').text.strip()
                 status = li.find('span', class_='vue--pill__body').text.strip()
                 score_details['detail'][category] = status

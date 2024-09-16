@@ -1,8 +1,12 @@
 import argparse
+import json
+import os
+from pathlib import Path
 
 from dotenv.main import load_dotenv
+from ecosystem import Organizations
 from github_fetcher import GithubFetcher
-from package_managers_fetcher import PackageManagersFetcher
+# from package_managers_fetcher import PackageManagersFetcher
 from utils import FormattedDate
 
 
@@ -35,11 +39,19 @@ def main():
 
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
-    pm_fetcher = PackageManagersFetcher.from_package_sites(str(end_date))
-    pm_fetcher.write_json()
+    # pm_fetcher = PackageManagersFetcher.from_package_sites(str(end_date))
+    # pm_fetcher.write_json()
 
-    git_fetcher = GithubFetcher.from_package_sites(str(end_date))
-    git_fetcher.write_json()
+    rep_folder = os.environ.get("JSON_FOLDER")
+    dict_to_write = {}
+    for org in Organizations:
+        print(org.name)
+        git_fetcher = GithubFetcher.from_package_sites(org.value, str(end_date))
+        dict_to_write[org.name] = git_fetcher.to_dict()
+    # print(json.dumps(dict_to_write, indent=4))
+    print("writting json ...")
+    report_name = Path(rep_folder) / f"green{end_date}.json"  # type: ignore
+    report_name.write_text(json.dumps(dict_to_write, indent=4))
 
 
 def validate_date(date_str: str):

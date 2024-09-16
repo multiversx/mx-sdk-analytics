@@ -8,13 +8,17 @@ from constants import GREEN_REPORT_PORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 from github_fetcher import GithubFetcher, GithubPackage
-from utils import FormattedDate, Language, PackagesRegistry, Reports
+from utils import FormattedDate, Language, PackagesRegistry
+
+from multiversx_usage_analytics_tool.ecosystem import Organizations
 
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6ffe6'
 directory = os.environ.get('JSON_FOLDER')
+if directory is None:
+    raise ValueError("The 'JSON_FOLDER' environment variable is not set.")
 
 json_files = sorted(Path(directory).glob('green*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
@@ -87,7 +91,7 @@ def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: st
     table_header = [header_row]
     table_rows = []
     packages: list[GithubPackage] = [item for item in fetcher.packages
-                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]  # type: ignore
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
         package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
@@ -121,7 +125,7 @@ def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: st
 def create_package_info_box(fetcher: GithubFetcher, section: PackagesRegistry, language: str):
     info_boxes = []
     packages: list[GithubPackage] = [item for item in fetcher.packages
-                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]  # type: ignore
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
@@ -137,7 +141,7 @@ def create_package_info_box(fetcher: GithubFetcher, section: PackagesRegistry, l
 
 def create_downloads_graph(fetcher: GithubFetcher, section: PackagesRegistry, language: str) -> Dict[str, Any]:
     packages: List[GithubPackage] = [item for item in fetcher.packages
-                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]  # type: ignore
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
@@ -167,7 +171,7 @@ def create_downloads_graph(fetcher: GithubFetcher, section: PackagesRegistry, la
 
 def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry, language: str) -> Dict[str, Any]:
     packages: list[GithubPackage] = [item for item in fetcher.packages
-                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]
+                                     if item.package_site == section.repo_name and (language == 'All' or language == item.package_language)]  # type: ignore
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     views_dict = {p.package_name: {d.date: d.downloads for d in p.views} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
@@ -201,30 +205,31 @@ def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry, langu
      Input('language-filter', 'value')]
 )
 def update_green_report(selected_file: str, selected_language: str):
-    fetcher = GithubFetcher.from_generated_file(selected_file)
+    fetchers = {org: GithubFetcher.from_generated_file(selected_file, org.value) for org in Organizations}
+    repo = PackagesRegistry.GITHUB
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
+            dcc.Tab(label=org.value.name, id="repo.repo_name", children=[
                 html.H1(f"{repo.name} Repositories Downloads"),
                 html.H2('Two Weeks Download Data Table'),
-                create_table(fetcher, repo, selected_language),
+                create_table(fetchers[org], repo, selected_language),  # type: ignore
                 html.H2('Clones & Visits Trends'),
                 html.Div([
                     dcc.Graph(
                         id='downloads-graph',
-                        figure=create_downloads_graph(fetcher, repo, selected_language)
+                        figure=create_downloads_graph(fetchers[org], repo, selected_language)  # type: ignore
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.Div([
                     dcc.Graph(
                         id='visits-graph',
-                        figure=create_visits_graph(fetcher, repo, selected_language)
+                        figure=create_visits_graph(fetchers[org], repo, selected_language)  # type: ignore
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.H2('Health score warnings'),
-                create_package_info_box(fetcher, repo, selected_language)
+                create_package_info_box(fetchers[org], repo, selected_language)  # type: ignore
             ])
-            for repo in [item for item in PackagesRegistry if Reports.GREEN in item.reports]
+            for org in Organizations
         ])
     ])
 

@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List
 
 from constants import DATE_FORMAT
 
@@ -28,14 +27,15 @@ class Language(Enum):
 
 
 class PackagesRegistry(Enum):
-    NPM = ('npmjs', [Language.JAVASCRIPT], [Reports.BLUE])
-    CARGO = ('crates.io', [Language.RUST], [Reports.BLUE])
-    PYPI = ('pypi', [Language.PYTHON], [Reports.BLUE])
-    GITHUB = ('github', [Language.JAVASCRIPT, Language.PYTHON, Language.RUST], [Reports.GREEN])
+    NPM = ('npmjs', '', '', [Reports.BLUE])
+    CARGO = ('crates.io', '', '', [Reports.BLUE])
+    PYPI = ('pypi', '', '', [Reports.BLUE])
+    GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN])
 
-    def __init__(self, repo_name: str, languages: List[Language], reports: List[Reports]):
+    def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Reports]):
         self.repo_name = repo_name
-        self.languages = languages
+        self.search_url = search_url
+        self.downloads_url = downloads_url
         self.reports = reports
 
 
@@ -51,18 +51,18 @@ class FormattedDate(datetime):
     def __str__(self):
         return self.strftime(DATE_FORMAT)
 
-    def __add__(self, added_days: int) -> 'FormattedDate':
+    def __add__(self, added_days: int) -> 'FormattedDate':  # type: ignore
         result_date = datetime(self.year, self.month, self.day) + timedelta(added_days)
         return FormattedDate(result_date.year, result_date.month, result_date.day)
 
-    def __sub__(self, substracted_days: int) -> 'FormattedDate':
+    def __sub__(self, substracted_days: int) -> 'FormattedDate':  # type: ignore
         result_date = datetime(self.year, self.month, self.day) - timedelta(substracted_days)
         return FormattedDate(result_date.year, result_date.month, result_date.day)
 
-    def __lt__(self, a_date: 'FormattedDate') -> bool:
+    def __lt__(self, a_date: 'FormattedDate') -> bool:  # type: ignore
         return super().__lt__(a_date)
 
-    def __gt__(self, a_date: 'FormattedDate') -> bool:
+    def __gt__(self, a_date: 'FormattedDate') -> bool:  # type: ignore
         return super().__gt__(a_date)
 
     def get_week_and_day_string(self) -> str:

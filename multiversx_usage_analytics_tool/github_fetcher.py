@@ -1,14 +1,15 @@
 import os
 from http import HTTPStatus
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 import requests
-from constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE,
-                       GITHUB_ORGANIZATION, GITHUB_PAGE_SIZE,
-                       GITHUB_SEARCH_PREFIX)
+from constants import DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE, GITHUB_PAGE_SIZE
+from ecosystem import Organization, Organizations
 from fetcher import DailyActivity, Fetcher, Package, Score
 from tqdm import tqdm
-from utils import FormattedDate, Language, PackagesRegistry, Reports
+
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+                                                   PackagesRegistry, Reports)
 
 
 class GithubDailyActivity(DailyActivity):
@@ -36,7 +37,7 @@ class GithubDailyActivity(DailyActivity):
 
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubDailyActivity':
-        result = super().from_generated_file(response)
+        result = cast(GithubDailyActivity, super().from_generated_file(response))
         result.uniques = response.get('uniques', 0)
         return result
 
@@ -58,11 +59,11 @@ class GithubPackage(Package):
         # clones - count, score etc.
         summary: Dict[str, Any] = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
         # clones - uniques
-        temp_list = [DailyActivity(item.date, item.uniques) for item in self.downloads]
+        temp_list = [DailyActivity(item.date, item.uniques) for item in self.downloads]  # type: ignore
         temp_summary = self.calculate_activity_statistics('downloaders', temp_list, end_date, report_duration)
         summary.update(temp_summary)
         # visits - count
-        temp_summary = self.calculate_activity_statistics('visits', self.views, end_date, report_duration)
+        temp_summary = self.calculate_activity_statistics('visits', self.views, end_date, report_duration)  # type: ignore
         summary.update(temp_summary)
         # visits - uniques
         temp_list = [DailyActivity(item.date, item.uniques) for item in self.views]
@@ -83,8 +84,8 @@ class GithubPackage(Package):
     @staticmethod
     def from_github_fetched_data(package: str, lang: str, response: Dict[str, Any]) -> 'GithubPackage':
         result = GithubPackage()
-        raw_downloads = response.get('downloads').get('clones', [])
-        raw_views = response.get('visits').get('views', [])
+        raw_downloads = response.get('downloads', {}).get('clones', [])
+        raw_views = response.get('visits', {}).get('views', [])
         result.downloads = [GithubDailyActivity.from_github_fetched_data(item) for item in raw_downloads]
         result.views = [GithubDailyActivity.from_github_fetched_data(item) for item in raw_views]
         result.package_name = response.get('package', package)
@@ -96,7 +97,7 @@ class GithubPackage(Package):
 
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubPackage':
-        result = super().from_generated_file(response)
+        result = cast(GithubPackage, super().from_generated_file(response))
         result.views = [result.get_daily_activity(item) for item in response.get('views', [])]
         result.main_page_statistics = response.get('metadata', {}).get('main_page_statistics', {})
         return result
@@ -107,11 +108,11 @@ class GithubFetcher(Fetcher):
         super().__init__()
         self.forbidden_traffic_access_packages = []
 
-    def write_report(self) -> None:
-        super().write_report("rep")
+    def write_report(self, repo_name: str = 'rep'):
+        return super().write_report(repo_name)
 
-    def write_json(self) -> None:
-        super().write_json(repo_type=Reports.GREEN.value)
+    def write_json(self, repo_type=Reports.GREEN.value) -> None:
+        super().write_json(repo_type)
 
     def get_package(self, item: Dict[str, Any]) -> GithubPackage:
         return GithubPackage.from_generated_file(item)
@@ -134,14 +135,15 @@ class GithubFetcher(Fetcher):
         bearer_token = os.environ.get("MX_GITHUB_TOKEN")
         return {"Authorization": f"Bearer {bearer_token}"}
 
-    def get_github_package_names(self, pattern: str) -> Dict[str, Any]:        # github api - query search result
+    def get_github_package_names(self) -> Dict[str, Any]:        # github api - query search result
         page = 0
         size = GITHUB_PAGE_SIZE
-        owner = GITHUB_ORGANIZATION
+        # owner = self.organization.github_name
+        # pattern = self.organization.search_includes[PackagesRegistry.GITHUB]
         scores_dict = {}
 
         while True:
-            url = f"https://api.github.com/search/repositories?q={pattern}+in:name+user:{owner}&per_page={size}&page={page}&sort=stars&order=desc"
+            url = self.organization.get_search_url_string(PackagesRegistry.GITHUB, page)
             response = requests.get(url, headers=self._get_github_authorization_header())
             response.raise_for_status()
             data = response.json()
@@ -155,8 +157,7 @@ class GithubFetcher(Fetcher):
         return scores_dict
 
     def fetch_github_downloads(self, package_name: str) -> Dict[str, Any]:
-        owner = GITHUB_ORGANIZATION
-        url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/clones"
+        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB)}/{package_name}/traffic/clones'
         response = requests.get(url, headers=self._get_github_authorization_header())
 
         if response.status_code == HTTPStatus.FORBIDDEN:
@@ -166,8 +167,7 @@ class GithubFetcher(Fetcher):
         return response.json()
 
     def fetch_github_visits(self, package_name: str) -> Dict[str, Any]:
-        owner = GITHUB_ORGANIZATION
-        url = f"https://api.github.com/repos/{owner}/{package_name}/traffic/views"
+        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB)}/{package_name}/traffic/views'
         response = requests.get(url, headers=self._get_github_authorization_header())
 
         if response.status_code == HTTPStatus.FORBIDDEN:
@@ -178,7 +178,7 @@ class GithubFetcher(Fetcher):
 
     def fetch_github_package_community_score(self, package_name: str) -> Dict[str, Any]:
         score = {}
-        owner = GITHUB_ORGANIZATION
+        owner = self.organization.github_name
         url = f"https://api.github.com/repos/{owner}/{package_name}/community/profile"
         response = requests.get(url, headers=self._get_github_authorization_header())
         response.raise_for_status()
@@ -211,18 +211,21 @@ class GithubFetcher(Fetcher):
             return packet_language
 
     @staticmethod
-    def from_package_sites(end_date: str) -> 'GithubFetcher':
+    def from_package_sites(organization: Organization, end_date: str) -> 'GithubFetcher':
         result = GithubFetcher()
         result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_TWO_WEEKS_REPORT + 1)
         result.end_date = end_date
+        result.organization = organization
 
         print("fetching from github ...")
-        packages = result.get_github_package_names(GITHUB_SEARCH_PREFIX)
+        packages = result.get_github_package_names()
 
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages.keys():
-                fetched_downloads = result.fetch_github_downloads(package_name)
-                fetched_visits = result.fetch_github_visits(package_name)
+                # print(package_name, 'mx' if organization.name == Organizations.MULTIVERSX.value.name else 'not mx')
+                # print(f'{package_name}, {type(organization)}, {type(Organizations.MULTIVERSX.value)}')
+                fetched_downloads = result.fetch_github_downloads(package_name) if organization == Organizations.MULTIVERSX.value else {}
+                fetched_visits = result.fetch_github_visits(package_name) if organization == Organizations.MULTIVERSX.value else {}
                 fetched = {"downloads": fetched_downloads, "visits": fetched_visits}
                 packet_language = result.github_package_language(package_name, packages[package_name]['language'])
 
@@ -233,7 +236,7 @@ class GithubFetcher(Fetcher):
                 result.packages.append(package_downloads)
                 pbar.update(1)
 
-        if result.forbidden_traffic_access_packages:
+        if organization.github_name == 'Multiversx' and result.forbidden_traffic_access_packages:
             print("Packages that didn't allow access to traffic information: ")
             for package_name in result.forbidden_traffic_access_packages:
                 print(package_name)

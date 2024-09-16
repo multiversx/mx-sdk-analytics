@@ -15,6 +15,8 @@ load_dotenv()
 app = dash.Dash(__name__)
 background_color = '#e6f7ff'
 directory = os.environ.get('JSON_FOLDER')
+if directory is None:
+    raise ValueError("The 'JSON_FOLDER' environment variable is not set.")
 
 json_files = sorted(Path(directory).glob('blue*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
@@ -59,7 +61,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
 
     table_header = [html.Tr(header_row)]
     table_rows = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]  # type: ignore
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
         package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
@@ -82,7 +84,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
 
 def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRegistry):
     info_boxes = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]  # type: ignore
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
@@ -97,7 +99,7 @@ def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRe
 
 
 def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> Dict[str, Any]:
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]  # type: ignore
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
@@ -136,15 +138,15 @@ def update_blue_report(selected_file: str):
             dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
                 html.H1(f"{repo.name} Package Downloads"),
                 html.H2('Download Data Table'),
-                create_table(fetcher, repo),
+                create_table(fetcher, repo),  # type: ignore
 
                 html.H2('Download Trends'),
                 dcc.Graph(
                     id='downloads-graph',
-                    figure=create_graph(fetcher, repo)
+                    figure=create_graph(fetcher, repo)  # type: ignore
                 ),
                 html.H2('Libraries.io warnings'),
-                create_package_info_box(fetcher, repo)
+                create_package_info_box(fetcher, repo)  # type: ignore
             ])
             for repo in PackagesRegistry if Reports.BLUE in repo.reports
         ])

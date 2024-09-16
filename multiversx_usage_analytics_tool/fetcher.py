@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from constants import DAYS_IN_WEEK, DEFAULT_DATE
+from ecosystem import Organization
 from utils import FormattedDate
 
 '''
@@ -131,6 +132,7 @@ class Fetcher:
         self.end_date = ''
         self.packages: List[Package] = []
         self.rep_folder = os.environ.get("JSON_FOLDER")
+        self.organization = Organization()
 
     def __str__(self):
         print_str = f"DOWNLOADS REPORT ({self.start_date} - {self.end_date})\n\n"
@@ -141,7 +143,7 @@ class Fetcher:
     def to_dict(self) -> Dict[str, Any]:
         return {
             'metadata': {
-                'report_type': 'blue',
+                'organization': self.organization.name,
                 'start_date': self.start_date,
                 'end_date': self.end_date,
             },
@@ -150,24 +152,26 @@ class Fetcher:
 
     def write_report(self, repo_name: str = 'log'):
         print("writting report ...")
-        report_name = Path(self.rep_folder) / f"{repo_name}{self.end_date}.txt"
+        report_name = Path(self.rep_folder) / f"{repo_name}{self.end_date}.txt"  # type: ignore
         report_name.write_text(str(self))
 
     def write_json(self, repo_type: str):
         print("writting json ...")
-        report_name = Path(self.rep_folder) / f"{repo_type}{self.end_date}.json"
+        report_name = Path(self.rep_folder) / f"{repo_type}{self.end_date}.json"  # type: ignore
         report_name.write_text(json.dumps(self.to_dict(), indent=4))
 
     def get_package(self, item: Dict[str, Any]) -> Package:
         return Package.from_generated_file(item)
 
     @classmethod
-    def from_generated_file(cls, file_name: str) -> 'Fetcher':
+    def from_generated_file(cls, file_name: str, organization: Organization) -> 'Fetcher':
         with open(file_name, 'r') as file:
             json_data: Dict[str, Any] = json.load(file)
         result = cls()
-        meta: Dict[str, Any] = json_data.get('metadata')
+        organization_data: Dict[str, Any] = json_data.get(organization.name.upper(), {})
+
+        meta: Dict[str, Any] = organization_data.get('metadata', {})
         result.start_date = meta.get('start_date', '')
         result.end_date = meta.get('end_date', '')
-        result.packages = [result.get_package(item) for item in json_data.get('records', [])]
+        result.packages = [result.get_package(item) for item in organization_data.get('records', [])]
         return result
