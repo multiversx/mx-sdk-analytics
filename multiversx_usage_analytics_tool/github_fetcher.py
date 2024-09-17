@@ -130,6 +130,7 @@ class GithubFetcher(Fetcher):
             'has_wiki': item.get('has_wiki', 0),
             'has_pages': item.get('has_pages', 0),
             'has_discussions': item.get('has_discussions', 0),
+            'is_forked': item.get('fork', False)
         }
 
     def _get_github_authorization_header(self) -> Dict[str, Any]:
@@ -149,7 +150,7 @@ class GithubFetcher(Fetcher):
             package_info = data.get('items', [])
 
             # also gets main page scores in the form "{package_name}": {package_score}
-            scores_dict.update({item.get('name'): self.build_package_main_page_score(item) for item in package_info})
+            scores_dict.update({item.get('full_name'): self.build_package_main_page_score(item) for item in package_info})
             if len(data['items']) < size:
                 break
             page += 1
@@ -177,10 +178,12 @@ class GithubFetcher(Fetcher):
 
     def fetch_github_package_community_score(self, package_name: str) -> Dict[str, Any]:
         score = {}
-        owner = self.organization.github_name
-        url = f"https://api.github.com/repos/{owner}/{package_name}/community/profile"
+        url = f"https://api.github.com/repos/{package_name}/community/profile"
         response = requests.get(url, headers=self._get_github_authorization_header())
-        response.raise_for_status()
+        if response.status_code == HTTPStatus.NOT_FOUND:
+            print(f'{package_name} - community_profile not found')
+        else:
+            response.raise_for_status()
         data = response.json()
 
         health_score: int = data.get('health_percentage', 0)
@@ -230,7 +233,8 @@ class GithubFetcher(Fetcher):
                 package_downloads = GithubPackage.from_github_fetched_data(
                     package_name, packet_language.lang_name, fetched)
                 package_downloads.main_page_statistics = packages[package_name]
-                package_downloads.site_score = Score.from_dict(result.fetch_github_package_community_score(package_name))
+                if not package_downloads.main_page_statistics['is_forked']:
+                    package_downloads.site_score = Score.from_dict(result.fetch_github_package_community_score(package_name))
                 result.packages.append(package_downloads)
                 pbar.update(1)
 

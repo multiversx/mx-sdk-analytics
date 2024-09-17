@@ -20,6 +20,12 @@ export PYTHONPATH=.
 pip install -r ./requirements-dev.txt --upgrade
 ```
 
+## CONFIGURATION
+### CONSTANTS.PY
+- GITHUB_OWN_ORGANIZATION - the organization to which the Github token belongs to, which allows for traffic data to be obtained
+
+### ECOSYSTEM.PY
+- Enables adding or removing organizations to/from the reports as well as filtering repositories
 
 ## RUN
 ### GATHER-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
@@ -56,4 +62,5 @@ pip install -r ./requirements-dev.txt --upgrade
 
  - renders the green report from the most recent json file generated through gathering.
  - the file rendered can be changed from a drop-down menu inside the report
+ - different organizations can be accesssed through tabs in the report
  - language based filtering is possible through a menu in the upper part of the report page

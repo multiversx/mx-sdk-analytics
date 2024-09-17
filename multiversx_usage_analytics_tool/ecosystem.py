@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict
+from typing import Dict, List
 
 from multiversx_usage_analytics_tool.constants import GITHUB_PAGE_SIZE
 from multiversx_usage_analytics_tool.utils import PackagesRegistry
@@ -7,11 +7,14 @@ from multiversx_usage_analytics_tool.utils import PackagesRegistry
 
 class Organization:
     def __init__(self, name: str = '', search_includes: Dict[PackagesRegistry, str] = {},
-                 search_excludes: Dict[PackagesRegistry, str] = {}, github_organization: str = '') -> None:
+                 search_excludes: Dict[PackagesRegistry, str] = {},
+                 github_organization: str = '', affiliated_orgs: List[str] = []) -> None:
+
         self.name = name
         self.search_includes: Dict[PackagesRegistry, str] = search_includes
         self.search_excludes: Dict[PackagesRegistry, str] = search_excludes
         self.github_name = github_organization
+        self.affiliated_orgs = affiliated_orgs
 
     def __eq__(self, value: object) -> bool:
         if isinstance(value, Organization):
@@ -24,12 +27,13 @@ class Organization:
             exclude = self.search_excludes[site]
             owner = self.github_name
             size = GITHUB_PAGE_SIZE
-            return f'{site.search_url}?q={pattern}+in:name+user:{owner}+NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
+            affiliated_string = "+".join(f'user:{item}' for item in self.affiliated_orgs) + '+fork:true+' if self.affiliated_orgs else ''
+            return f'{site.search_url}?q={pattern}+in:name+user:{owner}+{affiliated_string}NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
         return ''
 
     def get_downloads_url_string(self, site: PackagesRegistry, package_name: str) -> str:
         if site == PackagesRegistry.GITHUB:
-            return f'{site.downloads_url}/{self.github_name}/{package_name}/traffic'
+            return f'{site.downloads_url}/{package_name}/traffic'
         return ''
 
 
@@ -58,7 +62,8 @@ class Organizations(Enum):
         search_excludes={
             PackagesRegistry.GITHUB: 'deprecated'
         },
-        github_organization='solana-labs'
+        github_organization='solana-labs',
+        affiliated_orgs=['anza-xyz']
     )
     NEAR = Organization(
         name='Near',
