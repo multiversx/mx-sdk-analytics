@@ -59,7 +59,7 @@ def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: st
             html.Th('Visits', colSpan=5),
             html.Th('No of Forks', rowSpan=3),
             html.Th('No of Stars', rowSpan=3),
-            html.Th('No of Watchers', rowSpan=3),
+            html.Th('Watchers', rowSpan=3),
             html.Th('Site score', rowSpan=3),
         ]),
         html.Tr([

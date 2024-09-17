@@ -48,7 +48,6 @@ def main():
         print(org.name)
         git_fetcher = GithubFetcher.from_package_sites(org.value, str(end_date))
         dict_to_write[org.name] = git_fetcher.to_dict()
-    # print(json.dumps(dict_to_write, indent=4))
     print("writting json ...")
     report_name = Path(rep_folder) / f"green{end_date}.json"  # type: ignore
     report_name.write_text(json.dumps(dict_to_write, indent=4))

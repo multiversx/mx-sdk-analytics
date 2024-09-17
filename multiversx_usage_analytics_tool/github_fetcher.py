@@ -3,7 +3,8 @@ from http import HTTPStatus
 from typing import Any, Dict, List, cast
 
 import requests
-from constants import DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE, GITHUB_PAGE_SIZE
+from constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE,
+                       GITHUB_OWN_ORGANIZATION, GITHUB_PAGE_SIZE)
 from ecosystem import Organization, Organizations
 from fetcher import DailyActivity, Fetcher, Package, Score
 from tqdm import tqdm
@@ -138,8 +139,6 @@ class GithubFetcher(Fetcher):
     def get_github_package_names(self) -> Dict[str, Any]:        # github api - query search result
         page = 0
         size = GITHUB_PAGE_SIZE
-        # owner = self.organization.github_name
-        # pattern = self.organization.search_includes[PackagesRegistry.GITHUB]
         scores_dict = {}
 
         while True:
@@ -157,7 +156,7 @@ class GithubFetcher(Fetcher):
         return scores_dict
 
     def fetch_github_downloads(self, package_name: str) -> Dict[str, Any]:
-        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB)}/{package_name}/traffic/clones'
+        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB, package_name)}/clones'
         response = requests.get(url, headers=self._get_github_authorization_header())
 
         if response.status_code == HTTPStatus.FORBIDDEN:
@@ -167,7 +166,7 @@ class GithubFetcher(Fetcher):
         return response.json()
 
     def fetch_github_visits(self, package_name: str) -> Dict[str, Any]:
-        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB)}/{package_name}/traffic/views'
+        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB, package_name)}/views'
         response = requests.get(url, headers=self._get_github_authorization_header())
 
         if response.status_code == HTTPStatus.FORBIDDEN:
@@ -216,16 +215,15 @@ class GithubFetcher(Fetcher):
         result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_TWO_WEEKS_REPORT + 1)
         result.end_date = end_date
         result.organization = organization
+        my_organization = Organizations[GITHUB_OWN_ORGANIZATION].value
 
         print("fetching from github ...")
         packages = result.get_github_package_names()
 
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages.keys():
-                # print(package_name, 'mx' if organization.name == Organizations.MULTIVERSX.value.name else 'not mx')
-                # print(f'{package_name}, {type(organization)}, {type(Organizations.MULTIVERSX.value)}')
-                fetched_downloads = result.fetch_github_downloads(package_name) if organization == Organizations.MULTIVERSX.value else {}
-                fetched_visits = result.fetch_github_visits(package_name) if organization == Organizations.MULTIVERSX.value else {}
+                fetched_downloads = result.fetch_github_downloads(package_name) if organization == my_organization else {}
+                fetched_visits = result.fetch_github_visits(package_name) if organization == my_organization else {}
                 fetched = {"downloads": fetched_downloads, "visits": fetched_visits}
                 packet_language = result.github_package_language(package_name, packages[package_name]['language'])
 
@@ -236,8 +234,10 @@ class GithubFetcher(Fetcher):
                 result.packages.append(package_downloads)
                 pbar.update(1)
 
-        if organization.github_name == 'Multiversx' and result.forbidden_traffic_access_packages:
+        if organization == my_organization and result.forbidden_traffic_access_packages:
+            print()
             print("Packages that didn't allow access to traffic information: ")
             for package_name in result.forbidden_traffic_access_packages:
                 print(package_name)
+            print()
         return result

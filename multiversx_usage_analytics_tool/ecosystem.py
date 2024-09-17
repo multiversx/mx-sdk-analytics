@@ -24,12 +24,12 @@ class Organization:
             exclude = self.search_excludes[site]
             owner = self.github_name
             size = GITHUB_PAGE_SIZE
-            return f'{site.search_url}?q={pattern}+in:name-{exclude}+in:name+user:{owner}&per_page={size}&page={page}&sort=stars&order=desc'
+            return f'{site.search_url}?q={pattern}+in:name+user:{owner}+NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
         return ''
 
-    def get_downloads_url_string(self, site: PackagesRegistry) -> str:
+    def get_downloads_url_string(self, site: PackagesRegistry, package_name: str) -> str:
         if site == PackagesRegistry.GITHUB:
-            return f'{site.downloads_url}/{self.github_name}'
+            return f'{site.downloads_url}/{self.github_name}/{package_name}/traffic'
         return ''
 
 
@@ -86,3 +86,17 @@ class Organizations(Enum):
         },
         github_organization='ava-labs'
     )
+
+
+'''
+bearer_token = os.environ.get("MX_GITHUB_TOKEN")
+org = Organizations.MULTIVERSX.value
+url = org.get_search_url_string(PackagesRegistry.GITHUB, 1)
+print(url)
+response: Dict[str, Any] = requests.get(url, headers={"Authorization": f"Bearer {bearer_token}"}).json()
+package_info: List[Any] = response.get('items', [])
+for item in package_info:
+    if 'deprecated' in item.get('name'):
+        print(item.get('name'))
+print(len(package_info))
+'''
