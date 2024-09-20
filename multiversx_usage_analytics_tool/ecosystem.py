@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List
 
-from multiversx_usage_analytics_tool.constants import GITHUB_PAGE_SIZE
+from multiversx_usage_analytics_tool.constants import CRATES_PAGE_SIZE, GITHUB_PAGE_SIZE, NPM_PAGE_SIZE
 from multiversx_usage_analytics_tool.utils import PackagesRegistry
 
 
@@ -22,19 +22,35 @@ class Organization:
         return False
 
     def get_search_url_string(self, site: PackagesRegistry, page: int) -> str:
+        pattern = self.search_includes[site]
         if site == PackagesRegistry.GITHUB:
-            pattern = self.search_includes[site]
             exclude = self.search_excludes[site]
             owner = self.github_name
             size = GITHUB_PAGE_SIZE
             affiliated_string = "+".join(f'user:{item}' for item in self.affiliated_orgs) + '+fork:true+' if self.affiliated_orgs else ''
             return f'{site.search_url}?q={pattern}+in:name+user:{owner}+{affiliated_string}NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
-        return ''
+        elif site == PackagesRegistry.NPM:
+            size = NPM_PAGE_SIZE
+            return f'{site.search_url}?text={pattern}&size={size}&from={page * size}'
+        elif site == PackagesRegistry.CARGO:
+            size = CRATES_PAGE_SIZE
+            return f'{site.search_url}?q={pattern}&size={size}&from={page * size}'
+        elif site == PackagesRegistry.PYPI:
+            return f'{site.search_url}/?q={pattern}&page={page}'
+        else:
+            return ''
 
     def get_downloads_url_string(self, site: PackagesRegistry, package_name: str) -> str:
         if site == PackagesRegistry.GITHUB:
             return f'{site.downloads_url}/{package_name}/traffic'
-        return ''
+        elif site == PackagesRegistry.NPM:
+            return f'{site.downloads_url}'
+        elif site == PackagesRegistry.CARGO:
+            return f'{site.downloads_url}/{package_name}/downloads'
+        elif site == PackagesRegistry.PYPI:
+            return f'{site.downloads_url}/{package_name}/overall'
+        else:
+            return ''
 
 
 class Organizations(Enum):
@@ -55,22 +71,22 @@ class Organizations(Enum):
         name='Solana',
         search_includes={
             PackagesRegistry.NPM: '@solana',
-            PackagesRegistry.CARGO: 'multiversx',
-            PackagesRegistry.PYPI: 'multiversx-sdk',
-            PackagesRegistry.GITHUB: '',
+            PackagesRegistry.CARGO: 'solana',
+            PackagesRegistry.PYPI: 'solana',
+            PackagesRegistry.GITHUB: 'solana',
         },
         search_excludes={
             PackagesRegistry.GITHUB: 'deprecated'
         },
         github_organization='solana-labs',
-        affiliated_orgs=['anza-xyz']
+        affiliated_orgs=['anza-xyz', 'michaelhly']
     )
     NEAR = Organization(
         name='Near',
         search_includes={
             PackagesRegistry.NPM: 'near-',
-            PackagesRegistry.CARGO: 'multiversx',
-            PackagesRegistry.PYPI: 'multiversx-sdk',
+            PackagesRegistry.CARGO: 'near',
+            PackagesRegistry.PYPI: 'near',
             PackagesRegistry.GITHUB: 'near',
         },
         search_excludes={
@@ -82,8 +98,8 @@ class Organizations(Enum):
         name='Avalanche',
         search_includes={
             PackagesRegistry.NPM: '@avalabs/',
-            PackagesRegistry.CARGO: 'multiversx',
-            PackagesRegistry.PYPI: 'multiversx-sdk',
+            PackagesRegistry.CARGO: 'avalanche',
+            PackagesRegistry.PYPI: 'avalanche',
             PackagesRegistry.GITHUB: '',
         },
         search_excludes={

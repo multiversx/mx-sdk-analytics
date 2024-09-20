@@ -27,9 +27,9 @@ class Language(Enum):
 
 
 class PackagesRegistry(Enum):
-    NPM = ('npmjs', '', '', [Reports.BLUE])
-    CARGO = ('crates.io', '', '', [Reports.BLUE])
-    PYPI = ('pypi', '', '', [Reports.BLUE])
+    NPM = ('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE])
+    CARGO = ('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE])
+    PYPI = ('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE])
     GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN])
 
     def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Reports]):

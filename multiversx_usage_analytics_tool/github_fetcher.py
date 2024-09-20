@@ -3,10 +3,10 @@ from http import HTTPStatus
 from typing import Any, Dict, List, cast
 
 import requests
-from constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE,
-                       GITHUB_OWN_ORGANIZATION, GITHUB_PAGE_SIZE)
-from ecosystem import Organization, Organizations
-from fetcher import DailyActivity, Fetcher, Package, Score
+from multiversx_usage_analytics_tool.constants import (DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE,
+                                                       GITHUB_OWN_ORGANIZATION, GITHUB_PAGE_SIZE)
+from multiversx_usage_analytics_tool.ecosystem import Organization, Organizations
+from multiversx_usage_analytics_tool.fetcher import DailyActivity, Fetcher, Package, Score
 from tqdm import tqdm
 
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,

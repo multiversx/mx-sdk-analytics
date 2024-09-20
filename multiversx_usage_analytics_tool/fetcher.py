@@ -168,7 +168,7 @@ class Fetcher:
         with open(file_name, 'r') as file:
             json_data: Dict[str, Any] = json.load(file)
         result = cls()
-        organization_data: Dict[str, Any] = json_data.get(organization.name.upper(), {})
+        organization_data: Dict[str, Any] = json_data.get(organization.name, {})
 
         meta: Dict[str, Any] = organization_data.get('metadata', {})
         result.start_date = meta.get('start_date', '')
