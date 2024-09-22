@@ -6,10 +6,11 @@ import dash
 import plotly.graph_objs as go
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
-from multiversx_usage_analytics_tool.ecosystem import Organizations
 from package_managers_fetcher import (PackageManagersFetcher,
                                       PackageManagersPackage)
 from utils import FormattedDate, PackagesRegistry, Reports
+
+from multiversx_usage_analytics_tool.ecosystem import Organizations
 
 load_dotenv()
 

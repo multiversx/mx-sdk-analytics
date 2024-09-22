@@ -1,6 +1,6 @@
 
-from http import HTTPStatus
 import os
+from http import HTTPStatus
 from typing import Any, Dict, List, cast
 
 import requests
@@ -8,8 +8,10 @@ from bs4 import BeautifulSoup, Tag
 from constants import DAYS_IN_MONTHLY_REPORT, DEFAULT_DATE, NPM_PAGE_SIZE
 from fetcher import DailyActivity, Fetcher, Package, Score
 from tqdm import tqdm
+
 from multiversx_usage_analytics_tool.ecosystem import Organization
-from multiversx_usage_analytics_tool.utils import FormattedDate, Language, PackagesRegistry, Reports
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+                                                   PackagesRegistry, Reports)
 
 
 class PackageManagersDailyActivity(DailyActivity):

@@ -4,9 +4,11 @@ import os
 from pathlib import Path
 
 from dotenv.main import load_dotenv
+
 from multiversx_usage_analytics_tool.ecosystem import Organizations
 from multiversx_usage_analytics_tool.github_fetcher import GithubFetcher
-from multiversx_usage_analytics_tool.package_managers_fetcher import PackageManagersFetcher
+from multiversx_usage_analytics_tool.package_managers_fetcher import \
+    PackageManagersFetcher
 from multiversx_usage_analytics_tool.utils import FormattedDate
 
 

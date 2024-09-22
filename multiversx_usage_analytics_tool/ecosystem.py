@@ -1,7 +1,9 @@
 from enum import Enum
 from typing import Any, Dict, List
 
-from multiversx_usage_analytics_tool.constants import CRATES_PAGE_SIZE, GITHUB_PAGE_SIZE, NPM_PAGE_SIZE
+from multiversx_usage_analytics_tool.constants import (CRATES_PAGE_SIZE,
+                                                       GITHUB_PAGE_SIZE,
+                                                       NPM_PAGE_SIZE)
 from multiversx_usage_analytics_tool.utils import PackagesRegistry
 
 
