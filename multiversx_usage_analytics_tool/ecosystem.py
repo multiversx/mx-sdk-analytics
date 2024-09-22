@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from multiversx_usage_analytics_tool.constants import CRATES_PAGE_SIZE, GITHUB_PAGE_SIZE, NPM_PAGE_SIZE
 from multiversx_usage_analytics_tool.utils import PackagesRegistry
@@ -34,11 +34,35 @@ class Organization:
             return f'{site.search_url}?text={pattern}&size={size}&from={page * size}'
         elif site == PackagesRegistry.CARGO:
             size = CRATES_PAGE_SIZE
-            return f'{site.search_url}?q={pattern}&size={size}&from={page * size}'
+            return f'{site.search_url}'
         elif site == PackagesRegistry.PYPI:
             return f'{site.search_url}/?q={pattern}&page={page}'
         else:
             return ''
+
+    def get_search_filter(self, site: PackagesRegistry, item: Dict[str, Any]) -> bool:
+        if not item:
+            return False
+        pattern = self.search_includes[site]
+        own_github_orgs = [f'github.com/{item}/' for item in self.affiliated_orgs + [self.github_name]]
+
+        if site == PackagesRegistry.NPM:
+            item_name = item.get('package', {}).get('name')
+            item_repository = item.get('package', {}).get('links', {}).get('repository', '')
+            item_scope = item.get('package', {}).get('scope', '')
+            return pattern in item_name and (self.name.lower() in item_scope or isinstance(item_repository, str) and any(
+                own_repo_str in item_repository for own_repo_str in own_github_orgs))
+
+        elif site == PackagesRegistry.CARGO:
+            item_name = item.get('name', '')
+            item_repository = item.get('repository', '')
+            return pattern in item_name and isinstance(item_repository, str) and any(own_repo_str in item_repository for own_repo_str in own_github_orgs)
+
+        elif site == PackagesRegistry.PYPI:
+            source_url = item.get('Source', '')
+            homepage_url = item.get('Homepage', '')
+            return any(own_str in source_url for own_str in own_github_orgs) or any(own_str in homepage_url for own_str in own_github_orgs)
+        return False
 
     def get_downloads_url_string(self, site: PackagesRegistry, package_name: str) -> str:
         if site == PackagesRegistry.GITHUB:
@@ -73,7 +97,7 @@ class Organizations(Enum):
             PackagesRegistry.NPM: '@solana',
             PackagesRegistry.CARGO: 'solana',
             PackagesRegistry.PYPI: 'solana',
-            PackagesRegistry.GITHUB: 'solana',
+            PackagesRegistry.GITHUB: '',
         },
         search_excludes={
             PackagesRegistry.GITHUB: 'deprecated'
@@ -85,7 +109,7 @@ class Organizations(Enum):
         name='Near',
         search_includes={
             PackagesRegistry.NPM: 'near-',
-            PackagesRegistry.CARGO: 'near',
+            PackagesRegistry.CARGO: 'near-',
             PackagesRegistry.PYPI: 'near',
             PackagesRegistry.GITHUB: 'near',
         },
