@@ -53,6 +53,7 @@ pip install -r ./requirements-dev.txt --upgrade
 
  - renders the blue report from the most recent json file generated through gathering.
  - the file rendered can be changed from a drop-down menu inside the report
+ - different organizations can be accessed through a menu in the upper part of the report page
  - different repository sites can be accesed through tabs in the report
 
 ### GREEN-REPORT - script that renders the visual report for GITHUB repository usage. Report available at port 8051
