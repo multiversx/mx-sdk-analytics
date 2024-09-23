@@ -14,11 +14,13 @@ source ./venv/bin/activate
 pip install -r ./requirements.txt --upgrade
 export PYTHONPATH=.
 ```
+
 ## INSTALL DEVELOPMENT DEPENDENCIES
 
 ```
 pip install -r ./requirements-dev.txt --upgrade
 ```
+
 
 ## CONFIGURATION
 ### CONSTANTS.PY
@@ -26,6 +28,7 @@ pip install -r ./requirements-dev.txt --upgrade
 
 ### ECOSYSTEM.PY
 - Enables adding or removing organizations to/from the reports as well as filtering repositories
+
 
 ## RUN
 ### GATHER-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
