@@ -42,12 +42,10 @@ def main():
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
 
-    # pm_fetcher.write_json()
-
     rep_folder = os.environ.get("JSON_FOLDER")
     github_dict_to_write = {}
     pm_dict_to_write = {}
-    # for org in [item.value for item in Organizations if item == Organizations.MULTIVERSX]:
+
     for org in [item.value for item in Organizations]:
         print()
         print(org.name)

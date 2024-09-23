@@ -8,9 +8,13 @@ from multiversx_usage_analytics_tool.utils import PackagesRegistry
 
 
 class Organization:
-    def __init__(self, name: str = '', search_includes: Dict[PackagesRegistry, str] = {},
+    def __init__(self,
+                 name: str = '',
+                 search_includes: Dict[PackagesRegistry, str] = {},
                  search_excludes: Dict[PackagesRegistry, str] = {},
-                 github_organization: str = '', affiliated_orgs: List[str] = []) -> None:
+                 github_organization: str = '',
+                 affiliated_orgs: List[str] = []
+                 ) -> None:
 
         self.name = name
         self.search_includes: Dict[PackagesRegistry, str] = search_includes

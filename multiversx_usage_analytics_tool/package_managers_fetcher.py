@@ -140,7 +140,6 @@ class PackageManagersFetcher(Fetcher):
         page = 0
         size = NPM_PAGE_SIZE
         scores_dict = {}
-        # pattern = self.organization.search_includes[PackagesRegistry.NPM]
 
         while True:
             url = self.organization.get_search_url_string(PackagesRegistry.NPM, page)
