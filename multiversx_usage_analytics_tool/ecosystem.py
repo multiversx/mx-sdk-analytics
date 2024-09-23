@@ -133,17 +133,3 @@ class Organizations(Enum):
         },
         github_organization='ava-labs'
     )
-
-
-'''
-bearer_token = os.environ.get("MX_GITHUB_TOKEN")
-org = Organizations.MULTIVERSX.value
-url = org.get_search_url_string(PackagesRegistry.GITHUB, 1)
-print(url)
-response: Dict[str, Any] = requests.get(url, headers={"Authorization": f"Bearer {bearer_token}"}).json()
-package_info: List[Any] = response.get('items', [])
-for item in package_info:
-    if 'deprecated' in item.get('name'):
-        print(item.get('name'))
-print(len(package_info))
-'''
