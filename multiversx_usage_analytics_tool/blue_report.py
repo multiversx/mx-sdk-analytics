@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -8,21 +7,20 @@ from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 from package_managers_fetcher import (PackageManagersFetcher,
                                       PackageManagersPackage)
-from utils import FormattedDate, PackagesRegistry, Reports
+from utils import FormattedDate, PackagesRegistry, Reports, get_environmen_var
 
-from multiversx_usage_analytics_tool.ecosystem import Organizations
+from multiversx_usage_analytics_tool.ecosystem_configuration import \
+    EcosystemConfiguration
 
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6f7ff'
-directory = os.environ.get('JSON_FOLDER')
-if directory is None:
-    raise ValueError("The 'JSON_FOLDER' environment variable is not set.")
+directory = get_environmen_var('JSON_FOLDER')
 
 json_files = sorted(Path(directory).glob('blue*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
-organization_options = [item.value.name for item in Organizations]
+organization_options = [item.value.name for item in EcosystemConfiguration]
 
 # Layout of the Dash app
 app.layout = html.Div(style={'backgroundColor': background_color}, children=[
@@ -137,11 +135,11 @@ def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> 
      Input('organization-selector', 'value')]
 )
 def update_blue_report(selected_file: str, selected_organization: str):
-    organization = Organizations[selected_organization.upper()].value
+    organization = EcosystemConfiguration[selected_organization.upper()].value
     fetcher = PackageManagersFetcher.from_generated_file(selected_file, organization)
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
+            dcc.Tab(label=repo.repo_name, id=repo.repo_name.replace('.', '-'), children=[
                 html.H1(f"{repo.name} Package Downloads"),
                 html.H2('Download Data Table'),
                 create_table(fetcher, repo),  # type: ignore

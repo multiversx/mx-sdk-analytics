@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -8,17 +7,16 @@ from constants import GREEN_REPORT_PORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 from github_fetcher import GithubFetcher, GithubPackage
-from utils import FormattedDate, Language, PackagesRegistry
+from utils import FormattedDate, Language, PackagesRegistry, get_environmen_var
 
-from multiversx_usage_analytics_tool.ecosystem import Organizations
+from multiversx_usage_analytics_tool.ecosystem_configuration import \
+    EcosystemConfiguration
 
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6ffe6'
-directory = os.environ.get('JSON_FOLDER')
-if directory is None:
-    raise ValueError("The 'JSON_FOLDER' environment variable is not set.")
+directory = get_environmen_var('JSON_FOLDER')
 
 json_files = sorted(Path(directory).glob('green*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
@@ -205,7 +203,7 @@ def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry, langu
      Input('language-filter', 'value')]
 )
 def update_green_report(selected_file: str, selected_language: str):
-    fetchers = {org: GithubFetcher.from_generated_file(selected_file, org.value) for org in Organizations}
+    fetchers = {org: GithubFetcher.from_generated_file(selected_file, org.value) for org in EcosystemConfiguration}
     repo = PackagesRegistry.GITHUB
     return html.Div([
         dcc.Tabs([
@@ -229,7 +227,7 @@ def update_green_report(selected_file: str, selected_language: str):
                 html.H2('Health score warnings'),
                 create_package_info_box(fetchers[org], repo, selected_language)  # type: ignore
             ])
-            for org in Organizations
+            for org in EcosystemConfiguration
         ])
     ])
 

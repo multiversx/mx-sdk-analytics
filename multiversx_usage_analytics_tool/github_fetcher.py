@@ -8,8 +8,9 @@ from tqdm import tqdm
 from multiversx_usage_analytics_tool.constants import (
     DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE, GITHUB_OWN_ORGANIZATION,
     GITHUB_PAGE_SIZE)
-from multiversx_usage_analytics_tool.ecosystem import (Organization,
-                                                       Organizations)
+from multiversx_usage_analytics_tool.ecosystem import Organization
+from multiversx_usage_analytics_tool.ecosystem_configuration import \
+    EcosystemConfiguration
 from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
                                                      Package, Score)
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
@@ -41,9 +42,9 @@ class GithubDailyActivity(DailyActivity):
 
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubDailyActivity':
-        result = cast(GithubDailyActivity, super().from_generated_file(response))
-        result.uniques = response.get('uniques', 0)
-        return result
+        result = super().from_generated_file(response)
+        result.uniques = response.get('uniques', 0)  # type: ignore
+        return result  # type: ignore
 
 
 class GithubPackage(Package):
@@ -221,7 +222,7 @@ class GithubFetcher(Fetcher):
         result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_TWO_WEEKS_REPORT + 1)
         result.end_date = end_date
         result.organization = organization
-        my_organization = Organizations[GITHUB_OWN_ORGANIZATION].value
+        my_organization = EcosystemConfiguration[GITHUB_OWN_ORGANIZATION].value
 
         print("fetching from github ...")
         packages = result.get_github_package_names()

@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Any, Dict, List
 
 from multiversx_usage_analytics_tool.constants import (CRATES_PAGE_SIZE,
@@ -29,22 +28,24 @@ class Organization:
 
     def get_search_url_string(self, site: PackagesRegistry, page: int) -> str:
         pattern = self.search_includes[site]
+        text = ''
         if site == PackagesRegistry.GITHUB:
             exclude = self.search_excludes[site]
             owner = self.github_name
             size = GITHUB_PAGE_SIZE
             affiliated_string = "+".join(f'user:{item}' for item in self.affiliated_orgs) + '+fork:true+' if self.affiliated_orgs else ''
-            return f'{site.search_url}?q={pattern}+in:name+user:{owner}+{affiliated_string}NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
+            text = f'{site.search_url}?q={pattern}+in:name+user:{owner}+{affiliated_string}NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
         elif site == PackagesRegistry.NPM:
             size = NPM_PAGE_SIZE
-            return f'{site.search_url}?text={pattern}&size={size}&from={page * size}'
+            text = f'{site.search_url}?text={pattern}&size={size}&from={page * size}'
         elif site == PackagesRegistry.CARGO:
             size = CRATES_PAGE_SIZE
-            return f'{site.search_url}'
+            text = f'{site.search_url}'
         elif site == PackagesRegistry.PYPI:
-            return f'{site.search_url}/?q={pattern}&page={page}'
-        else:
-            return ''
+            text = f'{site.search_url}/?q={pattern}&page={page}'
+        if not text:
+            raise ValueError(f'Unknown package registry\'{site.repo_name}\'.')
+        return text
 
     def get_search_filter(self, site: PackagesRegistry, item: Dict[str, Any]) -> bool:
         if not item:
@@ -71,69 +72,15 @@ class Organization:
         return False
 
     def get_downloads_url_string(self, site: PackagesRegistry, package_name: str) -> str:
+        text = ''
         if site == PackagesRegistry.GITHUB:
-            return f'{site.downloads_url}/{package_name}/traffic'
+            text = f'{site.downloads_url}/{package_name}/traffic'
         elif site == PackagesRegistry.NPM:
-            return f'{site.downloads_url}'
+            text = f'{site.downloads_url}'
         elif site == PackagesRegistry.CARGO:
-            return f'{site.downloads_url}/{package_name}/downloads'
+            text = f'{site.downloads_url}/{package_name}/downloads'
         elif site == PackagesRegistry.PYPI:
-            return f'{site.downloads_url}/{package_name}/overall'
-        else:
-            return ''
-
-
-class Organizations(Enum):
-    MULTIVERSX = Organization(
-        name='Multiversx',
-        search_includes={
-            PackagesRegistry.NPM: '@multiversx/sdk',
-            PackagesRegistry.CARGO: 'multiversx',
-            PackagesRegistry.PYPI: 'multiversx-sdk',
-            PackagesRegistry.GITHUB: 'sdk',
-        },
-        search_excludes={
-            PackagesRegistry.GITHUB: 'deprecated'
-        },
-        github_organization='multiversx'
-    )
-    SOLANA = Organization(
-        name='Solana',
-        search_includes={
-            PackagesRegistry.NPM: '@solana',
-            PackagesRegistry.CARGO: 'solana',
-            PackagesRegistry.PYPI: 'solana',
-            PackagesRegistry.GITHUB: '',
-        },
-        search_excludes={
-            PackagesRegistry.GITHUB: 'deprecated'
-        },
-        github_organization='solana-labs',
-        affiliated_orgs=['anza-xyz', 'michaelhly']
-    )
-    NEAR = Organization(
-        name='Near',
-        search_includes={
-            PackagesRegistry.NPM: 'near-',
-            PackagesRegistry.CARGO: 'near-',
-            PackagesRegistry.PYPI: 'near',
-            PackagesRegistry.GITHUB: 'near',
-        },
-        search_excludes={
-            PackagesRegistry.GITHUB: 'deprecated'
-        },
-        github_organization='near'
-    )
-    AVALANCHE = Organization(
-        name='Avalanche',
-        search_includes={
-            PackagesRegistry.NPM: '@avalabs/',
-            PackagesRegistry.CARGO: 'avalanche',
-            PackagesRegistry.PYPI: 'avalanche',
-            PackagesRegistry.GITHUB: '',
-        },
-        search_excludes={
-            PackagesRegistry.GITHUB: 'deprecated'
-        },
-        github_organization='ava-labs'
-    )
+            text = f'{site.downloads_url}/{package_name}/overall'
+        if not text:
+            raise ValueError(f'Unknown package registry\'{site.repo_name}\'.')
+        return text

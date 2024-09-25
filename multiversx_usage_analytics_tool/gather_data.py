@@ -5,7 +5,8 @@ from pathlib import Path
 
 from dotenv.main import load_dotenv
 
-from multiversx_usage_analytics_tool.ecosystem import Organizations
+from multiversx_usage_analytics_tool.ecosystem_configuration import \
+    EcosystemConfiguration
 from multiversx_usage_analytics_tool.github_fetcher import GithubFetcher
 from multiversx_usage_analytics_tool.package_managers_fetcher import \
     PackageManagersFetcher
@@ -46,7 +47,7 @@ def main():
     github_dict_to_write = {}
     pm_dict_to_write = {}
 
-    for org in [item.value for item in Organizations]:
+    for org in [item.value for item in EcosystemConfiguration]:
         print()
         print(org.name)
         pm_fetcher = PackageManagersFetcher.from_package_sites(org, str(end_date))
@@ -80,7 +81,7 @@ def validate_week(week_str: str):
             raise ValueError()
         return week_no
     except ValueError:
-        max_week_no = FormattedDate.now().isocalendar().week - 1
+        max_week_no = FormattedDate.get_current_week() - 1
         raise argparse.ArgumentTypeError(f"Not a valid week number: '{week_no}'. Expected number between 0 and {max_week_no}")
 
 

@@ -219,8 +219,8 @@ class PackageManagersFetcher(Fetcher):
             for title_tag in title_tags:
                 title_text = title_tag.text
                 if 'package health:' in title_text.lower():
-                    health_score: int = title_text.split(':')[-1].split('/')[0].strip()  # type: ignore
-                    score_details['final'] = -1 if health_score == '?' else int(health_score) / 100
+                    health_score: int = int(title_text.split(':')[-1].split('/')[0].strip())
+                    score_details['final'] = -1 if health_score == '?' else health_score / 100
             score_details['detail'] = {}
             scores_list = soup.find('ul', class_='scores')
             for li in scores_list.find_all('li'):  # type: ignore
