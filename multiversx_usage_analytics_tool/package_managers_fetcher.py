@@ -223,10 +223,16 @@ class PackageManagersFetcher(Fetcher):
                     score_details['final'] = -1 if health_score == '?' else health_score / 100
             score_details['detail'] = {}
             scores_list = soup.find('ul', class_='scores')
-            for li in scores_list.find_all('li'):  # type: ignore
-                category = li.find('span').text.strip()
-                status = li.find('span', class_='vue--pill__body').text.strip()
-                score_details['detail'][category] = status
+            if scores_list and isinstance(scores_list, Tag):
+                for li in scores_list.find_all('li'):
+                    if isinstance(li, Tag):
+                        category_span = li.find('span')
+                        status_span = li.find('span', class_='vue--pill__body')
+
+                        if isinstance(category_span, Tag) and isinstance(status_span, Tag):
+                            category = category_span.text.strip()
+                            status = status_span.text.strip()
+                            score_details['detail'][category] = status
         else:
             print(f"Failed to retrieve the details webpage for package {package_name}.")
         return score_details

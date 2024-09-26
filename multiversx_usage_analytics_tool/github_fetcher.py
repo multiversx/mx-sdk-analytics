@@ -43,8 +43,8 @@ class GithubDailyActivity(DailyActivity):
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubDailyActivity':
         result = super().from_generated_file(response)
-        result.uniques = response.get('uniques', 0)  # type: ignore
-        return result  # type: ignore
+        uniques = response.get('uniques', 0)
+        return GithubDailyActivity(result.date, result.downloads, uniques)
 
 
 class GithubPackage(Package):
