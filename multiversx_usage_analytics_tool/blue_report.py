@@ -1,16 +1,20 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import dash
 import plotly.graph_objs as go
+from constants import DAYS_IN_MONTHLY_REPORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
-from package_managers_fetcher import (PackageManagersFetcher,
-                                      PackageManagersPackage)
-from utils import FormattedDate, PackagesRegistry, Reports, get_environmen_var
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
+from multiversx_usage_analytics_tool.fetcher import Package
+from multiversx_usage_analytics_tool.package_managers_fetcher import (
+    PackageManagersFetcher, PackageManagersPackage)
+from multiversx_usage_analytics_tool.utils import (FormattedDate,
+                                                   PackagesRegistry, Reports,
+                                                   get_environmen_var)
 
 load_dotenv()
 
@@ -63,10 +67,10 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
 
     table_header = [html.Tr(header_row)]
     table_rows = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]  # type: ignore
+    packages: list[Package] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
-        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
+        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date, DAYS_IN_MONTHLY_REPORT)
         row = [
             html.Td(package.package_name),
             html.Td(package_statistics['downloads_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
@@ -86,7 +90,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
 
 def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRegistry):
     info_boxes = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]  # type: ignore
+    packages: list[PackageManagersPackage] = [cast(PackageManagersPackage, item) for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
@@ -101,7 +105,7 @@ def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRe
 
 
 def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> Dict[str, Any]:
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]  # type: ignore
+    packages: list[Package] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
@@ -142,15 +146,15 @@ def update_blue_report(selected_file: str, selected_organization: str):
             dcc.Tab(label=repo.repo_name, id=repo.repo_name.replace('.', '-'), children=[
                 html.H1(f"{repo.name} Package Downloads"),
                 html.H2('Download Data Table'),
-                create_table(fetcher, repo),  # type: ignore
+                create_table(fetcher, repo),
 
                 html.H2('Download Trends'),
                 dcc.Graph(
                     id='downloads-graph',
-                    figure=create_graph(fetcher, repo)  # type: ignore
+                    figure=create_graph(fetcher, repo)
                 ),
                 html.H2('Libraries.io warnings'),
-                create_package_info_box(fetcher, repo)  # type: ignore
+                create_package_info_box(fetcher, repo)
             ])
             for repo in PackagesRegistry if Reports.BLUE in repo.reports
         ])

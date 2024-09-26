@@ -1,10 +1,11 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Sequence
 
 from constants import DAYS_IN_WEEK, DEFAULT_DATE
 from ecosystem import Organization
+from ecosystem_configuration import EcosystemConfiguration
 from utils import FormattedDate
 
 '''
@@ -44,9 +45,10 @@ class Score:
 
 
 class DailyActivity:
-    def __init__(self, date: str = DEFAULT_DATE, count: int = 0) -> None:
+    def __init__(self, date: str = DEFAULT_DATE, count: int = 0, uniques: int = 0) -> None:
         self.date = date
         self.downloads = count
+        self. uniques = uniques
 
     def __str__(self) -> str:
         return f"{self.date} - {self.downloads} downloads"
@@ -98,7 +100,7 @@ class Package:
         summary_dict['site_score_details'] = repr(self.site_score)
         return summary_dict
 
-    def calculate_activity_statistics(self, name: str, activity: List[DailyActivity], end_date: str, report_duration: int) -> Dict[str, Any]:
+    def calculate_activity_statistics(self, name: str, activity: Sequence[DailyActivity], end_date: str, report_duration: int) -> Dict[str, Any]:
         last_month_downloads = sum(dd.downloads for dd in activity)
         avg_daily_downloads = last_month_downloads / report_duration
         seven_days_before = str(FormattedDate.from_string(end_date) - DAYS_IN_WEEK + 1)
@@ -113,7 +115,7 @@ class Package:
         return DailyActivity.from_generated_file(item)
 
     @classmethod
-    def from_generated_file(cls, response: Dict[str, Any]) -> 'Package':
+    def from_generated_file(cls, response: Dict[str, Any]):
         result = cls()
         raw_downloads = response.get('downloads', [])
         result.downloads = [result.get_daily_activity(item) for item in raw_downloads]
@@ -152,26 +154,29 @@ class Fetcher:
 
     def write_report(self, repo_name: str = 'log'):
         print("writting report ...")
-        report_name = Path(self.rep_folder) / f"{repo_name}{self.end_date}.txt"  # type: ignore
+        report_name = Path(self.rep_folder if self.rep_folder else ".") / f"{repo_name}{self.end_date}.txt"
         report_name.write_text(str(self))
 
     def write_json(self, repo_type: str):
         print("writting json ...")
-        report_name = Path(self.rep_folder) / f"{repo_type}{self.end_date}.json"  # type: ignore
+        report_name = Path(Path(self.rep_folder if self.rep_folder else ".")) / f"{repo_type}{self.end_date}.json"
         report_name.write_text(json.dumps(self.to_dict(), indent=4))
 
     def get_package(self, item: Dict[str, Any]) -> Package:
         return Package.from_generated_file(item)
 
     @classmethod
-    def from_generated_file(cls, file_name: str, organization: Organization) -> 'Fetcher':
+    def from_generated_file(cls, file_name: str, organization: Organization):
         with open(file_name, 'r') as file:
             json_data: Dict[str, Any] = json.load(file)
         result = cls()
         organization_data: Dict[str, Any] = json_data.get(organization.name, {})
+        # Compatibility with old reports that didn't include organization key
+        if not organization_data and EcosystemConfiguration.MULTIVERSX.value.name not in json_data.keys():
+            organization_data = json_data if organization.name == EcosystemConfiguration.MULTIVERSX.value.name else {}
 
         meta: Dict[str, Any] = organization_data.get('metadata', {})
-        result.start_date = meta.get('start_date', '')
-        result.end_date = meta.get('end_date', '')
+        result.start_date = meta.get('start_date', DEFAULT_DATE)
+        result.end_date = meta.get('end_date', DEFAULT_DATE)
         result.packages = [result.get_package(item) for item in organization_data.get('records', [])]
         return result

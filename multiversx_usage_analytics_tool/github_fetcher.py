@@ -64,11 +64,11 @@ class GithubPackage(Package):
         # clones - count, score etc.
         summary: Dict[str, Any] = super().create_summary_statistics_from_daily_downloads(end_date, report_duration)
         # clones - uniques
-        temp_list = [DailyActivity(item.date, item.uniques) for item in self.downloads]  # type: ignore
+        temp_list = [DailyActivity(item.date, item.uniques) for item in self.downloads]
         temp_summary = self.calculate_activity_statistics('downloaders', temp_list, end_date, report_duration)
         summary.update(temp_summary)
         # visits - count
-        temp_summary = self.calculate_activity_statistics('visits', self.views, end_date, report_duration)  # type: ignore
+        temp_summary = self.calculate_activity_statistics('visits', self.views, end_date, report_duration)
         summary.update(temp_summary)
         # visits - uniques
         temp_list = [DailyActivity(item.date, item.uniques) for item in self.views]

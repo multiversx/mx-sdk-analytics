@@ -210,22 +210,22 @@ def update_green_report(selected_file: str, selected_language: str):
             dcc.Tab(label=org.value.name, id="repo.repo_name", children=[
                 html.H1(f"{repo.name} Repositories Downloads"),
                 html.H2('Two Weeks Download Data Table'),
-                create_table(fetchers[org], repo, selected_language),  # type: ignore
+                create_table(fetchers[org], repo, selected_language),
                 html.H2('Clones & Visits Trends'),
                 html.Div([
                     dcc.Graph(
                         id='downloads-graph',
-                        figure=create_downloads_graph(fetchers[org], repo, selected_language)  # type: ignore
+                        figure=create_downloads_graph(fetchers[org], repo, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.Div([
                     dcc.Graph(
                         id='visits-graph',
-                        figure=create_visits_graph(fetchers[org], repo, selected_language)  # type: ignore
+                        figure=create_visits_graph(fetchers[org], repo, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.H2('Health score warnings'),
-                create_package_info_box(fetchers[org], repo, selected_language)  # type: ignore
+                create_package_info_box(fetchers[org], repo, selected_language)
             ])
             for org in EcosystemConfiguration
         ])

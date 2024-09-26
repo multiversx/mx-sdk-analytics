@@ -56,10 +56,10 @@ def main():
         github_dict_to_write[org.name] = git_fetcher.to_dict()
     print("writting json ...")
 
-    pm_report_name = Path(rep_folder) / f"blue{end_date}.json"  # type: ignore
+    pm_report_name = Path(rep_folder if rep_folder else ".") / f"blue{end_date}.json"
     pm_report_name.write_text(json.dumps(pm_dict_to_write, indent=4))
 
-    github_report_name = Path(rep_folder) / f"green{end_date}.json"  # type: ignore
+    github_report_name = Path(rep_folder if rep_folder else ".") / f"green{end_date}.json"
     github_report_name.write_text(json.dumps(github_dict_to_write, indent=4))
 
 
