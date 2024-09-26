@@ -44,7 +44,7 @@ class GithubDailyActivity(DailyActivity):
     def from_generated_file(cls, response: Dict[str, Any]) -> 'GithubDailyActivity':
         result = super().from_generated_file(response)
         uniques = response.get('uniques', 0)
-        return GithubDailyActivity(result.date, result.downloads, uniques)
+        return cls(result.date, result.downloads, uniques)
 
 
 class GithubPackage(Package):

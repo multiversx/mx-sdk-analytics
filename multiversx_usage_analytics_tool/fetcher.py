@@ -48,7 +48,7 @@ class DailyActivity:
     def __init__(self, date: str = DEFAULT_DATE, count: int = 0, uniques: int = 0) -> None:
         self.date = date
         self.downloads = count
-        self. uniques = uniques
+        self.uniques = uniques
 
     def __str__(self) -> str:
         return f"{self.date} - {self.downloads} downloads"
@@ -159,7 +159,7 @@ class Fetcher:
 
     def write_json(self, repo_type: str):
         print("writting json ...")
-        report_name = Path(Path(self.rep_folder if self.rep_folder else ".")) / f"{repo_type}{self.end_date}.json"
+        report_name = Path(self.rep_folder if self.rep_folder else ".") / f"{repo_type}{self.end_date}.json"
         report_name.write_text(json.dumps(self.to_dict(), indent=4))
 
     def get_package(self, item: Dict[str, Any]) -> Package:

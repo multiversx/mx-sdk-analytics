@@ -28,24 +28,22 @@ class Organization:
 
     def get_search_url_string(self, site: PackagesRegistry, page: int) -> str:
         pattern = self.search_includes[site]
-        text = ''
         if site == PackagesRegistry.GITHUB:
             exclude = self.search_excludes[site]
             owner = self.github_name
             size = GITHUB_PAGE_SIZE
             affiliated_string = "+".join(f'user:{item}' for item in self.affiliated_orgs) + '+fork:true+' if self.affiliated_orgs else ''
-            text = f'{site.search_url}?q={pattern}+in:name+user:{owner}+{affiliated_string}NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
+            return f'{site.search_url}?q={pattern}+in:name+user:{owner}+{affiliated_string}NOT+{exclude}+in:name&per_page={size}&page={page}&sort=stars&order=desc'
         elif site == PackagesRegistry.NPM:
             size = NPM_PAGE_SIZE
-            text = f'{site.search_url}?text={pattern}&size={size}&from={page * size}'
+            return f'{site.search_url}?text={pattern}&size={size}&from={page * size}'
         elif site == PackagesRegistry.CARGO:
             size = CRATES_PAGE_SIZE
-            text = f'{site.search_url}'
+            return f'{site.search_url}'
         elif site == PackagesRegistry.PYPI:
-            text = f'{site.search_url}/?q={pattern}&page={page}'
-        if not text:
+            return f'{site.search_url}/?q={pattern}&page={page}'
+        else:
             raise ValueError(f'Unknown package registry\'{site.repo_name}\'.')
-        return text
 
     def get_search_filter(self, site: PackagesRegistry, item: Dict[str, Any]) -> bool:
         if not item:
@@ -72,15 +70,13 @@ class Organization:
         return False
 
     def get_downloads_url_string(self, site: PackagesRegistry, package_name: str) -> str:
-        text = ''
         if site == PackagesRegistry.GITHUB:
-            text = f'{site.downloads_url}/{package_name}/traffic'
+            return f'{site.downloads_url}/{package_name}/traffic'
         elif site == PackagesRegistry.NPM:
-            text = f'{site.downloads_url}'
+            return f'{site.downloads_url}'
         elif site == PackagesRegistry.CARGO:
-            text = f'{site.downloads_url}/{package_name}/downloads'
+            return f'{site.downloads_url}/{package_name}/downloads'
         elif site == PackagesRegistry.PYPI:
-            text = f'{site.downloads_url}/{package_name}/overall'
-        if not text:
+            return f'{site.downloads_url}/{package_name}/overall'
+        else:
             raise ValueError(f'Unknown package registry\'{site.repo_name}\'.')
-        return text
