@@ -1,23 +1,30 @@
-import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import dash
 import plotly.graph_objs as go
+from constants import DAYS_IN_MONTHLY_REPORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
-from package_managers_fetcher import (PackageManagersFetcher,
-                                      PackageManagersPackage)
-from utils import FormattedDate, PackagesRegistry, Reports
+
+from multiversx_usage_analytics_tool.ecosystem_configuration import \
+    EcosystemConfiguration
+from multiversx_usage_analytics_tool.fetcher import Package
+from multiversx_usage_analytics_tool.package_managers_fetcher import (
+    PackageManagersFetcher, PackageManagersPackage)
+from multiversx_usage_analytics_tool.utils import (FormattedDate,
+                                                   PackagesRegistry, Reports,
+                                                   get_environmen_var)
 
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6f7ff'
-directory = os.environ.get('JSON_FOLDER')
+directory = get_environmen_var('JSON_FOLDER')
 
 json_files = sorted(Path(directory).glob('blue*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
+organization_options = [item.value.name for item in EcosystemConfiguration]
 
 # Layout of the Dash app
 app.layout = html.Div(style={'backgroundColor': background_color}, children=[
@@ -36,8 +43,9 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
                 options=dropdown_options,
                 value=dropdown_options[0]['value'],  # Set default value as the newest file generated
                 clearable=False,
-                style={'width': '50%'}
-            )
+                style={'width': '40%'}
+            ),
+            dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '40%'}),
         ]
     ),
 
@@ -59,10 +67,10 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
 
     table_header = [html.Tr(header_row)]
     table_rows = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[Package] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
-        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date)
+        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date, DAYS_IN_MONTHLY_REPORT)
         row = [
             html.Td(package.package_name),
             html.Td(package_statistics['downloads_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
@@ -82,7 +90,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
 
 def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRegistry):
     info_boxes = []
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[PackageManagersPackage] = [cast(PackageManagersPackage, item) for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
 
     for package in packages:
@@ -97,7 +105,7 @@ def create_package_info_box(fetcher: PackageManagersFetcher, section: PackagesRe
 
 
 def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> Dict[str, Any]:
-    packages: list[PackageManagersPackage] = [item for item in fetcher.packages if item.package_site == section.repo_name]
+    packages: list[Package] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
@@ -127,13 +135,15 @@ def create_graph(fetcher: PackageManagersFetcher, section: PackagesRegistry) -> 
 
 @app.callback(
     Output('report-content', 'children'),
-    Input('file-selector', 'value')
+    [Input('file-selector', 'value'),
+     Input('organization-selector', 'value')]
 )
-def update_blue_report(selected_file: str):
-    fetcher = PackageManagersFetcher.from_generated_file(selected_file)
+def update_blue_report(selected_file: str, selected_organization: str):
+    organization = EcosystemConfiguration[selected_organization.upper()].value
+    fetcher = PackageManagersFetcher.from_generated_file(selected_file, organization)
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=repo.repo_name, id=repo.repo_name, children=[
+            dcc.Tab(label=repo.repo_name, id=repo.repo_name.replace('.', '-'), children=[
                 html.H1(f"{repo.name} Package Downloads"),
                 html.H2('Download Data Table'),
                 create_table(fetcher, repo),

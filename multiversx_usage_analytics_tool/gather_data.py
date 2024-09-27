@@ -1,9 +1,16 @@
 import argparse
+import json
+import os
+from pathlib import Path
 
 from dotenv.main import load_dotenv
-from github_fetcher import GithubFetcher
-from package_managers_fetcher import PackageManagersFetcher
-from utils import FormattedDate
+
+from multiversx_usage_analytics_tool.ecosystem_configuration import \
+    EcosystemConfiguration
+from multiversx_usage_analytics_tool.github_fetcher import GithubFetcher
+from multiversx_usage_analytics_tool.package_managers_fetcher import \
+    PackageManagersFetcher
+from multiversx_usage_analytics_tool.utils import FormattedDate
 
 
 def main():
@@ -35,11 +42,25 @@ def main():
 
     # Creates a fetcher for retrieving package sites info
     load_dotenv()
-    pm_fetcher = PackageManagersFetcher.from_package_sites(str(end_date))
-    pm_fetcher.write_json()
 
-    git_fetcher = GithubFetcher.from_package_sites(str(end_date))
-    git_fetcher.write_json()
+    rep_folder = os.environ.get("JSON_FOLDER")
+    github_dict_to_write = {}
+    pm_dict_to_write = {}
+
+    for org in [item.value for item in EcosystemConfiguration]:
+        print()
+        print(org.name)
+        pm_fetcher = PackageManagersFetcher.from_package_sites(org, str(end_date))
+        pm_dict_to_write[org.name] = pm_fetcher.to_dict()
+        git_fetcher = GithubFetcher.from_package_sites(org, str(end_date))
+        github_dict_to_write[org.name] = git_fetcher.to_dict()
+    print("writting json ...")
+
+    pm_report_name = Path(rep_folder if rep_folder else ".") / f"blue{end_date}.json"
+    pm_report_name.write_text(json.dumps(pm_dict_to_write, indent=4))
+
+    github_report_name = Path(rep_folder if rep_folder else ".") / f"green{end_date}.json"
+    github_report_name.write_text(json.dumps(github_dict_to_write, indent=4))
 
 
 def validate_date(date_str: str):
@@ -60,7 +81,7 @@ def validate_week(week_str: str):
             raise ValueError()
         return week_no
     except ValueError:
-        max_week_no = FormattedDate.now().isocalendar().week - 1
+        max_week_no = FormattedDate.get_current_week() - 1
         raise argparse.ArgumentTypeError(f"Not a valid week number: '{week_no}'. Expected number between 0 and {max_week_no}")
 
 

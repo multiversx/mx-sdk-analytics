@@ -1,15 +1,17 @@
 
 import os
-from typing import Any, Dict, List
+from http import HTTPStatus
+from typing import Any, Dict, List, cast
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from constants import (CRATES_PAGE_SIZE, CRATES_SEARCH_PREFIX,
-                       DAYS_IN_MONTHLY_REPORT, DEFAULT_DATE, NPM_PAGE_SIZE,
-                       NPM_SEARCH_PREFIX, PYPI_SEARCH_PREFIX)
+from constants import DAYS_IN_MONTHLY_REPORT, DEFAULT_DATE, NPM_PAGE_SIZE
 from fetcher import DailyActivity, Fetcher, Package, Score
 from tqdm import tqdm
-from utils import FormattedDate, Language, PackagesRegistry, Reports
+
+from multiversx_usage_analytics_tool.ecosystem import Organization
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+                                                   PackagesRegistry, Reports)
 
 
 class PackageManagersDailyActivity(DailyActivity):
@@ -84,12 +86,12 @@ class PackageManagersPackage(Package):
 
         for elem in raw_downloads:
             new_download_data = PackageManagersDailyActivity.from_crates_fetched_data(elem)
-            add_or_update_downloads(result.downloads, new_download_data)
+            add_or_update_downloads(result.downloads, new_download_data)  # type: ignore
         raw_downloads = response.get('meta', {}).get('extra_downloads', [])
 
         for elem in raw_downloads:
             new_download_data = PackageManagersDailyActivity.from_crates_fetched_data(elem)
-            add_or_update_downloads(result.downloads, new_download_data)
+            add_or_update_downloads(result.downloads, new_download_data)  # type: ignore
 
         result.package_language = lang
         result.package_name = package
@@ -111,7 +113,7 @@ class PackageManagersPackage(Package):
 
     @classmethod
     def from_generated_file(cls, response: Dict[str, Any]) -> 'PackageManagersPackage':
-        result = super().from_generated_file(response)
+        result = cast(PackageManagersPackage, super().from_generated_file(response))
         result.libraries_io_score = response.get('metadata', {}).get('libraries_io_score', {})
         return result
 
@@ -120,11 +122,11 @@ class PackageManagersFetcher(Fetcher):
     def __init__(self) -> None:
         super().__init__()
 
-    def write_report(self):
-        super().write_report("rep")
+    def write_report(self, repo_name: str = 'rep'):
+        return super().write_report(repo_name)
 
-    def write_json(self):
-        super().write_json(repo_type=Reports.BLUE.value)
+    def write_json(self, repo_type=Reports.BLUE.value):
+        super().write_json(repo_type)
 
     def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
         libraries_io_api_key = os.environ.get('LIBRARIES_IO_API_KEY')
@@ -134,50 +136,47 @@ class PackageManagersFetcher(Fetcher):
         response.raise_for_status()
         return response.json()
 
-    def get_npm_package_names(self, pattern: str) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
+    def get_npm_package_names(self) -> Dict[str, Any]:        # npm api (registry.npmjs.org) - query search result
         page = 0
         size = NPM_PAGE_SIZE
         scores_dict = {}
 
         while True:
-            url = f"https://registry.npmjs.org/-/v1/search?text={pattern}&size={size}&from={page * size}"
+            url = self.organization.get_search_url_string(PackagesRegistry.NPM, page)
             response = requests.get(url)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('objects', [])
             # also gets npmjs scores in the form "{package_name}": {package_score}
             scores_dict.update({item.get('package', {}).get('name'): item.get('score', {}) for item in package_info
-                                if pattern in item.get('package', {}).get('name')})
+                                if self.organization.get_search_filter(PackagesRegistry.NPM, item)})
             if len(data['objects']) < size:
                 break
             page += 1
         return scores_dict
 
     def fetch_npm_downloads(self, package_name: str) -> Dict[str, Any]:
-        url = f"https://api.npmjs.org/downloads/range/{self.start_date}:{self.end_date}/{package_name}"
+        url = f'https://api.npmjs.org/downloads/range/{self.start_date}:{self.end_date}/{package_name}'
         response = requests.get(url)
         if 'not found' in response.text:
             return {}
         response.raise_for_status()
         return response.json()
 
-    def get_crates_package_names(self, pattern: str) -> List[str]:      # crates api (crates/api) - query search result
-        size = CRATES_PAGE_SIZE
-        page = 0
+    def get_crates_package_names(self) -> List[str]:      # crates api (crates/api) - query search result
         package_names = []
-
-        while True:
-            url = f"https://crates.io/api/v1/crates?q={pattern}&size={size}&from={page * size}"
+        pattern = self.organization.search_includes[PackagesRegistry.CARGO]
+        search_string = f'?q={pattern}'
+        while search_string:
+            url = PackagesRegistry.CARGO.downloads_url + search_string
             response = requests.get(url)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('crates', [])
-            new_package_names = [item.get('name') for item in package_info if pattern in item.get('name')]
+            new_package_names = [
+                item.get('name') for item in package_info if self.organization.get_search_filter(PackagesRegistry.CARGO, item)]
             package_names.extend(new_package_names)
-
-            if len(data['crates']) < size:
-                break
-            page += 1
+            search_string = data.get('meta', {}).get('next_page', '')
         return package_names
 
     def fetch_crates_downloads(self, package_name: str):
@@ -189,25 +188,24 @@ class PackageManagersFetcher(Fetcher):
         data['meta']['extra_downloads'] = [entry for entry in data['meta']['extra_downloads'] if self.start_date <= entry['date'] <= self.end_date]
         return data
 
-    def get_pypi_package_names(self, pattern: str) -> List[str]:        # pypi http search result scrapping
-        page = 1
-        package_names: List[str] = []
+    def get_pypi_package_names(self) -> List[str]:
+        package_names = []
+        pattern = self.organization.search_includes[PackagesRegistry.PYPI]
+        response = requests.get('https://pypi.org/simple/', headers={"Accept": "application/vnd.pypi.simple.v1+json"})
+        response.raise_for_status()
+        package_info = response.json().get('projects', [])
 
-        while True:
-            url = f"https://pypi.org/search/?q={pattern}&page={page}"
-            response = requests.get(url)
+        for package in [item for item in package_info if pattern in item.get('name', '')]:
+            package_name = package.get('name', '')
+            response = requests.get(f"https://pypi.org/pypi/{package_name}/json")
+            if response.status_code == HTTPStatus.NOT_FOUND:
+                continue
             response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'html.parser')
-            package_info = [item for item in soup.find_all('a', class_='package-snippet')]
-            new_package_names = [item.find('span', class_='package-snippet__name').text.strip() for item in package_info]
-            if not new_package_names:
-                break
-            new_package_names = [item for item in new_package_names if pattern in item]
-            package_names.extend(new_package_names)
+            urls = response.json().get('info', {}).get('project_urls', {})
 
-            if not new_package_names:
-                break
-            page += 1
+            if urls and self.organization.get_search_filter(PackagesRegistry.PYPI, urls):
+                package_names.append(package_name)
+
         return package_names
 
     def fetch_pypi_package_score(self, package_name: str) -> Dict[str, Any]:
@@ -221,14 +219,20 @@ class PackageManagersFetcher(Fetcher):
             for title_tag in title_tags:
                 title_text = title_tag.text
                 if 'package health:' in title_text.lower():
-                    health_score: int = title_text.split(':')[-1].split('/')[0].strip()
-                    score_details['final'] = int(health_score) / 100
+                    health_score: int = int(title_text.split(':')[-1].split('/')[0].strip())
+                    score_details['final'] = -1 if health_score == '?' else health_score / 100
             score_details['detail'] = {}
             scores_list = soup.find('ul', class_='scores')
-            for li in scores_list.find_all('li'):
-                category = li.find('span').text.strip()
-                status = li.find('span', class_='vue--pill__body').text.strip()
-                score_details['detail'][category] = status
+            if scores_list and isinstance(scores_list, Tag):
+                for li in scores_list.find_all('li'):
+                    if isinstance(li, Tag):
+                        category_span = li.find('span')
+                        status_span = li.find('span', class_='vue--pill__body')
+
+                        if isinstance(category_span, Tag) and isinstance(status_span, Tag):
+                            category = category_span.text.strip()
+                            status = status_span.text.strip()
+                            score_details['detail'][category] = status
         else:
             print(f"Failed to retrieve the details webpage for package {package_name}.")
         return score_details
@@ -246,13 +250,14 @@ class PackageManagersFetcher(Fetcher):
         return PackageManagersPackage.from_generated_file(item)
 
     @staticmethod
-    def from_package_sites(end_date: str) -> 'PackageManagersFetcher':
+    def from_package_sites(org: Organization, end_date: str) -> 'PackageManagersFetcher':
         result = PackageManagersFetcher()
         result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_MONTHLY_REPORT + 1)
         result.end_date = end_date
+        result.organization = org
 
         print("fetching from npm ...")
-        packages = result.get_npm_package_names(NPM_SEARCH_PREFIX)
+        packages = result.get_npm_package_names()
 
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages.keys():
@@ -265,7 +270,7 @@ class PackageManagersFetcher(Fetcher):
                 pbar.update(1)
 
         print("fetching from crates ...")
-        packages = result.get_crates_package_names(CRATES_SEARCH_PREFIX)
+        packages = result.get_crates_package_names()
 
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages:
@@ -277,7 +282,7 @@ class PackageManagersFetcher(Fetcher):
                 pbar.update(1)
 
         print("fetching from pypi ...")
-        packages = result.get_pypi_package_names(PYPI_SEARCH_PREFIX)
+        packages = result.get_pypi_package_names()
 
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages:
