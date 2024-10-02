@@ -1,15 +1,15 @@
 import asyncio
-from pathlib import Path
 import threading
 import time
+from pathlib import Path
 from typing import Any, Dict, cast
 
 import dash
-from dash.dependencies import State
 import plotly.graph_objs as go
 from blue_report_to_pdf import export_dash_report_to_pdf
 from constants import DAYS_IN_MONTHLY_REPORT
 from dash import Input, Output, dcc, html
+from dash.dependencies import State
 from dotenv.main import load_dotenv
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \

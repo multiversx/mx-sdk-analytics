@@ -1,11 +1,12 @@
-# import asyncio
-from typing import List
-from pyppeteer import launch
-import tempfile
 import os
+import tempfile
+from typing import List
+
 from PyPDF2 import PdfMerger
-from multiversx_usage_analytics_tool.utils import PackagesRegistry, Reports
+from pyppeteer import launch
+
 from multiversx_usage_analytics_tool.constants import BLUE_REPORT_PORT
+from multiversx_usage_analytics_tool.utils import PackagesRegistry, Reports
 
 
 async def capture_pdfs(temp_dir: str) -> List[str]:
@@ -25,32 +26,41 @@ async def capture_pdfs(temp_dir: str) -> List[str]:
 
     pdf_files = []
 
-    await page.waitForSelector(f'#{tab_ids[0]}')
-    radio_buttons = await page.querySelectorAll('input[name="organization-selector"]')
+    # Wait for the radio items to be available (organization-selector)
+    await page.waitForSelector('#organization-selector input[type="radio"]')
 
-    # Loop through and click each radio button
-    for radio_button in radio_buttons:
-        await radio_button.click()
-        await page.waitFor(1000)  # Optional delay between clicks
-        print(radio_button)
-    await browser.close()
-    for tab_id in tab_ids:
-        await page.click(f'#{tab_id}')
+    # Get all radio buttons
+    radio_buttons = await page.querySelectorAll('#organization-selector input[type="radio"]')
 
-        await page.waitForSelector(f'#{tab_id}', {'timeout': 10000})
-        await page.waitFor(5000)
+    # Ensure we found the radio buttons
+    if not radio_buttons:
+        print("No radio buttons found!")
+        return []
 
-        pdf_file = os.path.join(temp_dir, f'report_{tab_id}.pdf')
-        pdf_files.append(pdf_file)
-        await page.pdf({
-            'path': pdf_file,
-            'format': 'A4',
-            'landscape': True,
-            'printBackground': True,
-            'width': '1440px',
-            'height': '1080px'
-        })
-        print(f"Saved PDF for {tab_id}: {pdf_file}")
+    # Loop through each radio button (organization)
+    for idx, radio in enumerate(radio_buttons):
+        # Click the radio button to select it
+        await radio.click()
+        await page.waitFor(2000)  # Wait for page content to update based on organization selection
+
+        # Now loop through the tabs
+        for tab_id in tab_ids:
+            await page.click(f'#{tab_id}')
+            await page.waitForSelector(f'#{tab_id}', {'timeout': 10000})
+            await page.waitFor(5000)
+
+            # Save each tab's content as a PDF
+            pdf_file = os.path.join(temp_dir, f'report_{idx}_{tab_id}.pdf')
+            pdf_files.append(pdf_file)
+            await page.pdf({
+                'path': pdf_file,
+                'format': 'A4',
+                'landscape': True,
+                'printBackground': True,
+                'width': '1440px',
+                'height': '1080px'
+            })
+            print(f"Saved PDF for organization {idx}, tab {tab_id}: {pdf_file}")
 
     await browser.close()
     return pdf_files
@@ -74,4 +84,5 @@ async def export_dash_report_to_pdf():
         combine_pdfs(pdf_files, output_pdf)
     return "done"
 
+# Run the export
 # asyncio.get_event_loop().run_until_complete(export_dash_report_to_pdf())
