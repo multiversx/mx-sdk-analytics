@@ -26,24 +26,15 @@ async def capture_pdfs(temp_dir: str) -> List[str]:
 
     pdf_files = []
 
-    # Wait for the radio items to be available (organization-selector)
     await page.waitForSelector('#organization-selector input[type="radio"]')
-
-    # Get all radio buttons
     radio_buttons = await page.querySelectorAll('#organization-selector input[type="radio"]')
-
-    # Ensure we found the radio buttons
-    if not radio_buttons:
-        print("No radio buttons found!")
-        return []
 
     # Loop through each radio button (organization)
     for idx, radio in enumerate(radio_buttons):
-        # Click the radio button to select it
         await radio.click()
-        await page.waitFor(2000)  # Wait for page content to update based on organization selection
+        await page.waitFor(2000)
 
-        # Now loop through the tabs
+        # Loop through each tab (package registry)
         for tab_id in tab_ids:
             await page.click(f'#{tab_id}')
             await page.waitForSelector(f'#{tab_id}', {'timeout': 10000})
