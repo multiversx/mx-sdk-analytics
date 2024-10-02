@@ -133,6 +133,8 @@ class PackageManagersFetcher(Fetcher):
         package = package_name.replace('/', '%2F')
         url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
         response = requests.get(url)
+        if 'not found' in response.text:
+            return {}
         response.raise_for_status()
         return response.json()
 
