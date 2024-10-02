@@ -1,8 +1,13 @@
+import asyncio
 from pathlib import Path
+import threading
+import time
 from typing import Any, Dict, cast
 
 import dash
+from dash.dependencies import State
 import plotly.graph_objs as go
+from blue_report_to_pdf import export_dash_report_to_pdf
 from constants import DAYS_IN_MONTHLY_REPORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
@@ -46,6 +51,13 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
                 style={'width': '40%'}
             ),
             dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '40%'}),
+            dcc.ConfirmDialog(id='confirm-dialog', message='The PDF has been saved successfully.'),
+            dcc.Loading(
+                id="loading",
+                type="default",
+                children=html.Div(id='loading-output', hidden=True),
+            ),
+            html.Button('Save PDF', id='save-pdf-button'),
         ]
     ),
 
@@ -161,5 +173,42 @@ def update_blue_report(selected_file: str, selected_organization: str):
     ])
 
 
+def save_pdf():
+    global message
+    message = ''
+    loop = asyncio.new_event_loop()  # Create a new event loop
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(export_dash_report_to_pdf())
+    message = 'done'
+
+
+@app.callback(
+    Output('loading-output', 'children'),
+    Input('save-pdf-button', 'n_clicks'),
+    State('save-pdf-button', 'n_clicks'),
+    prevent_initial_call=True
+)
+def trigger_pdf_generation(n_clicks: int, _):
+    if n_clicks:
+        threading.Thread(target=save_pdf).start()
+        while message != 'done':
+            time.sleep(1)
+        return "Generating PDF..."
+    return ""
+
+
+@app.callback(
+    Output('confirm-dialog', 'displayed'),
+    Input('loading-output', 'children'),
+    prevent_initial_call=True
+)
+def display_dialog_after_pdf(saved_message: str):
+    # Only display the confirm dialog once the task is complete
+    if saved_message == "Generating PDF...":
+        # Simulating the completion of PDF task by assuming it completes
+        return True
+    return False
+
+
 if __name__ == '__main__':
-    app.run_server(debug=True, host='0.0.0.0')
+    app.run_server(debug=False, host='0.0.0.0')
