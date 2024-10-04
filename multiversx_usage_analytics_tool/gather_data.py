@@ -47,7 +47,7 @@ def main():
     github_dict_to_write = {}
     pm_dict_to_write = {}
 
-    for org in [item.value for item in EcosystemConfiguration]:
+    for org in [item.value for item in EcosystemConfiguration if item.value.gather_data]:
         print()
         print(org.name)
         pm_fetcher = PackageManagersFetcher.from_package_sites(org, str(end_date))

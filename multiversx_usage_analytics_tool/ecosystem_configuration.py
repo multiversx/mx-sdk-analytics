@@ -16,7 +16,8 @@ class EcosystemConfiguration(Enum):
         search_excludes={
             PackagesRegistry.GITHUB: 'deprecated'
         },
-        github_organization='multiversx'
+        github_organization='multiversx',
+        gather_data=True,
     )
     SOLANA = Organization(
         name='Solana',
@@ -30,7 +31,8 @@ class EcosystemConfiguration(Enum):
             PackagesRegistry.GITHUB: 'deprecated'
         },
         github_organization='solana-labs',
-        affiliated_orgs=['anza-xyz', 'michaelhly']
+        affiliated_orgs=['anza-xyz', 'michaelhly'],
+        gather_data=False,
     )
     NEAR = Organization(
         name='Near',
@@ -43,7 +45,8 @@ class EcosystemConfiguration(Enum):
         search_excludes={
             PackagesRegistry.GITHUB: 'deprecated'
         },
-        github_organization='near'
+        github_organization='near',
+        gather_data=False,
     )
     AVALANCHE = Organization(
         name='Avalanche',
@@ -56,5 +59,6 @@ class EcosystemConfiguration(Enum):
         search_excludes={
             PackagesRegistry.GITHUB: 'deprecated'
         },
-        github_organization='ava-labs'
+        github_organization='ava-labs',
+        gather_data=True
     )

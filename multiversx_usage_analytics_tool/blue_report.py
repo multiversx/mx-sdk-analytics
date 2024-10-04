@@ -41,17 +41,17 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
         },
         children=[
             html.H1(
-                'BLUE REPORT',
-                style={'marginRight': '20px'}
+                'PACKAGE MANAGERS REPORT',
+                style={'marginRight': '20px', 'width': '30%'}
             ),
             dcc.Dropdown(
                 id='file-selector', maxHeight=1000,
                 options=dropdown_options,
                 value=dropdown_options[0]['value'],  # Set default value as the newest file generated
                 clearable=False,
-                style={'width': '40%'}
+                style={'width': '35%'}
             ),
-            dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '40%'}),
+            dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '30%'}),
             dcc.ConfirmDialog(id='confirm-dialog', message=f'The PDF has been saved successfully. \nFolder: {report_directory}'),
             dcc.Loading(
                 id="loading",
@@ -219,4 +219,4 @@ def display_dialog_after_pdf(saved_message: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False, host='0.0.0.0')
+    app.run_server(debug=True, host='0.0.0.0')

@@ -37,8 +37,8 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
         },
         children=[
             html.H1(
-                'GREEN REPORT',
-                style={'marginRight': '20px'}
+                'GITHUB REPORT',
+                style={'marginRight': '20px', 'width': '15%'}
             ),
             dcc.Dropdown(
                 id='file-selector', maxHeight=1000,
@@ -293,4 +293,4 @@ def display_dialog_after_pdf(saved_message: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False, port=GREEN_REPORT_PORT, host='0.0.0.0')
+    app.run_server(debug=True, port=GREEN_REPORT_PORT, host='0.0.0.0')
