@@ -1,9 +1,10 @@
 # mx-sdk-analytics
-Tool for data gathering and analysis (on SDKs usage).
+Tool for data gathering and analysis on SDKs usage.
 
 ## ENVIRONMENT VARIABLES
 - LIBRARIES_IO_API_KEY (Api key for the libraries.io account)
 - JSON_FOLDER (Folder where generated json files are stored after gathering data from Repository sites - "./Output" for development mode)
+- REPORT_FOLDER (Folder where saved .pdf files are stored)
 - MX_GITHUB_TOKEN (Github fine-grained personal access token that gives access to traffic and community api pages)
 
 ## INSTALL
@@ -25,10 +26,13 @@ pip install -r ./requirements-dev.txt --upgrade
 ## CONFIGURATION
 ### CONSTANTS.PY
 - GITHUB_OWN_ORGANIZATION - the organization to which the Github token belongs to, which allows for traffic data to be obtained
+- adjust time needed to load different components when exporting the report as pdf (Ex: GREEN_PDF_SAVE_WAIT_FOR_TABS_COMPONENT_LOAD = 2000)
 
-### ECOSYSTEM.PY
+### ECOSYSTEM_CONFIGURATION.PY
 - Enables adding or removing organizations to/from the reports as well as filtering repositories
 
+### ECOSYSTEM.PY
+- Enables fine-tunig for filtering the repositories
 
 ## RUN
 ### GATHER-DATA - script to be run on a weekly basis that fetches data from repository sites and saves it in a json format in the JSON_FOLDER
@@ -58,6 +62,7 @@ pip install -r ./requirements-dev.txt --upgrade
  - the file rendered can be changed from a drop-down menu inside the report
  - different organizations can be accessed through a menu in the upper part of the report page
  - different repository sites can be accesed through tabs in the report
+ - the entire report can be exported to a pdf using a button in the upper part of the report page
 
 ### GREEN-REPORT - script that renders the visual report for GITHUB repository usage. Report available at port 8051
 ```
@@ -68,3 +73,4 @@ pip install -r ./requirements-dev.txt --upgrade
  - the file rendered can be changed from a drop-down menu inside the report
  - different organizations can be accesssed through tabs in the report
  - language based filtering is possible through a menu in the upper part of the report page
+ - the entire report can be exported to a pdf using a button in the upper part of the report page

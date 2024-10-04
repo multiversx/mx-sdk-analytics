@@ -1,3 +1,6 @@
+import asyncio
+import threading
+import time
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -5,18 +8,22 @@ import dash
 import plotly.graph_objs as go
 from constants import GREEN_REPORT_PORT
 from dash import Input, Output, dcc, html
+from dash.dependencies import State
 from dotenv.main import load_dotenv
 from github_fetcher import GithubFetcher, GithubPackage
 from utils import FormattedDate, Language, PackagesRegistry, get_environmen_var
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
+from multiversx_usage_analytics_tool.green_report_to_pdf import \
+    export_dash_report_to_pdf
 
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6ffe6'
 directory = get_environmen_var('JSON_FOLDER')
+report_directory = get_environmen_var('REPORT_FOLDER')
 
 json_files = sorted(Path(directory).glob('green*.json'), reverse=True)
 dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
@@ -34,13 +41,22 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
                 style={'marginRight': '20px'}
             ),
             dcc.Dropdown(
-                id='file-selector',
+                id='file-selector', maxHeight=1000,
                 options=dropdown_options,
                 value=dropdown_options[0]['value'],  # Set default value as the newest file generated
                 clearable=False,
-                style={'width': '40%'}
+                style={'width': '35%'}
             ),
             dcc.RadioItems(language_options, 'All', id='language-filter', inline=True, style={'width': '40%'}),
+            dcc.ConfirmDialog(id='confirm-dialog', message=f'The PDF has been saved successfully. \nFolder: {report_directory}'),
+            dcc.Loading(
+                id="loading",
+                type="default",
+                children=html.Div(id='loading-output', hidden=True),
+                fullscreen=True,
+                style={"backgroundColor": "rgba(0, 0, 0, 0.5)"},
+            ),
+            html.Button('Save PDF', id='save-pdf-button'),
         ]
     ),
 
@@ -206,9 +222,10 @@ def update_green_report(selected_file: str, selected_language: str):
     fetchers = {org: GithubFetcher.from_generated_file(selected_file, org.value) for org in EcosystemConfiguration}
     repo = PackagesRegistry.GITHUB
     return html.Div([
-        dcc.Tabs([
-            dcc.Tab(label=org.value.name, id="repo.repo_name", children=[
-                html.H1(f"{repo.name} Repositories Downloads"),
+        dcc.Tabs(id="org-selector", children=[
+            dcc.Tab(label=org.value.name, id=org.value.name, style={'font-weight': 'normal'},
+                    selected_style={'font-weight': 'bold'}, children=[
+                html.H1(f"{org.value.name} - {repo.name} Repositories Downloads {'' if selected_language == 'All' else ' - ' + selected_language}"),
                 html.H2('Two Weeks Download Data Table'),
                 create_table(fetchers[org], repo, selected_language),
                 html.H2('Clones & Visits Trends'),
@@ -228,9 +245,52 @@ def update_green_report(selected_file: str, selected_language: str):
                 create_package_info_box(fetchers[org], repo, selected_language)
             ])
             for org in EcosystemConfiguration
-        ])
+        ],
+            colors={
+            "border": "white",  # Border color
+            "primary": "blue",  # Color of the selected tab
+            "background": "lightgray"  # Color of the unselected tabs
+        }),
     ])
 
 
+def save_pdf(selected_file: str):
+    global message
+    message = ''
+    loop = asyncio.new_event_loop()  # Create a new event loop
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(export_dash_report_to_pdf(selected_file))
+    message = 'done'
+
+
+selected_file: str
+
+
+@app.callback(
+    Output('loading-output', 'children'),
+    Input('save-pdf-button', 'n_clicks'),
+    State('file-selector', 'value'),
+    prevent_initial_call=True
+)
+def trigger_pdf_generation(n_clicks: int, selected_file: str):
+    if n_clicks:
+        threading.Thread(target=save_pdf, args=(selected_file,)).start()
+        while message != 'done':
+            time.sleep(1)
+        return "Generating PDF..."
+    return ""
+
+
+@app.callback(
+    Output('confirm-dialog', 'displayed'),
+    Input('loading-output', 'children'),
+    prevent_initial_call=True
+)
+def display_dialog_after_pdf(saved_message: str):
+    if saved_message == "Generating PDF...":
+        return True
+    return False
+
+
 if __name__ == '__main__':
-    app.run_server(debug=True, port=GREEN_REPORT_PORT, host='0.0.0.0')
+    app.run_server(debug=False, port=GREEN_REPORT_PORT, host='0.0.0.0')
