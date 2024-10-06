@@ -169,8 +169,8 @@ def update_blue_report(selected_file: str, selected_organization: str):
                     id='downloads-graph',
                     figure=create_graph(fetcher, repo)
                 ),
-                html.H2('Libraries.io warnings'),
-                create_package_info_box(fetcher, repo)
+                html.H2('Libraries.io warnings') if organization.report_warnings else None,
+                create_package_info_box(fetcher, repo) if organization.report_warnings else None,
             ])
             for repo in PackagesRegistry if Reports.BLUE in repo.reports
         ],
@@ -219,4 +219,4 @@ def display_dialog_after_pdf(saved_message: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host='0.0.0.0')
+    app.run_server(debug=False, host='0.0.0.0')

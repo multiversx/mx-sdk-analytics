@@ -241,8 +241,8 @@ def update_green_report(selected_file: str, selected_language: str):
                         figure=create_visits_graph(fetchers[org], repo, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
-                html.H2('Health score warnings'),
-                create_package_info_box(fetchers[org], repo, selected_language)
+                html.H2('Health score warnings') if org.value.report_warnings else None,
+                create_package_info_box(fetchers[org], repo, selected_language) if org.value.report_warnings else None,
             ])
             for org in EcosystemConfiguration
         ],
@@ -293,4 +293,4 @@ def display_dialog_after_pdf(saved_message: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=GREEN_REPORT_PORT, host='0.0.0.0')
+    app.run_server(debug=False, port=GREEN_REPORT_PORT, host='0.0.0.0')
