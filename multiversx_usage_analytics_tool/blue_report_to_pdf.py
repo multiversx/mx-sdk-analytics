@@ -16,7 +16,8 @@ from multiversx_usage_analytics_tool.utils import (PackagesRegistry, Reports,
                                                    combine_pdfs,
                                                    get_pyppeteer_page,
                                                    is_empty_page,
-                                                   select_report)
+                                                   select_report,
+                                                   select_target_json_file)
 
 
 async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
@@ -94,4 +95,5 @@ async def export_dash_report_to_pdf(selected_file: str = ''):
     return "done"
 
 if __name__ == "__main__":
-    asyncio.run(export_dash_report_to_pdf())
+    selected_json = select_target_json_file(Reports.BLUE)
+    asyncio.run(export_dash_report_to_pdf(selected_json))

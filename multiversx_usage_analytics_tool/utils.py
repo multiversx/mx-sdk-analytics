@@ -1,8 +1,11 @@
 import os
 from datetime import datetime, timedelta
 from enum import Enum
+from pathlib import Path
 from typing import Any, List
 
+import inquirer
+from dotenv.main import load_dotenv
 from PyPDF2._merger import PdfMerger
 from pyppeteer.browser import Browser
 from pyppeteer.page import Page
@@ -193,3 +196,24 @@ async def is_empty_page(page: Page) -> bool:
         })();
     ''')
     return no_of_rows == 0
+
+
+def select_target_json_file(report_type: Reports) -> str:
+    report_port = GREEN_REPORT_PORT if report_type == Reports.GREEN else BLUE_REPORT_PORT
+    print(f'\nWARNING! Report should be available at port {report_port}.\n')
+    # display list of available json files
+    load_dotenv()
+    directory = get_environmen_var('JSON_FOLDER')
+
+    json_files = sorted(Path(directory).glob(f'{report_type.value}*.json'), reverse=True)
+    file_options = [file.name for file in json_files]
+
+    questions = [
+        inquirer.List('selected_file',
+                      message="Select a JSON file",
+                      choices=file_options,
+                      ),
+    ]
+
+    answers = inquirer.prompt(questions)
+    return answers['selected_file'] if answers else ''

@@ -26,7 +26,8 @@ pip install -r ./requirements-dev.txt --upgrade
 ## CONFIGURATION
 ### CONSTANTS.PY
 - GITHUB_OWN_ORGANIZATION - the organization to which the Github token belongs to, which allows for traffic data to be obtained
-- adjust time needed to load different components when exporting the report as pdf (Ex: GREEN_PDF_SAVE_WAIT_FOR_TABS_COMPONENT_LOAD = 2000)
+- BLUE_REPORT_PORT, GREEN_REPORT_PORT - Ports used for the Green and Blue Reports
+- adjust time needed to load different components when exporting the report as pdf (Ex: WAIT_FOR_TABS_COMPONENT_LOAD = 2000)
 
 ### ECOSYSTEM_CONFIGURATION.PY
 - Enables adding or removing organizations to/from the reports as well as filtering repositories
@@ -62,7 +63,6 @@ pip install -r ./requirements-dev.txt --upgrade
  - the file rendered can be changed from a drop-down menu inside the report
  - different organizations can be accessed through a menu in the upper part of the report page
  - different repository sites can be accesed through tabs in the report
- - the entire report can be exported to a pdf using a button in the upper part of the report page
 
 ### GREEN-REPORT - script that renders the visual report for GITHUB repository usage. Report available at port 8051
 ```
@@ -73,4 +73,30 @@ pip install -r ./requirements-dev.txt --upgrade
  - the file rendered can be changed from a drop-down menu inside the report
  - different organizations can be accesssed through tabs in the report
  - language based filtering is possible through a menu in the upper part of the report page
- - the entire report can be exported to a pdf using a button in the upper part of the report page
+
+### BLUE-REPORT-TO-PDF - script that exports the Blue Report in PDF format
+```
+   python ./multiversx_usage_analytics_tool/blue_report_to_pdf.py
+```
+
+ - exports the blue report in PDF format.
+ - the Blue Report must be available at BLUE_REPORT_PORT.
+ - the target report is selected from a list of available json files in the JSON_FOLDER
+
+ ### GREEN-REPORT-TO-PDF - script that exports the Green Report in PDF format
+```
+   python ./multiversx_usage_analytics_tool/green_report_to_pdf.py
+```
+
+ - exports the green report in PDF format.
+ - the Green Report must be available at GREEN_REPORT_PORT.
+ - the target report is selected from a list of available json files in the JSON_FOLDER
+
+## SOURCES
+- Github
+- npmjs.org
+- crates.io
+- pypi.org
+- pypistats.org
+- snyk.io
+- libraries.io
