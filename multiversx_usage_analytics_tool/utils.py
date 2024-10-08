@@ -1,9 +1,15 @@
 import os
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any
+from typing import Any, List
 
-from constants import DATE_FORMAT
+from PyPDF2._merger import PdfMerger
+from pyppeteer.browser import Browser
+from pyppeteer.page import Page
+
+from multiversx_usage_analytics_tool.constants import (
+    BLUE_REPORT_PORT, DATE_FORMAT, GREEN_REPORT_PORT,
+    WAIT_FOR_DROPDOWN_COMPONENT_LOAD)
 
 
 class Reports (Enum):
@@ -107,3 +113,83 @@ def get_environmen_var(env_var: str) -> Any:
 def check_required_environment_variables() -> Any:
     for env_var in ['JSON_FOLDER']:
         get_environmen_var(env_var)
+
+
+# save to pdf common methods
+
+def combine_pdfs(pdf_files: List[str], output_pdf: str):
+    merger = PdfMerger()
+
+    for pdf_file in pdf_files:
+        merger.append(pdf_file)
+
+    merger.write(output_pdf)
+    merger.close()
+    print(f"Combined PDF saved as: {output_pdf}")
+
+
+async def get_pyppeteer_page(browser: Browser, report_type: Reports) -> Page:
+    report_port = GREEN_REPORT_PORT if report_type == Reports.GREEN else BLUE_REPORT_PORT
+
+    page = await browser.newPage()
+    await page.setViewport({'width': 1440, 'height': 1080})
+    DASH_APP_URL = f'http://0.0.0.0:{report_port}/'
+    await page.goto(DASH_APP_URL)
+
+    return page
+
+
+async def select_report(page: Page, selected_file: str) -> str:
+    wait_for_dropdown_selection_to_load_time = WAIT_FOR_DROPDOWN_COMPONENT_LOAD
+    # click on selected file received from dash
+    file_selector_id = 'file-selector'
+    await page.waitForSelector(f'#{file_selector_id}')
+    if selected_file:
+        desired_value = selected_file.split('/')[-1]  # extract file name without path
+        await page.click(f'#{file_selector_id} .Select-control')
+        await page.waitForSelector('.Select-menu-outer')
+
+        files = await page.evaluate('''() => {
+            let elements = document.querySelectorAll('.VirtualizedSelectOption');
+            let options_text = [];
+            elements.forEach(option => options_text.push(option.textContent));
+            return options_text;
+        }''')
+        desired_index = None
+        for index, option in enumerate(files):
+            if desired_value in option:
+                desired_index = index
+                break
+
+        if desired_index is not None:
+            option_selector = f'.Select-menu-outer .VirtualizedSelectOption:nth-child({desired_index + 1})'
+            await page.click(option_selector)
+            page.waitFor(wait_for_dropdown_selection_to_load_time)
+
+    # Get the selected json file name
+    selected_value: str = await page.evaluate(f'''
+        document.querySelector("#{file_selector_id}").textContent;
+    ''')
+    print()
+    print(f"Target report: {selected_value}")
+    file_name = selected_value.split('.')[0]  # extract name without extension
+    output = f'{file_name}.pdf' if any(repo_type in selected_value for repo_type in ['blue', 'green']) else 'combined.pdf'
+
+    return output
+
+
+async def is_empty_page(page: Page) -> bool:
+    await page.waitForSelector('#downloads_table')
+    # await page.waitForSelector('#downloads_table tr')  # Wait for at least one row to appear
+    no_of_rows = await page.evaluate('''
+        (function() {
+            var table = document.querySelector('#downloads_table');
+            if (table) {
+                var rows = table.querySelectorAll('tbody tr, tr:not(thead tr)');
+                return rows.length;
+            } else {
+                return 0;
+            }
+        })();
+    ''')
+    return no_of_rows == 0

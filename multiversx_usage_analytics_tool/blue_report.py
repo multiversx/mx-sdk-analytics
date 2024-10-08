@@ -1,17 +1,12 @@
-import asyncio
-import threading
-import time
 from pathlib import Path
 from typing import Any, Dict, cast
 
 import dash
 import plotly.graph_objs as go
-from blue_report_to_pdf import export_dash_report_to_pdf
-from constants import DAYS_IN_MONTHLY_REPORT
 from dash import Input, Output, dcc, html
-from dash.dependencies import State
 from dotenv.main import load_dotenv
 
+from multiversx_usage_analytics_tool.constants import DAYS_IN_MONTHLY_REPORT
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 from multiversx_usage_analytics_tool.fetcher import Package
@@ -52,15 +47,6 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
                 style={'width': '35%'}
             ),
             dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '30%'}),
-            dcc.ConfirmDialog(id='confirm-dialog', message=f'The PDF has been saved successfully. \nFolder: {report_directory}'),
-            dcc.Loading(
-                id="loading",
-                type="default",
-                children=html.Div(id='loading-output', hidden=True),
-                fullscreen=True,
-                style={"backgroundColor": "rgba(0, 0, 0, 0.5)"},
-            ),
-            html.Button('Save PDF', id='save-pdf-button'),
         ]
     ),
 
@@ -70,7 +56,7 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
 
 
 def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
-    header_row = [
+    header_row = html.Thead([
         html.Th('Package'),
         html.Th(['Downloads', html.Br(), 'last month']),
         html.Th(['Downloads', html.Br(), 'last week']),
@@ -78,9 +64,8 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
         html.Th(['Libraries.io', html.Br(), 'Score']),
         html.Th(['Site', html.Br(), ' Score']),
         html.Th('Site Score Details')
-    ]
-
-    table_header = [html.Tr(header_row)]
+    ])
+    table_header = [header_row]
     table_rows = []
     packages: list[Package] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
@@ -97,7 +82,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
         ]
         table_rows.append(html.Tr(row))
 
-    return html.Table(table_header + table_rows, style={
+    return html.Table(table_header + table_rows, id='downloads_table', style={
         'width': '98%',
         'borderCollapse': 'collapse',
     })
@@ -180,42 +165,6 @@ def update_blue_report(selected_file: str, selected_organization: str):
             "background": "lightgray"  # Color of the unselected tabs
         }),
     ])
-
-
-def save_pdf(selected_file: str):
-    global message
-    message = ''
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(export_dash_report_to_pdf(selected_file))
-    message = 'done'
-    return message
-
-
-@app.callback(
-    Output('loading-output', 'children'),
-    Input('save-pdf-button', 'n_clicks'),
-    State('file-selector', 'value'),
-    prevent_initial_call=True
-)
-def trigger_pdf_generation(n_clicks: int, selected_file: str):
-    if n_clicks:
-        threading.Thread(target=save_pdf, args=(selected_file,)).start()
-        while message != 'done':
-            time.sleep(1)
-        return "Generating PDF..."
-    return ""
-
-
-@app.callback(
-    Output('confirm-dialog', 'displayed'),
-    Input('loading-output', 'children'),
-    prevent_initial_call=True
-)
-def display_dialog_after_pdf(saved_message: str):
-    if saved_message == "Generating PDF...":
-        return True
-    return False
 
 
 if __name__ == '__main__':

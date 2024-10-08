@@ -1,6 +1,3 @@
-import asyncio
-import threading
-import time
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -8,15 +5,12 @@ import dash
 import plotly.graph_objs as go
 from constants import GREEN_REPORT_PORT
 from dash import Input, Output, dcc, html
-from dash.dependencies import State
 from dotenv.main import load_dotenv
 from github_fetcher import GithubFetcher, GithubPackage
 from utils import FormattedDate, Language, PackagesRegistry, get_environmen_var
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
-from multiversx_usage_analytics_tool.green_report_to_pdf import \
-    export_dash_report_to_pdf
 
 load_dotenv()
 
@@ -48,15 +42,6 @@ app.layout = html.Div(style={'backgroundColor': background_color}, children=[
                 style={'width': '35%'}
             ),
             dcc.RadioItems(language_options, 'All', id='language-filter', inline=True, style={'width': '40%'}),
-            dcc.ConfirmDialog(id='confirm-dialog', message=f'The PDF has been saved successfully. \nFolder: {report_directory}'),
-            dcc.Loading(
-                id="loading",
-                type="default",
-                children=html.Div(id='loading-output', hidden=True),
-                fullscreen=True,
-                style={"backgroundColor": "rgba(0, 0, 0, 0.5)"},
-            ),
-            html.Button('Save PDF', id='save-pdf-button'),
         ]
     ),
 
@@ -129,7 +114,7 @@ def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: st
         ]
         table_rows.append(html.Tr(row))
 
-    return html.Table(table_header + table_rows, style={
+    return html.Table(table_header + table_rows, id='downloads_table', style={
         'width': '98%',
         'borderCollapse': 'collapse',
     })
@@ -252,44 +237,6 @@ def update_green_report(selected_file: str, selected_language: str):
             "background": "lightgray"  # Color of the unselected tabs
         }),
     ])
-
-
-def save_pdf(selected_file: str):
-    global message
-    message = ''
-    loop = asyncio.new_event_loop()  # Create a new event loop
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(export_dash_report_to_pdf(selected_file))
-    message = 'done'
-
-
-selected_file: str
-
-
-@app.callback(
-    Output('loading-output', 'children'),
-    Input('save-pdf-button', 'n_clicks'),
-    State('file-selector', 'value'),
-    prevent_initial_call=True
-)
-def trigger_pdf_generation(n_clicks: int, selected_file: str):
-    if n_clicks:
-        threading.Thread(target=save_pdf, args=(selected_file,)).start()
-        while message != 'done':
-            time.sleep(1)
-        return "Generating PDF..."
-    return ""
-
-
-@app.callback(
-    Output('confirm-dialog', 'displayed'),
-    Input('loading-output', 'children'),
-    prevent_initial_call=True
-)
-def display_dialog_after_pdf(saved_message: str):
-    if saved_message == "Generating PDF...":
-        return True
-    return False
 
 
 if __name__ == '__main__':
