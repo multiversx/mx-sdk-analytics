@@ -183,7 +183,6 @@ async def select_report(page: Page, selected_file: str) -> str:
 
 async def is_empty_page(page: Page) -> bool:
     await page.waitForSelector('#downloads_table')
-    # await page.waitForSelector('#downloads_table tr')  # Wait for at least one row to appear
     no_of_rows = await page.evaluate('''
         (function() {
             var table = document.querySelector('#downloads_table');
