@@ -1,14 +1,19 @@
 
 import os
+import time
 from http import HTTPStatus
 from typing import Any, Dict, List, cast
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from constants import DAYS_IN_MONTHLY_REPORT, DEFAULT_DATE, NPM_PAGE_SIZE
 from fetcher import DailyActivity, Fetcher, Package, Score
 from tqdm import tqdm
 
+from multiversx_usage_analytics_tool.constants import (DAYS_IN_MONTHLY_REPORT,
+                                                       DEFAULT_DATE,
+                                                       NO_OF_RETRIES,
+                                                       NPM_PAGE_SIZE,
+                                                       SECONDS_BEFORE_RETRY)
 from multiversx_usage_analytics_tool.ecosystem import Organization
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
                                                    PackagesRegistry, Reports)
@@ -129,7 +134,7 @@ class PackageManagersFetcher(Fetcher):
         super().write_json(repo_type)
 
     def get_request(self, url: str) -> requests.Response:
-        retries = 10
+        retries = NO_OF_RETRIES
         response = requests.Response()
         while retries > 0:
             response = requests.get(url)
@@ -137,6 +142,7 @@ class PackageManagersFetcher(Fetcher):
                 break
             else:
                 retries = retries - 1
+                time.sleep(SECONDS_BEFORE_RETRY)
         return response
 
     def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
