@@ -16,43 +16,53 @@ from multiversx_usage_analytics_tool.utils import (FormattedDate,
                                                    PackagesRegistry, Reports,
                                                    get_environmen_var)
 
+
+def get_dropdown_options(folder: str):
+    json_files = sorted(Path(folder).glob('blue*.json'), reverse=True)
+    return [{'label': file.name, 'value': str(file)} for file in json_files]
+
+
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6f7ff'
-directory = get_environmen_var('JSON_FOLDER')
-report_directory = get_environmen_var('REPORT_FOLDER')
 
-json_files = sorted(Path(directory).glob('blue*.json'), reverse=True)
-dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
-organization_options = [item.value.name for item in EcosystemConfiguration]
 
-# Layout of the Dash app
-app.layout = html.Div(style={'backgroundColor': background_color}, children=[
-    html.Div(
-        style={
-            'display': 'flex',
-            'alignItems': 'center'
-        },
-        children=[
-            html.H1(
-                'PACKAGE MANAGERS REPORT',
-                style={'marginRight': '20px', 'width': '30%'}
-            ),
-            dcc.Dropdown(
-                id='file-selector', maxHeight=1000,
-                options=dropdown_options,
-                value=dropdown_options[0]['value'],  # Set default value as the newest file generated
-                clearable=False,
-                style={'width': '35%'}
-            ),
-            dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '30%'}),
-        ]
-    ),
+def get_layout():
+    directory = get_environmen_var('JSON_FOLDER')
+    dropdown_options = get_dropdown_options(directory)
+    selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
+    organization_options = [item.value.name for item in EcosystemConfiguration]
 
-    # Container for dynamic content
-    html.Div(id='report-content')
-])
+    # Layout of the Dash app
+    return html.Div(style={'backgroundColor': background_color}, children=[
+        html.Div(
+            style={
+                'display': 'flex',
+                'alignItems': 'center'
+            },
+            children=[
+                html.H1(
+                    'PACKAGE MANAGERS REPORT',
+                    style={'marginRight': '20px', 'width': '30%'}
+                ),
+                dcc.Dropdown(
+                    id='file-selector', maxHeight=1000,
+                    options=dropdown_options,
+                    value=selected_option,
+                    clearable=False,
+                    style={'width': '35%'}
+                ),
+                dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '30%'}),
+            ]
+        ),
+
+        # Container for dynamic content
+        html.Div(id='report-content')
+    ])
+
+
+app.layout = get_layout
 
 
 def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):

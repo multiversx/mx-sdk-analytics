@@ -12,42 +12,53 @@ from utils import FormattedDate, Language, PackagesRegistry, get_environmen_var
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 
+
+def get_dropdown_options(folder: str):
+    json_files = sorted(Path(folder).glob('green*.json'), reverse=True)
+    return [{'label': file.name, 'value': str(file)} for file in json_files]
+
+
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6ffe6'
-directory = get_environmen_var('JSON_FOLDER')
-report_directory = get_environmen_var('REPORT_FOLDER')
 
-json_files = sorted(Path(directory).glob('green*.json'), reverse=True)
-dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
-language_options = ['All'] + [lang.lang_name for lang in Language]
-# Layout of the Dash app
-app.layout = html.Div(style={'backgroundColor': background_color}, children=[
-    html.Div(
-        style={
-            'display': 'flex',
-            'alignItems': 'center'
-        },
-        children=[
-            html.H1(
-                'GITHUB REPORT',
-                style={'marginRight': '20px', 'width': '15%'}
-            ),
-            dcc.Dropdown(
-                id='file-selector', maxHeight=1000,
-                options=dropdown_options,
-                value=dropdown_options[0]['value'],  # Set default value as the newest file generated
-                clearable=False,
-                style={'width': '35%'}
-            ),
-            dcc.RadioItems(language_options, 'All', id='language-filter', inline=True, style={'width': '40%'}),
-        ]
-    ),
 
-    # Container for dynamic content
-    html.Div(id='report-content')
-])
+def get_layout():
+    directory = get_environmen_var('JSON_FOLDER')
+    language_options = ['All'] + [lang.lang_name for lang in Language]
+    dropdown_options = get_dropdown_options(directory)
+    selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
+
+    # Layout of the Dash app
+    return html.Div(style={'backgroundColor': background_color}, children=[
+        html.Div(
+            style={
+                'display': 'flex',
+                'alignItems': 'center'
+            },
+            children=[
+                html.H1(
+                    'GITHUB REPORT',
+                    style={'marginRight': '20px', 'width': '15%'}
+                ),
+                dcc.Dropdown(
+                    id='file-selector', maxHeight=1000,
+                    options=dropdown_options,
+                    value=selected_option,
+                    clearable=False,
+                    style={'width': '35%'}
+                ),
+                dcc.RadioItems(language_options, 'All', id='language-filter', inline=True, style={'width': '40%'}),
+            ]
+        ),
+
+        # Container for dynamic content
+        html.Div(id='report-content')
+    ])
+
+
+app.layout = get_layout
 
 
 def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: str):
