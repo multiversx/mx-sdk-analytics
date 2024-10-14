@@ -12,41 +12,53 @@ from utils import FormattedDate, Language, PackagesRegistry, get_environmen_var
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 
+
+def get_dropdown_options(folder: str):
+    json_files = sorted(Path(folder).glob('green*.json'), reverse=True)
+    return [{'label': file.name, 'value': str(file)} for file in json_files]
+
+
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6ffe6'
-directory = get_environmen_var('JSON_FOLDER')
 
-json_files = sorted(Path(directory).glob('green*.json'), reverse=True)
-dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
-language_options = ['All'] + [lang.lang_name for lang in Language]
-# Layout of the Dash app
-app.layout = html.Div(style={'backgroundColor': background_color}, children=[
-    html.Div(
-        style={
-            'display': 'flex',
-            'alignItems': 'center'
-        },
-        children=[
-            html.H1(
-                'GREEN REPORT',
-                style={'marginRight': '20px'}
-            ),
-            dcc.Dropdown(
-                id='file-selector',
-                options=dropdown_options,
-                value=dropdown_options[0]['value'],  # Set default value as the newest file generated
-                clearable=False,
-                style={'width': '40%'}
-            ),
-            dcc.RadioItems(language_options, 'All', id='language-filter', inline=True, style={'width': '40%'}),
-        ]
-    ),
 
-    # Container for dynamic content
-    html.Div(id='report-content')
-])
+def get_layout():
+    directory = get_environmen_var('JSON_FOLDER')
+    language_options = ['All'] + [lang.lang_name for lang in Language]
+    dropdown_options = get_dropdown_options(directory)
+    selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
+
+    # Layout of the Dash app
+    return html.Div(style={'backgroundColor': background_color}, children=[
+        html.Div(
+            style={
+                'display': 'flex',
+                'alignItems': 'center'
+            },
+            children=[
+                html.H1(
+                    'GITHUB REPORT',
+                    style={'marginRight': '20px', 'width': '15%'}
+                ),
+                dcc.Dropdown(
+                    id='file-selector', maxHeight=1000,
+                    options=dropdown_options,
+                    value=selected_option,
+                    clearable=False,
+                    style={'width': '35%'}
+                ),
+                dcc.RadioItems(language_options, 'All', id='language-filter', inline=True, style={'width': '40%'}),
+            ]
+        ),
+
+        # Container for dynamic content
+        html.Div(id='report-content')
+    ])
+
+
+app.layout = get_layout
 
 
 def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: str):
@@ -113,7 +125,7 @@ def create_table(fetcher: GithubFetcher, section: PackagesRegistry, language: st
         ]
         table_rows.append(html.Tr(row))
 
-    return html.Table(table_header + table_rows, style={
+    return html.Table(table_header + table_rows, id='downloads_table', style={
         'width': '98%',
         'borderCollapse': 'collapse',
     })
@@ -206,9 +218,10 @@ def update_green_report(selected_file: str, selected_language: str):
     fetchers = {org: GithubFetcher.from_generated_file(selected_file, org.value) for org in EcosystemConfiguration}
     repo = PackagesRegistry.GITHUB
     return html.Div([
-        dcc.Tabs([
-            dcc.Tab(label=org.value.name, id="repo.repo_name", children=[
-                html.H1(f"{repo.name} Repositories Downloads"),
+        dcc.Tabs(id="org-selector", children=[
+            dcc.Tab(label=org.value.name, id=org.value.name, style={'font-weight': 'normal'},
+                    selected_style={'font-weight': 'bold'}, children=[
+                html.H1(f"{org.value.name} - {repo.name} Repositories Downloads {'' if selected_language == 'All' else ' - ' + selected_language}"),
                 html.H2('Two Weeks Download Data Table'),
                 create_table(fetchers[org], repo, selected_language),
                 html.H2('Clones & Visits Trends'),
@@ -224,13 +237,18 @@ def update_green_report(selected_file: str, selected_language: str):
                         figure=create_visits_graph(fetchers[org], repo, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
-                html.H2('Health score warnings'),
-                create_package_info_box(fetchers[org], repo, selected_language)
+                html.H2('Health score warnings') if org.value.report_warnings else None,
+                create_package_info_box(fetchers[org], repo, selected_language) if org.value.report_warnings else None,
             ])
             for org in EcosystemConfiguration
-        ])
+        ],
+            colors={
+            "border": "white",  # Border color
+            "primary": "blue",  # Color of the selected tab
+            "background": "lightgray"  # Color of the unselected tabs
+        }),
     ])
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=GREEN_REPORT_PORT, host='0.0.0.0')
+    app.run_server(debug=False, port=GREEN_REPORT_PORT, host='0.0.0.0')

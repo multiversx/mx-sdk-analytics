@@ -9,6 +9,8 @@ from multiversx_usage_analytics_tool.utils import PackagesRegistry
 class Organization:
     def __init__(self,
                  name: str = '',
+                 gather_data: bool = False,
+                 report_warnings: bool = False,
                  search_includes: Dict[PackagesRegistry, str] = {},
                  search_excludes: Dict[PackagesRegistry, str] = {},
                  github_organization: str = '',
@@ -16,6 +18,8 @@ class Organization:
                  ) -> None:
 
         self.name = name
+        self.gather_data = gather_data
+        self.report_warnings = report_warnings
         self.search_includes: Dict[PackagesRegistry, str] = search_includes
         self.search_excludes: Dict[PackagesRegistry, str] = search_excludes
         self.github_name = github_organization

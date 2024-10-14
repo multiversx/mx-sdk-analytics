@@ -1,14 +1,19 @@
 
 import os
+import time
 from http import HTTPStatus
 from typing import Any, Dict, List, cast
 
 import requests
 from bs4 import BeautifulSoup, Tag
-from constants import DAYS_IN_MONTHLY_REPORT, DEFAULT_DATE, NPM_PAGE_SIZE
 from fetcher import DailyActivity, Fetcher, Package, Score
 from tqdm import tqdm
 
+from multiversx_usage_analytics_tool.constants import (DAYS_IN_MONTHLY_REPORT,
+                                                       DEFAULT_DATE,
+                                                       NO_OF_RETRIES,
+                                                       NPM_PAGE_SIZE,
+                                                       SECONDS_BEFORE_RETRY)
 from multiversx_usage_analytics_tool.ecosystem import Organization
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
                                                    PackagesRegistry, Reports)
@@ -128,11 +133,25 @@ class PackageManagersFetcher(Fetcher):
     def write_json(self, repo_type=Reports.BLUE.value):
         super().write_json(repo_type)
 
+    def get_request(self, url: str) -> requests.Response:
+        retries = NO_OF_RETRIES
+        response = requests.Response()
+        while retries > 0:
+            response = requests.get(url)
+            if response.status_code not in [HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.BAD_GATEWAY]:
+                break
+            else:
+                retries = retries - 1
+                time.sleep(SECONDS_BEFORE_RETRY)
+        return response
+
     def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
         libraries_io_api_key = os.environ.get('LIBRARIES_IO_API_KEY')
         package = package_name.replace('/', '%2F')
         url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
-        response = requests.get(url)
+        response = self.get_request(url)
+        if response.status_code == HTTPStatus.NOT_FOUND:
+            return {}
         response.raise_for_status()
         return response.json()
 
@@ -143,7 +162,7 @@ class PackageManagersFetcher(Fetcher):
 
         while True:
             url = self.organization.get_search_url_string(PackagesRegistry.NPM, page)
-            response = requests.get(url)
+            response = self.get_request(url)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('objects', [])
@@ -157,7 +176,7 @@ class PackageManagersFetcher(Fetcher):
 
     def fetch_npm_downloads(self, package_name: str) -> Dict[str, Any]:
         url = f'https://api.npmjs.org/downloads/range/{self.start_date}:{self.end_date}/{package_name}'
-        response = requests.get(url)
+        response = self.get_request(url)
         if 'not found' in response.text:
             return {}
         response.raise_for_status()
@@ -169,7 +188,7 @@ class PackageManagersFetcher(Fetcher):
         search_string = f'?q={pattern}'
         while search_string:
             url = PackagesRegistry.CARGO.downloads_url + search_string
-            response = requests.get(url)
+            response = self.get_request(url)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('crates', [])
@@ -181,7 +200,7 @@ class PackageManagersFetcher(Fetcher):
 
     def fetch_crates_downloads(self, package_name: str):
         url = f"https://crates.io/api/v1/crates/{package_name}/downloads"
-        response = requests.get(url)
+        response = self.get_request(url)
         response.raise_for_status()
         data = response.json()
         data['version_downloads'] = [entry for entry in data['version_downloads'] if self.start_date <= entry['date'] <= self.end_date]
@@ -211,7 +230,7 @@ class PackageManagersFetcher(Fetcher):
     def fetch_pypi_package_score(self, package_name: str) -> Dict[str, Any]:
         score_details = {}
         url = f"https://snyk.io/advisor/python/{package_name}"
-        response = requests.get(url)
+        response = self.get_request(url)
 
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -239,7 +258,7 @@ class PackageManagersFetcher(Fetcher):
 
     def fetch_pypi_downloads(self, package_name: str):
         url = f"https://pypistats.org/api/packages/{package_name}/overall"
-        response = requests.get(url)
+        response = self.get_request(url)
         response.raise_for_status()
         data = response.json()
         data['data'] = [entry for entry in data['data']

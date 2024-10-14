@@ -3,10 +3,10 @@ from typing import Any, Dict, cast
 
 import dash
 import plotly.graph_objs as go
-from constants import DAYS_IN_MONTHLY_REPORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 
+from multiversx_usage_analytics_tool.constants import DAYS_IN_MONTHLY_REPORT
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 from multiversx_usage_analytics_tool.fetcher import Package
@@ -16,46 +16,57 @@ from multiversx_usage_analytics_tool.utils import (FormattedDate,
                                                    PackagesRegistry, Reports,
                                                    get_environmen_var)
 
+
+def get_dropdown_options(folder: str):
+    json_files = sorted(Path(folder).glob('blue*.json'), reverse=True)
+    return [{'label': file.name, 'value': str(file)} for file in json_files]
+
+
 load_dotenv()
 
 app = dash.Dash(__name__)
 background_color = '#e6f7ff'
-directory = get_environmen_var('JSON_FOLDER')
 
-json_files = sorted(Path(directory).glob('blue*.json'), reverse=True)
-dropdown_options = [{'label': file.name, 'value': str(file)} for file in json_files]
-organization_options = [item.value.name for item in EcosystemConfiguration]
 
-# Layout of the Dash app
-app.layout = html.Div(style={'backgroundColor': background_color}, children=[
-    html.Div(
-        style={
-            'display': 'flex',
-            'alignItems': 'center'
-        },
-        children=[
-            html.H1(
-                'BLUE REPORT',
-                style={'marginRight': '20px'}
-            ),
-            dcc.Dropdown(
-                id='file-selector',
-                options=dropdown_options,
-                value=dropdown_options[0]['value'],  # Set default value as the newest file generated
-                clearable=False,
-                style={'width': '40%'}
-            ),
-            dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '40%'}),
-        ]
-    ),
+def get_layout():
+    directory = get_environmen_var('JSON_FOLDER')
+    dropdown_options = get_dropdown_options(directory)
+    selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
+    organization_options = [item.value.name for item in EcosystemConfiguration]
 
-    # Container for dynamic content
-    html.Div(id='report-content')
-])
+    # Layout of the Dash app
+    return html.Div(style={'backgroundColor': background_color}, children=[
+        html.Div(
+            style={
+                'display': 'flex',
+                'alignItems': 'center'
+            },
+            children=[
+                html.H1(
+                    'PACKAGE MANAGERS REPORT',
+                    style={'marginRight': '20px', 'width': '30%'}
+                ),
+                dcc.Dropdown(
+                    id='file-selector', maxHeight=1000,
+                    options=dropdown_options,
+                    value=selected_option,
+                    clearable=False,
+                    style={'width': '35%'}
+                ),
+                dcc.RadioItems(organization_options, organization_options[0], id='organization-selector', inline=True, style={'width': '30%'}),
+            ]
+        ),
+
+        # Container for dynamic content
+        html.Div(id='report-content')
+    ])
+
+
+app.layout = get_layout
 
 
 def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
-    header_row = [
+    header_row = html.Thead([
         html.Th('Package'),
         html.Th(['Downloads', html.Br(), 'last month']),
         html.Th(['Downloads', html.Br(), 'last week']),
@@ -63,9 +74,8 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
         html.Th(['Libraries.io', html.Br(), 'Score']),
         html.Th(['Site', html.Br(), ' Score']),
         html.Th('Site Score Details')
-    ]
-
-    table_header = [html.Tr(header_row)]
+    ])
+    table_header = [header_row]
     table_rows = []
     packages: list[Package] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
@@ -82,7 +92,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
         ]
         table_rows.append(html.Tr(row))
 
-    return html.Table(table_header + table_rows, style={
+    return html.Table(table_header + table_rows, id='downloads_table', style={
         'width': '98%',
         'borderCollapse': 'collapse',
     })
@@ -143,8 +153,9 @@ def update_blue_report(selected_file: str, selected_organization: str):
     fetcher = PackageManagersFetcher.from_generated_file(selected_file, organization)
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=repo.repo_name, id=repo.repo_name.replace('.', '-'), children=[
-                html.H1(f"{repo.name} Package Downloads"),
+            dcc.Tab(label=repo.repo_name, id=repo.repo_name.replace('.', '-'), style={'font-weight': 'normal'},
+                    selected_style={'font-weight': 'bold'}, children=[
+                html.H1(f"{organization.name} - {repo.name} Package Downloads"),
                 html.H2('Download Data Table'),
                 create_table(fetcher, repo),
 
@@ -153,13 +164,18 @@ def update_blue_report(selected_file: str, selected_organization: str):
                     id='downloads-graph',
                     figure=create_graph(fetcher, repo)
                 ),
-                html.H2('Libraries.io warnings'),
-                create_package_info_box(fetcher, repo)
+                html.H2('Libraries.io warnings') if organization.report_warnings else None,
+                create_package_info_box(fetcher, repo) if organization.report_warnings else None,
             ])
             for repo in PackagesRegistry if Reports.BLUE in repo.reports
-        ])
+        ],
+            colors={
+            "border": "white",  # Border color
+            "primary": "blue",  # Color of the selected tab
+            "background": "lightgray"  # Color of the unselected tabs
+        }),
     ])
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host='0.0.0.0')
+    app.run_server(debug=False, host='0.0.0.0')
