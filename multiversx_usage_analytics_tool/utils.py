@@ -81,10 +81,12 @@ class UserAgentGroup(Enum):
 
     @staticmethod
     def find(user_agent_name: str) -> str:
-        if any(u in user_agent_name.lower() for u in UserAgentGroup.MULTIVERSX.group_prefixes):
-            return user_agent_name
-        group = next((user_agent for user_agent in UserAgentGroup if any(u in user_agent_name.lower() for u in user_agent.group_prefixes)), UserAgentGroup.OTHER)
-        return group.group_name
+        group_name = next(
+            (user_agent.group_name for user_agent in UserAgentGroup if user_agent is not UserAgentGroup.MULTIVERSX and any(
+                u in user_agent_name.lower() for u in user_agent.group_prefixes
+            )
+            ), user_agent_name)
+        return group_name
 
 
 class FormattedDate:

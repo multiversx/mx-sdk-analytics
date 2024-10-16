@@ -1,10 +1,17 @@
-import json
 from typing import Any, Dict, List
 
-from multiversx_usage_analytics_tool.fetcher import DailyActivity, Fetcher, Package
-from multiversx_usage_analytics_tool.constants import DEFAULT_DATE
+from dotenv.main import load_dotenv
+from elastic_transport._response import ObjectApiResponse
+from indexer import Indexer
+
+from multiversx_usage_analytics_tool.constants import (
+    DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE, INDEX_NAME, LOG_URL)
 from multiversx_usage_analytics_tool.ecosystem import Organization
-from multiversx_usage_analytics_tool.utils import Indexes, UserAgentGroup
+from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
+                                                     Package)
+from multiversx_usage_analytics_tool.utils import (FormattedDate,
+                                                   UserAgentGroup,
+                                                   get_environment_var)
 
 
 class ElasticDailyActivity(DailyActivity):
@@ -23,7 +30,7 @@ class ElasticPackage(Package):
         return ElasticDailyActivity.from_generated_file(item)
 
     @staticmethod
-    def from_aggregate_elastic_search(elastic_source: str, response: Dict[str, Any]) -> 'ElasticPackage':
+    def from_aggregate_elastic_search(response: Dict[str, Any]) -> 'ElasticPackage':
         result = ElasticPackage()
         raw_downloads = response.get('docs_per_day', {}).get('buckets', [])
 
@@ -32,7 +39,7 @@ class ElasticPackage(Package):
         result.package_name = package_name
         result.no_of_downloads = response.get('doc_count', 0)
         result.package_site = UserAgentGroup.find(package_name)
-        result.package_language = elastic_source
+
         return result
 
 
@@ -40,28 +47,29 @@ class ElasticFetcher(Fetcher):
     def get_package(self, item: Dict[str, Any]) -> ElasticPackage:
         return ElasticPackage.from_generated_file(item)
 
-    def get_user_agent_aggregate_packages(self, elastic_source: str, response: Dict[str, Any]) -> List[ElasticPackage]:
-        raw_downloads = response.get("aggregations", {}).get("useragent_aggregation", {}).get("buckets", [])
-        return [ElasticPackage.from_aggregate_elastic_search(elastic_source, item) for item in raw_downloads]
+    def get_user_agent_aggregate_packages(self, response: ObjectApiResponse[Any]) -> List[ElasticPackage]:
+        raw_downloads = response.get("aggregations", {}).get("user_agents", {}).get("buckets", [])
+        return [ElasticPackage.from_aggregate_elastic_search(item) for item in raw_downloads]
 
-    def fetch_aggregate_data(self, index: str) -> Dict[str, Any]:
-        # TODO
-        file_name = './TestingData/elastic_aggregate.json'
-        with open(file_name, 'r') as file:
-            received_json: Dict[str, Any] = json.load(file)
-        return received_json
+    def fetch_aggregate_data(self, end_date: str) -> ObjectApiResponse[Any]:
+        load_dotenv()
+        indexer = Indexer(LOG_URL, get_environment_var('ELASTIC_SEARCH_USER'), get_environment_var('ELASTIC_SEARCH_PASSWORD'))
 
-    def fetch_detailed_data(self, index: str) -> Dict[str, Any]:
-        # TODO
-        received_json = {}
-        return received_json
+        end_timestamp = FormattedDate.from_string(end_date)
+        start_timestamp = end_timestamp - DAYS_IN_TWO_WEEKS_REPORT
+
+        index = INDEX_NAME
+        count = indexer.count_records(index, start_timestamp, end_timestamp)
+        print(f'Processing {count} records...')
+
+        resp = indexer.get_aggregate_records(index, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+        return resp
 
     @staticmethod
     def from_aggregate_elastic_search(org: Organization, end_date: str) -> 'ElasticFetcher':
         result = ElasticFetcher()
         result.organization = org
         result.end_date = end_date
-        for idx in Indexes:
-            received_json = result.fetch_aggregate_data(idx.index_value)
-            result.packages.extend(result.get_user_agent_aggregate_packages(idx.index_name, received_json))  # type: ignore
+        received_data = result.fetch_aggregate_data(end_date)
+        result.packages = result.get_user_agent_aggregate_packages(received_data)  # type: ignore
         return result

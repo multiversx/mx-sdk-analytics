@@ -1,13 +1,13 @@
-from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
-from dotenv.main import load_dotenv
-from elastic_transport._response import ObjectApiResponse
 import elasticsearch.helpers
+from elastic_transport._response import ObjectApiResponse
 from elasticsearch import Elasticsearch
 
-from multiversx_usage_analytics_tool.constants import ELASTICSEARCH_CONNECTIONS_PER_NODE, ELASTICSEARCH_MAX_RETRIES, INDEX_NAME, LOG_URL, REQUEST_TIMEOUT, SCAN_BATCH_SIZE, SCROLL_CONSISTENCY_TIME
-from multiversx_usage_analytics_tool.utils import FormattedDate, get_environment_var
+from multiversx_usage_analytics_tool.constants import (
+    ELASTICSEARCH_CONNECTIONS_PER_NODE, ELASTICSEARCH_MAX_RETRIES,
+    REQUEST_TIMEOUT, SCAN_BATCH_SIZE, SCROLL_CONSISTENCY_TIME)
+from multiversx_usage_analytics_tool.utils import FormattedDate
 
 # based on class Indexer in multiversx-etl
 
@@ -156,32 +156,3 @@ class Indexer:
     @staticmethod
     def _to_index_format(date: FormattedDate) -> str:
         return f'{str(date)}T00:00:00.000Z'
-
-
-load_dotenv()
-indexer = Indexer(LOG_URL, get_environment_var('ELASTIC_SEARCH_USER'), get_environment_var('ELASTIC_SEARCH_PASSWORD'))
-start_timestamp = FormattedDate.now() - 14
-end_timestamp = FormattedDate.now()
-
-index = INDEX_NAME
-count = indexer.count_records(index, None, None)
-print(count)
-count = indexer.count_records(index, start_timestamp, end_timestamp)
-print(count)
-
-print('aggregation')
-days = 1
-resp = indexer.get_aggregate_records(index, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
-repo_name = f'user_agents_ingress{str(end_timestamp)}'
-report_name = Path('./Output') / f"{repo_name}.txt"
-users_agents = {}
-buckets = resp["aggregations"]["user_agents"]["buckets"]
-for bucket in buckets:
-    users_agents[bucket['key']] = bucket['doc_count']
-list_user_agents = sorted(users_agents.items(), key=lambda x: x[1], reverse=True)
-
-text = ''
-for user_agent, count in list_user_agents:
-    text = text + f"\nUser_agent: {user_agent}, Doc count: {count}"
-
-report_name.write_text(text)

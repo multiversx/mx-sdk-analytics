@@ -1,11 +1,12 @@
 import json
 import os
 from pathlib import Path
-from dotenv.main import load_dotenv
-from multiversx_usage_analytics_tool.utils import FormattedDate, Reports
-from multiversx_usage_analytics_tool.elastic_fetcher import ElasticFetcher
 
 from blue_report import EcosystemConfiguration
+from dotenv.main import load_dotenv
+
+from multiversx_usage_analytics_tool.elastic_fetcher import ElasticFetcher
+from multiversx_usage_analytics_tool.utils import FormattedDate, Reports
 
 
 def main():
