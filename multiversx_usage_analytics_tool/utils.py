@@ -16,8 +16,23 @@ from multiversx_usage_analytics_tool.constants import (
 
 
 class Reports (Enum):
-    BLUE = 'blue'
-    GREEN = 'green'
+    BLUE = ('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff')
+    GREEN = ('green', 'GITHUB REPORT', '#e6ffe6')
+    YELLOW = ('yellow', 'USER AGENT REPORT', '#FFFFF0')
+
+    def __init__(self, repo_name: str, repo_title: str, repo_color: str):
+        self.repo_name = repo_name
+        self.repo_title = repo_title
+        self.repo_color = repo_color
+
+
+class Indexes(Enum):
+    ACCESS = ('Access-logs', 'enriched-mainnet-access-logs')
+    INGRESS = ('Ingress-logs', 'enriched-mainnet-ingress-logs')
+
+    def __init__(self, index_name: str, index_value: str):
+        self.index_name = index_name
+        self.index_value = index_value
 
 
 class Language(Enum):
@@ -48,6 +63,28 @@ class PackagesRegistry(Enum):
         self.search_url = search_url
         self.downloads_url = downloads_url
         self.reports = reports
+
+
+class UserAgentGroup(Enum):
+    MULTIVERSX = ('Multiversx', ['multiversx', 'mx-'])
+    PYTHON = ('Python', ['python/3.', 'python-requests/2.'])
+    AXIOS = ('Axios', ['axios'])
+    MOBILE_ANDROID = ('Mobile Android', ['android'])
+    MOBILE_IOS = ('Mobile IOS', ['iphone'])
+    BROWSER = ('Browser', ['mozilla', 'opera'])
+
+    OTHER = ('Other/Unknown', ['other/unknown'])
+
+    def __init__(self, group_name: str, group_prefixes: List[str]):
+        self.group_name = group_name
+        self.group_prefixes = group_prefixes
+
+    @staticmethod
+    def find(user_agent_name: str) -> str:
+        if any(u in user_agent_name.lower() for u in UserAgentGroup.MULTIVERSX.group_prefixes):
+            return user_agent_name
+        group = next((user_agent for user_agent in UserAgentGroup if any(u in user_agent_name.lower() for u in user_agent.group_prefixes)), UserAgentGroup.OTHER)
+        return group.group_name
 
 
 class FormattedDate:
@@ -106,7 +143,7 @@ class FormattedDate:
         return self.date.strftime(format)
 
 
-def get_environmen_var(env_var: str) -> Any:
+def get_environment_var(env_var: str) -> Any:
     result = os.environ.get(env_var)
     if result is None:
         raise ValueError(f'The \'{env_var}\' environment variable is not set.')
@@ -115,7 +152,7 @@ def get_environmen_var(env_var: str) -> Any:
 
 def check_required_environment_variables() -> Any:
     for env_var in ['JSON_FOLDER']:
-        get_environmen_var(env_var)
+        get_environment_var(env_var)
 
 
 # save to pdf common methods
@@ -202,7 +239,7 @@ def select_target_json_file(report_type: Reports) -> str:
     print(f'\nWARNING! Report should be available at port {report_port}.\n')
     # display list of available json files
     load_dotenv()
-    directory = get_environmen_var('JSON_FOLDER')
+    directory = get_environment_var('JSON_FOLDER')
 
     json_files = sorted(Path(directory).glob(f'{report_type.value}*.json'), reverse=True)
     file_options = [file.name for file in json_files]

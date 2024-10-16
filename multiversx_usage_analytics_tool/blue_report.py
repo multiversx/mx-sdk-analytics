@@ -14,7 +14,7 @@ from multiversx_usage_analytics_tool.package_managers_fetcher import (
     PackageManagersFetcher, PackageManagersPackage)
 from multiversx_usage_analytics_tool.utils import (FormattedDate,
                                                    PackagesRegistry, Reports,
-                                                   get_environmen_var)
+                                                   get_environment_var)
 
 
 def get_dropdown_options(folder: str):
@@ -29,7 +29,7 @@ background_color = '#e6f7ff'
 
 
 def get_layout():
-    directory = get_environmen_var('JSON_FOLDER')
+    directory = get_environment_var('JSON_FOLDER')
     dropdown_options = get_dropdown_options(directory)
     selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
     organization_options = [item.value.name for item in EcosystemConfiguration]

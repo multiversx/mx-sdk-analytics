@@ -7,31 +7,32 @@ from constants import GREEN_REPORT_PORT
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 from github_fetcher import GithubFetcher, GithubPackage
-from utils import FormattedDate, Language, PackagesRegistry, get_environmen_var
+from utils import (FormattedDate, Language, PackagesRegistry, Reports,
+                   get_environment_var)
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 
+report_type = Reports.GREEN
+
 
 def get_dropdown_options(folder: str):
-    json_files = sorted(Path(folder).glob('green*.json'), reverse=True)
+    json_files = sorted(Path(folder).glob(f'{report_type.repo_name}*.json'), reverse=True)
     return [{'label': file.name, 'value': str(file)} for file in json_files]
 
 
 load_dotenv()
-
 app = dash.Dash(__name__)
-background_color = '#e6ffe6'
 
 
 def get_layout():
-    directory = get_environmen_var('JSON_FOLDER')
+    directory = get_environment_var('JSON_FOLDER')
     language_options = ['All'] + [lang.lang_name for lang in Language]
     dropdown_options = get_dropdown_options(directory)
     selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
 
     # Layout of the Dash app
-    return html.Div(style={'backgroundColor': background_color}, children=[
+    return html.Div(style={'backgroundColor': report_type.repo_color}, children=[
         html.Div(
             style={
                 'display': 'flex',
@@ -39,7 +40,7 @@ def get_layout():
             },
             children=[
                 html.H1(
-                    'GITHUB REPORT',
+                    report_type.repo_title,
                     style={'marginRight': '20px', 'width': '15%'}
                 ),
                 dcc.Dropdown(
