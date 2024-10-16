@@ -6,13 +6,14 @@ import plotly.graph_objs as go
 from dash import Input, Output, dcc, html
 from dotenv.main import load_dotenv
 
-from multiversx_usage_analytics_tool.constants import DAYS_IN_TWO_WEEKS_REPORT, YELLOW_REPORT_PORT
+from multiversx_usage_analytics_tool.constants import DAYS_IN_TWO_WEEKS_REPORT
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
+from multiversx_usage_analytics_tool.elastic_fetcher import (ElasticFetcher,
+                                                             ElasticPackage)
 from multiversx_usage_analytics_tool.fetcher import Package
-from multiversx_usage_analytics_tool.utils import FormattedDate, Reports, get_environment_var
-
-from multiversx_usage_analytics_tool.elastic_fetcher import ElasticFetcher, ElasticPackage
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Reports,
+                                                   get_environment_var)
 
 report_type = Reports.YELLOW
 
@@ -86,13 +87,12 @@ def create_table(fetcher: ElasticFetcher, section: str):
             html.Td(int(package_statistics['avg_daily_downloads']), style={'textAlign': 'right'}),
         ]
         table_rows.append(html.Tr(row))
-    print(f'Total: {total["total_usage"]}, Total last week: {total["last_week_usage"]}, Avg: {total["total_usage"] / DAYS_IN_TWO_WEEKS_REPORT:.2f}')
 
     row = html.Tr([
-        html.Td('Total'),
-        html.Td(f'{total['total_usage']}', style={'textAlign': 'right', 'maxWidth': '10ch'}),
-        html.Td(f'{total['last_week_usage']}', style={'textAlign': 'right'}),
-        html.Td(f'{total['total_usage'] / DAYS_IN_TWO_WEEKS_REPORT:.0f}', style={'textAlign': 'right'}),
+        html.Td('Total', style={'fontWeight': 'bold'}),
+        html.Td(f'{total['total_usage']}', style={'textAlign': 'right', 'maxWidth': '10ch', 'fontWeight': 'bold'}),
+        html.Td(f'{total['last_week_usage']}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
+        html.Td(f'{total['total_usage'] / DAYS_IN_TWO_WEEKS_REPORT:.0f}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
     ])
     table_rows.append(row)
 
@@ -141,9 +141,9 @@ def update_yellow_report(selected_file: str):
     fetcher = ElasticFetcher.from_generated_file(selected_file, organization)
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=section, id=section, style={'font-weight': 'normal'},
+            dcc.Tab(label=section.replace('_', ' '), id=section, style={'font-weight': 'normal'},
                     selected_style={'font-weight': 'bold'}, children=[
-                html.H1(f"{organization.name} - {section} - MAINNET User Agent Access Details"),
+                html.H1(f"{organization.name} - {section.replace('_', ' ')} - MAINNET User Agent Access Details"),
                 html.H2('Download Data Table'),
                 create_table(fetcher, section),
 
@@ -153,7 +153,7 @@ def update_yellow_report(selected_file: str):
                     figure=create_graph(fetcher, section)
                 ),
             ])
-            for section in ['Grouped data']
+            for section in ['Grouped_data']
         ],
             colors={
             "border": "white",  # Border color
@@ -164,4 +164,4 @@ def update_yellow_report(selected_file: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=YELLOW_REPORT_PORT, host='0.0.0.0')
+    app.run_server(debug=False, port=report_type.repo_port, host='0.0.0.0')

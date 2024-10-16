@@ -13,18 +13,19 @@ from pyppeteer.page import Page
 
 from multiversx_usage_analytics_tool.constants import (
     BLUE_REPORT_PORT, DATE_FORMAT, GREEN_REPORT_PORT,
-    WAIT_FOR_DROPDOWN_COMPONENT_LOAD)
+    WAIT_FOR_DROPDOWN_COMPONENT_LOAD, YELLOW_REPORT_PORT)
 
 
 class Reports (Enum):
-    BLUE = ('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff')
-    GREEN = ('green', 'GITHUB REPORT', '#e6ffe6')
-    YELLOW = ('yellow', 'USER AGENT REPORT', '#FFFFF0')
+    BLUE = ('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff', BLUE_REPORT_PORT)
+    GREEN = ('green', 'GITHUB REPORT', '#e6ffe6', GREEN_REPORT_PORT)
+    YELLOW = ('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT)
 
-    def __init__(self, repo_name: str, repo_title: str, repo_color: str):
+    def __init__(self, repo_name: str, repo_title: str, repo_color: str, repo_port: int):
         self.repo_name = repo_name
         self.repo_title = repo_title
         self.repo_color = repo_color
+        self.repo_port = repo_port
 
 
 class Indexes(Enum):
@@ -188,7 +189,7 @@ def combine_pdfs(pdf_files: List[str], output_pdf: str):
 
 
 async def get_pyppeteer_page(browser: Browser, report_type: Reports) -> Page:
-    report_port = GREEN_REPORT_PORT if report_type == Reports.GREEN else BLUE_REPORT_PORT
+    report_port = report_type.repo_port
 
     page = await browser.newPage()
     await page.setViewport({'width': 1440, 'height': 1080})
@@ -232,7 +233,7 @@ async def select_report(page: Page, selected_file: str) -> str:
     print()
     print(f"Target report: {selected_value}")
     file_name = selected_value.split('.')[0]  # extract name without extension
-    output = f'{file_name}.pdf' if any(repo_type in selected_value for repo_type in ['blue', 'green']) else 'combined.pdf'
+    output = f'{file_name}.pdf' if any(repo_type in selected_value for repo_type in ['blue', 'green', 'yellow']) else 'combined.pdf'
 
     return output
 
@@ -254,13 +255,13 @@ async def is_empty_page(page: Page) -> bool:
 
 
 def select_target_json_file(report_type: Reports) -> str:
-    report_port = GREEN_REPORT_PORT if report_type == Reports.GREEN else BLUE_REPORT_PORT
+    report_port = report_type.repo_port
     print(f'\nWARNING! Report should be available at port {report_port}.\n')
     # display list of available json files
     load_dotenv()
     directory = get_environment_var('JSON_FOLDER')
 
-    json_files = sorted(Path(directory).glob(f'{report_type.value}*.json'), reverse=True)
+    json_files = sorted(Path(directory).glob(f'{report_type.repo_name}*.json'), reverse=True)
     file_options = [file.name for file in json_files]
 
     questions = [
