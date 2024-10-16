@@ -60,16 +60,43 @@ class ElasticFetcher(Fetcher):
 
         index = INDEX_NAME
         count = indexer.count_records(index, start_timestamp, end_timestamp)
-        print(f'Processing {count} records...')
+        print(f'Retrieving data for {count} documents...')
 
         resp = indexer.get_aggregate_records(index, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
         return resp
+
+    def get_user_agent_grouped_packages(self, raw_packages: List[ElasticPackage]) -> List[ElasticPackage]:
+        def add_or_update_downloads(my_list: List[ElasticDailyActivity], elem: ElasticDailyActivity):
+            if elem.date in [item.date for item in my_list]:
+                existing_item = next(item for item in my_list if item.date == elem.date)
+                existing_item.downloads += elem.downloads
+            else:
+                my_list.append(elem)
+
+        print('Grouping data...')
+        result: List[ElasticPackage] = []
+
+        for package in raw_packages:
+            if package.package_site in [item.package_name for item in result]:
+                existing_package = next(item for item in result if item.package_name == package.package_site)
+                existing_package.no_of_downloads += package.no_of_downloads
+                for activity in package.downloads:
+                    add_or_update_downloads(existing_package.downloads, activity)  # type: ignore
+            else:
+                new_package = package
+                new_package.package_name = package.package_site
+                new_package.package_site = UserAgentGroup.get_group(package.package_name).group_name
+                result.append(new_package)
+
+        return result
 
     @staticmethod
     def from_aggregate_elastic_search(org: Organization, end_date: str) -> 'ElasticFetcher':
         result = ElasticFetcher()
         result.organization = org
         result.end_date = end_date
+        result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_TWO_WEEKS_REPORT + 1)
         received_data = result.fetch_aggregate_data(end_date)
-        result.packages = result.get_user_agent_aggregate_packages(received_data)  # type: ignore
+        raw_packages = result.get_user_agent_aggregate_packages(received_data)  # type: ignore
+        result.packages = result.get_user_agent_grouped_packages(raw_packages)  # type: ignore
         return result

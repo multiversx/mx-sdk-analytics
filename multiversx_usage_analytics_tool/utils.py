@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -67,13 +68,15 @@ class PackagesRegistry(Enum):
 
 class UserAgentGroup(Enum):
     MULTIVERSX = ('Multiversx', ['multiversx', 'mx-'])
-    PYTHON = ('Python', ['python/3.', 'python-requests/2.'])
+    PYTHON = ('Python', ['python'])
     AXIOS = ('Axios', ['axios'])
+    HTTPS = ('Https', ['+http'])
     MOBILE_ANDROID = ('Mobile Android', ['android'])
     MOBILE_IOS = ('Mobile IOS', ['iphone'])
-    BROWSER = ('Browser', ['mozilla', 'opera'])
+    BROWSER = ('Desktop browser', ['mozilla', 'opera', 'safari'])
 
-    OTHER = ('Other/Unknown', ['other/unknown'])
+    OTHER = ('Other', ['@@'])
+    UNKNOWN = ('Unknown', ['group-prefix'])
 
     def __init__(self, group_name: str, group_prefixes: List[str]):
         self.group_name = group_name
@@ -81,12 +84,26 @@ class UserAgentGroup(Enum):
 
     @staticmethod
     def find(user_agent_name: str) -> str:
-        group_name = next(
-            (user_agent.group_name for user_agent in UserAgentGroup if user_agent is not UserAgentGroup.MULTIVERSX and any(
+        group = UserAgentGroup.get_group(user_agent_name)
+        if group in [UserAgentGroup.MULTIVERSX, UserAgentGroup.UNKNOWN]:
+            return user_agent_name
+        elif group in [UserAgentGroup.AXIOS, UserAgentGroup.PYTHON]:
+            i = user_agent_name.index('/')
+            return user_agent_name[:(i + 2)]
+        elif group == UserAgentGroup.HTTPS:
+            url_match = re.search(r'\+(https?://[^\s;)\]]+)', user_agent_name)
+            url = url_match.group(1) if url_match else None
+            return f'URL: {url}'
+        return group.group_name
+
+    @staticmethod
+    def get_group(user_agent_name: str) -> 'UserAgentGroup':
+        group = next(
+            (user_agent for user_agent in UserAgentGroup if any(
                 u in user_agent_name.lower() for u in user_agent.group_prefixes
             )
-            ), user_agent_name)
-        return group_name
+            ), UserAgentGroup.UNKNOWN)
+        return group
 
 
 class FormattedDate:
