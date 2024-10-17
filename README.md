@@ -101,7 +101,7 @@ pip install -r ./requirements-dev.txt --upgrade
  - the Green Report must be available at GREEN_REPORT_PORT.
  - the target report is selected from a list of available json files in the JSON_FOLDER
 
- ### GREEN-REPORT-TO-PDF - script that exports the Green Report in PDF format
+ ### YELLOW-REPORT-TO-PDF - script that exports the Yellow Report in PDF format
 ```
    python ./multiversx_usage_analytics_tool/yellow_report_to_pdf.py
 ```
