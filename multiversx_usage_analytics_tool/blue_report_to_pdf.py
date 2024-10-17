@@ -5,7 +5,6 @@ from math import ceil
 from pathlib import Path
 from typing import List
 
-from dotenv.main import load_dotenv
 from pyppeteer import launch
 
 from multiversx_usage_analytics_tool.constants import (
@@ -14,6 +13,7 @@ from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 from multiversx_usage_analytics_tool.utils import (PackagesRegistry, Reports,
                                                    combine_pdfs,
+                                                   get_environment_var,
                                                    get_pyppeteer_page,
                                                    is_empty_page,
                                                    select_report,
@@ -87,8 +87,7 @@ async def export_dash_report_to_pdf(selected_file: str = ''):
     with tempfile.TemporaryDirectory() as temp_dir:
         pdf_files = await capture_pdfs(temp_dir, selected_file)
 
-        load_dotenv()
-        rep_folder = os.environ.get("REPORT_FOLDER")
+        rep_folder = get_environment_var("REPORT_FOLDER")
         output_pdf = Path(rep_folder if rep_folder else ".") / f"{pdf_files[0]}"
         combine_pdfs(pdf_files[1:], str(output_pdf))
 

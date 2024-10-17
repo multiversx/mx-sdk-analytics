@@ -1,16 +1,15 @@
 import argparse
 import json
-import os
 from pathlib import Path
-
-from dotenv.main import load_dotenv
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
+from multiversx_usage_analytics_tool.elastic_fetcher import ElasticFetcher
 from multiversx_usage_analytics_tool.github_fetcher import GithubFetcher
 from multiversx_usage_analytics_tool.package_managers_fetcher import \
     PackageManagersFetcher
-from multiversx_usage_analytics_tool.utils import FormattedDate
+from multiversx_usage_analytics_tool.utils import (FormattedDate,
+                                                   get_environment_var)
 
 
 def main():
@@ -40,20 +39,23 @@ def main():
     print(f"Gathering data for: {end_date}...")
     print(end_date.get_week_and_day_string())
 
-    # Creates a fetcher for retrieving package sites info
-    load_dotenv()
-
-    rep_folder = os.environ.get("JSON_FOLDER")
+    rep_folder = get_environment_var("JSON_FOLDER")
     github_dict_to_write = {}
     pm_dict_to_write = {}
+    el_dict_to_write = {}
 
+    # Creates a fetcher for each organization for retrieving package sites info
     for org in [item.value for item in EcosystemConfiguration if item.value.gather_data]:
         print()
         print(org.name)
+        if org == EcosystemConfiguration.MULTIVERSX.value:
+            el_fetcher = ElasticFetcher.from_aggregate_elastic_search(org, str(end_date))
+            el_dict_to_write[org.name] = el_fetcher.to_dict()
         pm_fetcher = PackageManagersFetcher.from_package_sites(org, str(end_date))
         pm_dict_to_write[org.name] = pm_fetcher.to_dict()
         git_fetcher = GithubFetcher.from_package_sites(org, str(end_date))
         github_dict_to_write[org.name] = git_fetcher.to_dict()
+
     print("writting json ...")
 
     pm_report_name = Path(rep_folder if rep_folder else ".") / f"blue{end_date}.json"
@@ -61,6 +63,11 @@ def main():
 
     github_report_name = Path(rep_folder if rep_folder else ".") / f"green{end_date}.json"
     github_report_name.write_text(json.dumps(github_dict_to_write, indent=4))
+
+    el_report_name = Path(rep_folder if rep_folder else ".") / f"yellow{end_date}.json"
+    el_report_name.write_text(json.dumps(el_dict_to_write, indent=4))
+
+    print('Data gathered successfully')
 
 
 def validate_date(date_str: str):

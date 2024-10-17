@@ -1,12 +1,9 @@
-from pathlib import Path
 from typing import Any, Dict, cast
 
 import dash
 import plotly.graph_objs as go
 from dash import Input, Output, dcc, html
-from dotenv.main import load_dotenv
 
-from multiversx_usage_analytics_tool.constants import DAYS_IN_TWO_WEEKS_REPORT
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 from multiversx_usage_analytics_tool.elastic_fetcher import (ElasticFetcher,
@@ -18,19 +15,12 @@ from multiversx_usage_analytics_tool.utils import (FormattedDate, Reports,
 report_type = Reports.YELLOW
 
 
-def get_dropdown_options(folder: str):
-    json_files = sorted(Path(folder).glob(f'{report_type.repo_name}*.json'), reverse=True)
-    return [{'label': file.name, 'value': str(file)} for file in json_files]
-
-
-load_dotenv()
-
 app = dash.Dash(__name__)
 
 
 def get_layout():
     directory = get_environment_var('JSON_FOLDER')
-    dropdown_options = get_dropdown_options(directory)
+    dropdown_options = report_type.get_report_dropdown_options(directory)
     selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
 
     # Layout of the Dash app
@@ -76,7 +66,7 @@ def create_table(fetcher: ElasticFetcher, section: str):
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     total: Dict[str, int] = {'total_usage': 0, 'last_week_usage': 0}
     for package in packages:
-        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date, DAYS_IN_TWO_WEEKS_REPORT)
+        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date, report_type.repo_length)
         total['total_usage'] += package_statistics['downloads_total']
         total['last_week_usage'] += package_statistics['downloads_last_week']
 
@@ -92,7 +82,7 @@ def create_table(fetcher: ElasticFetcher, section: str):
         html.Td('Total', style={'fontWeight': 'bold'}),
         html.Td(f'{total['total_usage']}', style={'textAlign': 'right', 'maxWidth': '10ch', 'fontWeight': 'bold'}),
         html.Td(f'{total['last_week_usage']}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
-        html.Td(f'{total['total_usage'] / DAYS_IN_TWO_WEEKS_REPORT:.0f}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
+        html.Td(f'{total['total_usage'] / report_type.repo_length:.0f}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
     ])
     table_rows.append(row)
 
@@ -108,7 +98,7 @@ def create_graph(fetcher: ElasticFetcher, section: str) -> Dict[str, Any]:
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
     end_date = FormattedDate.from_string(fetcher.end_date)
-    date_range = [str(start_date + x) for x in range(end_date.days_from(start_date))]
+    date_range = [str(start_date + x) for x in range(end_date.days_from(start_date) + 1)]
 
     traces = [
         go.Scatter(

@@ -1,24 +1,22 @@
 import json
-import os
 from pathlib import Path
 
 from blue_report import EcosystemConfiguration
-from dotenv.main import load_dotenv
 
 from multiversx_usage_analytics_tool.elastic_fetcher import ElasticFetcher
-from multiversx_usage_analytics_tool.utils import FormattedDate, Reports
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Reports,
+                                                   get_environment_var)
 
 
 def main():
-    end_date = FormattedDate.now()
+    end_date = FormattedDate.now() - 1
 
     print(f"Gathering data for: {end_date}...")
     print(end_date.get_week_and_day_string())
 
-    # Creates a fetcher for retrieving package sites info
-    load_dotenv()
+    # Creates a fetcher for retrieving elastic search data
 
-    rep_folder = os.environ.get("JSON_FOLDER")
+    rep_folder = get_environment_var("JSON_FOLDER")
     el_dict_to_write = {}
     org = EcosystemConfiguration.MULTIVERSX.value
     el_fetcher = ElasticFetcher.from_aggregate_elastic_search(org, str(end_date))

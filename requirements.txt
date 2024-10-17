@@ -12,3 +12,4 @@ tqdm==4.66.5
 PyPDF2==3.0.1
 pyppeteer==2.0.0
 inquirer==3.4.0
+elasticsearch==8.15.1

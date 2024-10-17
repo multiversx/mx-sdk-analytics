@@ -1,5 +1,3 @@
-
-import os
 import time
 from http import HTTPStatus
 from typing import Any, Dict, List, cast
@@ -16,7 +14,8 @@ from multiversx_usage_analytics_tool.constants import (DAYS_IN_MONTHLY_REPORT,
                                                        SECONDS_BEFORE_RETRY)
 from multiversx_usage_analytics_tool.ecosystem import Organization
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
-                                                   PackagesRegistry, Reports)
+                                                   PackagesRegistry, Reports,
+                                                   get_environment_var)
 
 
 class PackageManagersDailyActivity(DailyActivity):
@@ -146,7 +145,7 @@ class PackageManagersFetcher(Fetcher):
         return response
 
     def fetch_libraries_io_score(self, package_name: str, site: str) -> Dict[str, Any]:
-        libraries_io_api_key = os.environ.get('LIBRARIES_IO_API_KEY')
+        libraries_io_api_key = get_environment_var('LIBRARIES_IO_API_KEY')
         package = package_name.replace('/', '%2F')
         url = f"https://libraries.io/api/{site}/{package}/sourcerank?api_key={libraries_io_api_key}"
         response = self.get_request(url)

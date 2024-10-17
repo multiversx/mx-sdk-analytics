@@ -12,20 +12,26 @@ from pyppeteer.browser import Browser
 from pyppeteer.page import Page
 
 from multiversx_usage_analytics_tool.constants import (
-    BLUE_REPORT_PORT, DATE_FORMAT, GREEN_REPORT_PORT,
+    BLUE_REPORT_PORT, DATE_FORMAT, DAYS_IN_MONTHLY_REPORT,
+    DAYS_IN_TWO_WEEKS_REPORT, GREEN_REPORT_PORT,
     WAIT_FOR_DROPDOWN_COMPONENT_LOAD, YELLOW_REPORT_PORT)
 
 
 class Reports (Enum):
-    BLUE = ('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff', BLUE_REPORT_PORT)
-    GREEN = ('green', 'GITHUB REPORT', '#e6ffe6', GREEN_REPORT_PORT)
-    YELLOW = ('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT)
+    BLUE = ('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff', BLUE_REPORT_PORT, DAYS_IN_MONTHLY_REPORT)
+    GREEN = ('green', 'GITHUB REPORT', '#e6ffe6', GREEN_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
+    YELLOW = ('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
 
-    def __init__(self, repo_name: str, repo_title: str, repo_color: str, repo_port: int):
+    def __init__(self, repo_name: str, repo_title: str, repo_color: str, repo_port: int, repo_length: int):
         self.repo_name = repo_name
         self.repo_title = repo_title
         self.repo_color = repo_color
         self.repo_port = repo_port
+        self.repo_length = repo_length
+
+    def get_report_dropdown_options(self, folder: str):
+        json_files = sorted(Path(folder).glob(f'{self.repo_name}*.json'), reverse=True)
+        return [{'label': file.name, 'value': str(file)} for file in json_files]
 
 
 class Indexes(Enum):
@@ -176,15 +182,11 @@ class FormattedDate:
 
 
 def get_environment_var(env_var: str) -> Any:
+    load_dotenv()
     result = os.environ.get(env_var)
     if result is None:
         raise ValueError(f'The \'{env_var}\' environment variable is not set.')
     return result
-
-
-def check_required_environment_variables() -> Any:
-    for env_var in ['JSON_FOLDER']:
-        get_environment_var(env_var)
 
 
 # save to pdf common methods
@@ -269,8 +271,8 @@ async def is_empty_page(page: Page) -> bool:
 def select_target_json_file(report_type: Reports) -> str:
     report_port = report_type.repo_port
     print(f'\nWARNING! Report should be available at port {report_port}.\n')
+
     # display list of available json files
-    load_dotenv()
     directory = get_environment_var('JSON_FOLDER')
 
     json_files = sorted(Path(directory).glob(f'{report_type.repo_name}*.json'), reverse=True)

@@ -1,34 +1,27 @@
-from pathlib import Path
 from typing import Any, Dict, List
 
 import dash
 import plotly.graph_objs as go
-from constants import GREEN_REPORT_PORT
 from dash import Input, Output, dcc, html
-from dotenv.main import load_dotenv
-from github_fetcher import GithubFetcher, GithubPackage
-from utils import (FormattedDate, Language, PackagesRegistry, Reports,
-                   get_environment_var)
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
+from multiversx_usage_analytics_tool.github_fetcher import (GithubFetcher,
+                                                            GithubPackage)
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+                                                   PackagesRegistry, Reports,
+                                                   get_environment_var)
 
 report_type = Reports.GREEN
 
 
-def get_dropdown_options(folder: str):
-    json_files = sorted(Path(folder).glob(f'{report_type.repo_name}*.json'), reverse=True)
-    return [{'label': file.name, 'value': str(file)} for file in json_files]
-
-
-load_dotenv()
 app = dash.Dash(__name__)
 
 
 def get_layout():
     directory = get_environment_var('JSON_FOLDER')
     language_options = ['All'] + [lang.lang_name for lang in Language]
-    dropdown_options = get_dropdown_options(directory)
+    dropdown_options = report_type.get_report_dropdown_options(directory)
     selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
 
     # Layout of the Dash app
@@ -252,4 +245,4 @@ def update_green_report(selected_file: str, selected_language: str):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False, port=GREEN_REPORT_PORT, host='0.0.0.0')
+    app.run_server(debug=False, port=report_type.repo_port, host='0.0.0.0')

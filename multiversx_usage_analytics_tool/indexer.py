@@ -105,13 +105,13 @@ class Indexer:
                 }
             }
 
-            # Add gte to range flter if start is not None
+            # Add gte to range filter if start is not None
             if start_timestamp is not None:
                 range_filter["range"]["@timestamp"]["gte"] = self._to_index_format(start_timestamp)
 
             # Add lt to the range filter if end is not None
             if end_timestamp is not None:
-                range_filter["range"]["@timestamp"]["lt"] = self._to_index_format(end_timestamp)
+                range_filter["range"]["@timestamp"]["lt"] = self._to_index_format(end_timestamp + 1)
 
             # Add data range filter to the query
             query["query"]["bool"]["must"].append(range_filter)

@@ -1,6 +1,5 @@
 from typing import Any, Dict, List
 
-from dotenv.main import load_dotenv
 from elastic_transport._response import ObjectApiResponse
 from indexer import Indexer
 
@@ -52,7 +51,6 @@ class ElasticFetcher(Fetcher):
         return [ElasticPackage.from_aggregate_elastic_search(item) for item in raw_downloads]
 
     def fetch_aggregate_data(self, end_date: str) -> ObjectApiResponse[Any]:
-        load_dotenv()
         indexer = Indexer(LOG_URL, get_environment_var('ELASTIC_SEARCH_USER'), get_environment_var('ELASTIC_SEARCH_PASSWORD'))
 
         end_timestamp = FormattedDate.from_string(end_date)
@@ -60,7 +58,7 @@ class ElasticFetcher(Fetcher):
 
         index = INDEX_NAME
         count = indexer.count_records(index, start_timestamp, end_timestamp)
-        print(f'Retrieving data for {count} documents...')
+        print(f'fetching from {self.organization.name} access logs - {count} documents...')
 
         resp = indexer.get_aggregate_records(index, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
         return resp
@@ -73,7 +71,6 @@ class ElasticFetcher(Fetcher):
             else:
                 my_list.append(elem)
 
-        print('Grouping data...')
         result: List[ElasticPackage] = []
 
         for package in raw_packages:
