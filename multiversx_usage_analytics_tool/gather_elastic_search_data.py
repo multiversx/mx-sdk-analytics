@@ -7,6 +7,9 @@ from multiversx_usage_analytics_tool.elastic_fetcher import ElasticFetcher
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Reports,
                                                    get_environment_var)
 
+# TEMPORARY FILE - TO TEST DATA GROUPING: WILL BE REMOVED
+# DATA GATHERING WILL STILL BE PERFORMED THROUGH GATHER_DATA.PY
+
 
 def main():
     end_date = FormattedDate.now() - 1
