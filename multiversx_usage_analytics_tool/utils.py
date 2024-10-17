@@ -75,6 +75,9 @@ class UserAgentGroup(Enum):
     MOBILE_ANDROID = ('Mobile Android', ['android'])
     MOBILE_IOS = ('Mobile IOS', ['iphone'])
     BROWSER = ('Desktop browser', ['mozilla', 'opera', 'safari'])
+    OKHTTP = ('Okhttp', ['okhttp'])
+    APACHE = ('Apache-HttpClient', ['apache-httpclient'])
+    CURL = ('Curl', ['^curl'])
 
     OTHER = ('Other', ['@@'])
     UNKNOWN = ('Unknown', ['group-prefix'])
@@ -88,7 +91,7 @@ class UserAgentGroup(Enum):
         group = UserAgentGroup.get_group(user_agent_name)
         if group in [UserAgentGroup.MULTIVERSX, UserAgentGroup.UNKNOWN]:
             return user_agent_name
-        elif group in [UserAgentGroup.AXIOS, UserAgentGroup.PYTHON]:
+        elif group in [UserAgentGroup.AXIOS, UserAgentGroup.PYTHON, UserAgentGroup.APACHE, UserAgentGroup.OKHTTP, UserAgentGroup.CURL]:
             i = user_agent_name.index('/')
             return user_agent_name[:(i + 2)]
         elif group == UserAgentGroup.HTTPS:
@@ -100,11 +103,20 @@ class UserAgentGroup(Enum):
     @staticmethod
     def get_group(user_agent_name: str) -> 'UserAgentGroup':
         group = next(
-            (user_agent for user_agent in UserAgentGroup if any(
-                u in user_agent_name.lower() for u in user_agent.group_prefixes
+            (group for group in UserAgentGroup if any(
+                re.search(UserAgentGroup._safe_pattern(pattern), user_agent_name, re.IGNORECASE) for pattern in group.group_prefixes
             )
             ), UserAgentGroup.UNKNOWN)
+
         return group
+
+    @staticmethod
+    def _safe_pattern(pattern: str) -> str:
+        try:
+            re.compile(pattern)
+            return pattern
+        except re.error:
+            return re.escape(pattern)
 
 
 class FormattedDate:

@@ -108,7 +108,7 @@ def create_graph(fetcher: ElasticFetcher, section: str) -> Dict[str, Any]:
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
     start_date = FormattedDate.from_string(fetcher.start_date)
     end_date = FormattedDate.from_string(fetcher.end_date)
-    date_range = [str(start_date + x) for x in range(end_date.days_from(start_date) + 1)]
+    date_range = [str(start_date + x) for x in range(end_date.days_from(start_date))]
 
     traces = [
         go.Scatter(
@@ -144,10 +144,10 @@ def update_yellow_report(selected_file: str):
             dcc.Tab(label=section.replace('_', ' '), id=section, style={'font-weight': 'normal'},
                     selected_style={'font-weight': 'bold'}, children=[
                 html.H1(f"{organization.name} - {section.replace('_', ' ')} - MAINNET User Agent Access Details"),
-                html.H2('Download Data Table'),
+                html.H2('Access Data Table'),
                 create_table(fetcher, section),
 
-                html.H2('Download Trends'),
+                html.H2('Access Trends'),
                 dcc.Graph(
                     id='downloads-graph',
                     figure=create_graph(fetcher, section)
