@@ -129,7 +129,7 @@ class PackageManagersFetcher(Fetcher):
     def write_report(self, repo_name: str = 'rep'):
         return super().write_report(repo_name)
 
-    def write_json(self, repo_type=Reports.BLUE.value):
+    def write_json(self, repo_type=Reports.BLUE.value.repo_name):
         super().write_json(repo_type)
 
     def get_request(self, url: str) -> requests.Response:

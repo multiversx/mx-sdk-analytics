@@ -116,7 +116,7 @@ class GithubFetcher(Fetcher):
     def write_report(self, repo_name: str = 'rep'):
         return super().write_report(repo_name)
 
-    def write_json(self, repo_type=Reports.GREEN.value) -> None:
+    def write_json(self, repo_type=Reports.GREEN.value.repo_name) -> None:
         super().write_json(repo_type)
 
     def get_package(self, item: Dict[str, Any]) -> GithubPackage:

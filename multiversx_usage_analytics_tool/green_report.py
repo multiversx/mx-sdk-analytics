@@ -12,7 +12,7 @@ from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
                                                    PackagesRegistry, Reports,
                                                    get_environment_var)
 
-report_type = Reports.GREEN
+report_type = Reports.GREEN.value
 
 
 app = dash.Dash(__name__)

@@ -4,7 +4,8 @@ from pathlib import Path
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
-from multiversx_usage_analytics_tool.elastic_fetcher import ElasticFetcher
+from multiversx_usage_analytics_tool.elastic_fetcher import \
+    ElasticSearchFetcher
 from multiversx_usage_analytics_tool.github_fetcher import GithubFetcher
 from multiversx_usage_analytics_tool.package_managers_fetcher import \
     PackageManagersFetcher
@@ -42,15 +43,15 @@ def main():
     rep_folder = get_environment_var("JSON_FOLDER")
     github_dict_to_write = {}
     pm_dict_to_write = {}
-    el_dict_to_write = {}
+    es_dict_to_write = {}
 
     # Creates a fetcher for each organization for retrieving package sites info
     for org in [item.value for item in EcosystemConfiguration if item.value.gather_data]:
         print()
         print(org.name)
         if org == EcosystemConfiguration.MULTIVERSX.value:
-            el_fetcher = ElasticFetcher.from_aggregate_elastic_search(org, str(end_date))
-            el_dict_to_write[org.name] = el_fetcher.to_dict()
+            es_fetcher = ElasticSearchFetcher.from_aggregate_elastic_search(org, str(end_date))
+            es_dict_to_write[org.name] = es_fetcher.to_dict()
         pm_fetcher = PackageManagersFetcher.from_package_sites(org, str(end_date))
         pm_dict_to_write[org.name] = pm_fetcher.to_dict()
         git_fetcher = GithubFetcher.from_package_sites(org, str(end_date))
@@ -65,7 +66,7 @@ def main():
     github_report_name.write_text(json.dumps(github_dict_to_write, indent=4))
 
     el_report_name = Path(rep_folder if rep_folder else ".") / f"yellow{end_date}.json"
-    el_report_name.write_text(json.dumps(el_dict_to_write, indent=4))
+    el_report_name.write_text(json.dumps(es_dict_to_write, indent=4))
 
     print('Data gathered successfully')
 

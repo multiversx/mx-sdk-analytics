@@ -29,7 +29,7 @@ pip install -r ./requirements-dev.txt --upgrade
 - GITHUB_OWN_ORGANIZATION - the organization to which the Github token belongs to, which allows for traffic data to be obtained
 - BLUE_REPORT_PORT, GREEN_REPORT_PORT, YELLOW_REPORT_PORT - Ports used for the Green, Blue, and Yellow Reports
 - adjust time needed to load different components when exporting the report as pdf (Ex: WAIT_FOR_TABS_COMPONENT_LOAD = 2000)
-- LOG_URL, INDEX_NAME = url and name of the index that logs data related to network access    
+- LOG_URL url of the index that logs data related to network access
 
 ### ECOSYSTEM_CONFIGURATION.PY
 - Enables adding or removing organizations to/from the reports as well as filtering repositories

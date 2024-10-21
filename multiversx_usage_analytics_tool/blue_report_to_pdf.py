@@ -24,7 +24,7 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
     wait_for_radio_selection_to_load_time = WAIT_FOR_RADIO_COMPONENT_LOAD
     wait_for_tabs_content_to_load_time = WAIT_FOR_TABS_COMPONENT_LOAD
 
-    tab_ids = [repo.repo_name.replace('.', '-') for repo in PackagesRegistry if Reports.BLUE in repo.reports]
+    tab_ids = [repo.repo_name.replace('.', '-') for repo in PackagesRegistry if Reports.BLUE.value in repo.reports]
     organizations = [item.value.name for item in EcosystemConfiguration]
 
     browser = await launch(
@@ -34,7 +34,7 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
         handleSIGHUP=False
     )
     # open report page
-    page = await get_pyppeteer_page(browser, Reports.BLUE)
+    page = await get_pyppeteer_page(browser, Reports.BLUE.value)
 
     # click on selected file
     output = await select_report(page, selected_file)
@@ -94,5 +94,5 @@ async def export_dash_report_to_pdf(selected_file: str = ''):
     return "done"
 
 if __name__ == "__main__":
-    selected_json = select_target_json_file(Reports.BLUE)
+    selected_json = select_target_json_file(Reports.BLUE.value)
     asyncio.run(export_dash_report_to_pdf(selected_json))

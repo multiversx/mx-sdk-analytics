@@ -1,5 +1,6 @@
 import os
 import re
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -17,30 +18,34 @@ from multiversx_usage_analytics_tool.constants import (
     WAIT_FOR_DROPDOWN_COMPONENT_LOAD, YELLOW_REPORT_PORT)
 
 
-class Reports (Enum):
-    BLUE = ('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff', BLUE_REPORT_PORT, DAYS_IN_MONTHLY_REPORT)
-    GREEN = ('green', 'GITHUB REPORT', '#e6ffe6', GREEN_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
-    YELLOW = ('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
-
-    def __init__(self, repo_name: str, repo_title: str, repo_color: str, repo_port: int, repo_length: int):
-        self.repo_name = repo_name
-        self.repo_title = repo_title
-        self.repo_color = repo_color
-        self.repo_port = repo_port
-        self.repo_length = repo_length
+@dataclass
+class Report:
+    repo_name: str
+    repo_title: str
+    repo_color: str
+    repo_port: int
+    repo_length: int
 
     def get_report_dropdown_options(self, folder: str):
         json_files = sorted(Path(folder).glob(f'{self.repo_name}*.json'), reverse=True)
         return [{'label': file.name, 'value': str(file)} for file in json_files]
 
 
-class Indexes(Enum):
-    ACCESS = ('Access-logs', 'enriched-mainnet-access-logs')
-    INGRESS = ('Ingress-logs', 'enriched-mainnet-ingress-logs')
+class Reports (Enum):
+    BLUE = Report('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff', BLUE_REPORT_PORT, DAYS_IN_MONTHLY_REPORT)
+    GREEN = Report('green', 'GITHUB REPORT', '#e6ffe6', GREEN_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
+    YELLOW = Report('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
 
-    def __init__(self, index_name: str, index_value: str):
-        self.index_name = index_name
-        self.index_value = index_value
+
+@dataclass
+class Index:
+    index_title: str
+    index_name: str
+
+
+class Indexes(Enum):
+    ACCESS = Index('Access-logs', 'enriched-mainnet-access-*')
+    INGRESS = Index('Ingress-logs', 'enriched-mainnet-ingress-*')
 
 
 class Language(Enum):
@@ -61,12 +66,12 @@ class Language(Enum):
 
 
 class PackagesRegistry(Enum):
-    NPM = ('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE])
-    CARGO = ('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE])
-    PYPI = ('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE])
-    GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN])
+    NPM = ('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE.value])
+    CARGO = ('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE.value])
+    PYPI = ('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE.value])
+    GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN.value])
 
-    def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Reports]):
+    def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Report]):
         self.repo_name = repo_name
         self.search_url = search_url
         self.downloads_url = downloads_url
@@ -202,7 +207,7 @@ def combine_pdfs(pdf_files: List[str], output_pdf: str):
     print(f"Combined PDF saved as: {output_pdf}")
 
 
-async def get_pyppeteer_page(browser: Browser, report_type: Reports) -> Page:
+async def get_pyppeteer_page(browser: Browser, report_type: Report) -> Page:
     report_port = report_type.repo_port
 
     page = await browser.newPage()
@@ -268,7 +273,7 @@ async def is_empty_page(page: Page) -> bool:
     return no_of_rows == 0
 
 
-def select_target_json_file(report_type: Reports) -> str:
+def select_target_json_file(report_type: Report) -> str:
     report_port = report_type.repo_port
     print(f'\nWARNING! Report should be available at port {report_port}.\n')
 

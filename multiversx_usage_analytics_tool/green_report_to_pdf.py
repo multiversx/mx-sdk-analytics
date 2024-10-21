@@ -34,7 +34,7 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
         handleSIGHUP=False
     )
     # open report page
-    page = await get_pyppeteer_page(browser, Reports.GREEN)
+    page = await get_pyppeteer_page(browser, Reports.GREEN.value)
 
     # click on selected file
     output = await select_report(page, selected_file)
@@ -104,5 +104,5 @@ async def export_dash_report_to_pdf(selected_file: str = ''):
     return "done"
 
 if __name__ == "__main__":
-    selected_json = select_target_json_file(Reports.GREEN)
+    selected_json = select_target_json_file(Reports.GREEN.value)
     asyncio.run(export_dash_report_to_pdf(selected_json))

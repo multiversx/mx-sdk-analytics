@@ -6,13 +6,13 @@ from dash import Input, Output, dcc, html
 
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
-from multiversx_usage_analytics_tool.elastic_fetcher import (ElasticFetcher,
-                                                             ElasticPackage)
+from multiversx_usage_analytics_tool.elastic_fetcher import (
+    ElasticSearchFetcher, ElasticSearchPackage)
 from multiversx_usage_analytics_tool.fetcher import Package
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Reports,
                                                    get_environment_var)
 
-report_type = Reports.YELLOW
+report_type = Reports.YELLOW.value
 
 
 app = dash.Dash(__name__)
@@ -53,7 +53,7 @@ def get_layout():
 app.layout = get_layout
 
 
-def create_table(fetcher: ElasticFetcher, section: str):
+def create_table(fetcher: ElasticSearchFetcher, section: str):
     header_row = html.Thead([
         html.Th('User', style={'width': '70%', 'textAlign': 'left'}),
         html.Th('Count last 2 weeks', style={'width': '10%', 'textAlign': 'right'}),
@@ -62,7 +62,7 @@ def create_table(fetcher: ElasticFetcher, section: str):
     ])
     table_header = [header_row]
     table_rows = []
-    packages: list[ElasticPackage] = [cast(ElasticPackage, item) for item in fetcher.packages]
+    packages: list[ElasticSearchPackage] = [cast(ElasticSearchPackage, item) for item in fetcher.packages]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     total: Dict[str, int] = {'total_usage': 0, 'last_week_usage': 0}
     for package in packages:
@@ -92,7 +92,7 @@ def create_table(fetcher: ElasticFetcher, section: str):
     })
 
 
-def create_graph(fetcher: ElasticFetcher, section: str) -> Dict[str, Any]:
+def create_graph(fetcher: ElasticSearchFetcher, section: str) -> Dict[str, Any]:
     packages: list[Package] = [item for item in fetcher.packages]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     downloads_dict = {p.package_name: {d.date: d.downloads for d in p.downloads} for p in packages}
@@ -128,7 +128,7 @@ def create_graph(fetcher: ElasticFetcher, section: str) -> Dict[str, Any]:
 def update_yellow_report(selected_file: str):
     selected_organization = 'MULTIVERSX'
     organization = EcosystemConfiguration[selected_organization.upper()].value
-    fetcher = ElasticFetcher.from_generated_file(selected_file, organization)
+    fetcher = ElasticSearchFetcher.from_generated_file(selected_file, organization)
     return html.Div([
         dcc.Tabs([
             dcc.Tab(label=section.replace('_', ' '), id=section, style={'font-weight': 'normal'},

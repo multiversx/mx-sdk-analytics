@@ -25,7 +25,7 @@ WAIT_FOR_DROPDOWN_COMPONENT_LOAD = 1000
 
 # ELASTIC SEARCH
 LOG_URL = 'http://elastic-do-es-logs-02.elrond.ro:9200'
-INDEX_NAME = "enriched-mainnet-access-logs"
+INDEX_NAME = "enriched-mainnet-access-*"
 SCROLL_CONSISTENCY_TIME = "10m"
 REQUEST_TIMEOUT = 600
 SCAN_BATCH_SIZE = 7500
