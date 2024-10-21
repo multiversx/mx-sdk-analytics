@@ -78,46 +78,49 @@ class PackagesRegistry(Enum):
         self.reports = reports
 
 
-class UserAgentGroup(Enum):
-    MULTIVERSX = ('Multiversx', ['multiversx', 'mx-'])
-    PYTHON = ('Python', ['python'])
-    AXIOS = ('Axios', ['axios'])
-    HTTPS = ('Https', ['+http'])
-    MOBILE_ANDROID = ('Mobile Android', ['android'])
-    MOBILE_IOS = ('Mobile IOS', ['iphone'])
-    BROWSER = ('Desktop browser', ['mozilla', 'opera', 'safari'])
-    OKHTTP = ('Okhttp', ['okhttp'])
-    APACHE = ('Apache-HttpClient', ['apache-httpclient'])
-    CURL = ('Curl', ['^curl'])
+@dataclass
+class UserAgentGroup:
+    group_name: str
+    group_prefixes: List[str]
 
-    OTHER = ('Other', ['@@'])
-    UNKNOWN = ('Unknown', ['group-prefix'])
 
-    def __init__(self, group_name: str, group_prefixes: List[str]):
-        self.group_name = group_name
-        self.group_prefixes = group_prefixes
+class UserAgentGroups(Enum):
+    MULTIVERSX = UserAgentGroup('Multiversx', ['multiversx', 'mx-'])
+    PYTHON = UserAgentGroup('Python', ['python'])
+    AXIOS = UserAgentGroup('Axios', ['axios'])
+    HTTPS = UserAgentGroup('Https', ['+http'])
+    MOBILE_ANDROID = UserAgentGroup('Mobile Android', ['android'])
+    MOBILE_IOS = UserAgentGroup('Mobile IOS', ['iphone'])
+    BROWSER = UserAgentGroup('Desktop browser', ['mozilla', 'opera', 'safari'])
+    OKHTTP = UserAgentGroup('Okhttp', ['okhttp'])
+    APACHE = UserAgentGroup('Apache-HttpClient', ['apache-httpclient'])
+    CURL = UserAgentGroup('Curl', ['^curl'])
+
+    OTHER = UserAgentGroup('Other', ['@@'])
+    UNKNOWN = UserAgentGroup('Unknown', ['group-prefix'])
 
     @staticmethod
     def find(user_agent_name: str) -> str:
-        group = UserAgentGroup.get_group(user_agent_name)
-        if group in [UserAgentGroup.MULTIVERSX, UserAgentGroup.UNKNOWN]:
+        group = UserAgentGroups.get_group(user_agent_name)
+        if group in [UserAgentGroups.MULTIVERSX.value, UserAgentGroups.UNKNOWN.value]:
             return user_agent_name
-        elif group in [UserAgentGroup.AXIOS, UserAgentGroup.PYTHON, UserAgentGroup.APACHE, UserAgentGroup.OKHTTP, UserAgentGroup.CURL]:
+        elif group in [UserAgentGroups.AXIOS.value, UserAgentGroups.PYTHON.value, UserAgentGroups.APACHE.value,
+                       UserAgentGroups.OKHTTP.value, UserAgentGroups.CURL.value]:
             i = user_agent_name.index('/')
             return user_agent_name[:(i + 2)]
-        elif group == UserAgentGroup.HTTPS:
+        elif group == UserAgentGroups.HTTPS.value:
             url_match = re.search(r'\+(https?://[^\s;)\]]+)', user_agent_name)
             url = url_match.group(1) if url_match else None
             return f'URL: {url}'
         return group.group_name
 
     @staticmethod
-    def get_group(user_agent_name: str) -> 'UserAgentGroup':
+    def get_group(user_agent_name: str) -> UserAgentGroup:
         group = next(
-            (group for group in UserAgentGroup if any(
-                re.search(UserAgentGroup._safe_pattern(pattern), user_agent_name, re.IGNORECASE) for pattern in group.group_prefixes
+            (group for group in [item.value for item in UserAgentGroups] if any(
+                re.search(UserAgentGroups._safe_pattern(pattern), user_agent_name, re.IGNORECASE) for pattern in group.group_prefixes
             )
-            ), UserAgentGroup.UNKNOWN)
+            ), UserAgentGroups.UNKNOWN.value)
 
         return group
 

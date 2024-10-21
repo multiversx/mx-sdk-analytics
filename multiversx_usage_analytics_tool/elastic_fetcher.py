@@ -9,7 +9,7 @@ from multiversx_usage_analytics_tool.ecosystem import Organization
 from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
                                                      Package)
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Indexes,
-                                                   UserAgentGroup,
+                                                   UserAgentGroups,
                                                    get_environment_var)
 
 
@@ -37,7 +37,7 @@ class ElasticSearchPackage(Package):
         package_name = response.get('key', '')
         result.package_name = package_name
         result.no_of_downloads = response.get('doc_count', 0)
-        result.package_site = UserAgentGroup.find(package_name)
+        result.package_site = UserAgentGroups.find(package_name)
 
         return result
 
@@ -82,7 +82,7 @@ class ElasticSearchFetcher(Fetcher):
             else:
                 new_package = package
                 new_package.package_name = package.package_site
-                new_package.package_site = UserAgentGroup.get_group(package.package_name).group_name
+                new_package.package_site = UserAgentGroups.get_group(package.package_name).group_name
                 result.append(new_package)
 
         return result
