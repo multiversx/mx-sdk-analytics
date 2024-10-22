@@ -9,8 +9,6 @@ from multiversx_usage_analytics_tool.constants import (
     REQUEST_TIMEOUT, SCAN_BATCH_SIZE, SCROLL_CONSISTENCY_TIME)
 from multiversx_usage_analytics_tool.utils import FormattedDate
 
-# based on class Indexer in multiversx-etl
-
 
 class Indexer:
     def __init__(self, url: str, username: str = "", password: str = ""):

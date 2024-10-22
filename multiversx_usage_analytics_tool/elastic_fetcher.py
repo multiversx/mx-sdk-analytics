@@ -4,7 +4,7 @@ from elastic_transport._response import ObjectApiResponse
 from indexer import Indexer
 
 from multiversx_usage_analytics_tool.constants import (
-    DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE, LOG_URL)
+    DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE)
 from multiversx_usage_analytics_tool.ecosystem import Organization
 from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
                                                      Package)
@@ -51,12 +51,16 @@ class ElasticSearchFetcher(Fetcher):
         return [ElasticSearchPackage.from_aggregate_elastic_search(item) for item in raw_downloads]
 
     def fetch_aggregate_data(self, end_date: str) -> ObjectApiResponse[Any]:
-        indexer = Indexer(LOG_URL, get_environment_var('ELASTIC_SEARCH_USER'), get_environment_var('ELASTIC_SEARCH_PASSWORD'))
+        indexer = Indexer(
+            get_environment_var('LOG_URL'),
+            get_environment_var('ELASTIC_SEARCH_USER'),
+            get_environment_var('ELASTIC_SEARCH_PASSWORD')
+        )
 
         end_timestamp = FormattedDate.from_string(end_date)
         start_timestamp = end_timestamp - DAYS_IN_TWO_WEEKS_REPORT
 
-        index = Indexes.ACCESS.value.index_name
+        index = get_environment_var(Indexes.ACCESS.value.index_name)
         count = indexer.count_records(index, start_timestamp, end_timestamp)
         print(f'fetching from {self.organization.name} access logs - {count} documents...')
 

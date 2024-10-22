@@ -44,8 +44,8 @@ class Index:
 
 
 class Indexes(Enum):
-    ACCESS = Index('Access-logs', 'enriched-mainnet-access-*')
-    INGRESS = Index('Ingress-logs', 'enriched-mainnet-ingress-*')
+    ACCESS = Index('Access-logs', 'ACCESS_INDEX_NAME')
+    INGRESS = Index('Ingress-logs', 'INGRESS_INDEX_NAME')
 
 
 class Language(Enum):
@@ -88,12 +88,13 @@ class UserAgentGroups(Enum):
     MULTIVERSX = UserAgentGroup('Multiversx', ['multiversx', 'mx-'])
     PYTHON = UserAgentGroup('Python', ['python'])
     AXIOS = UserAgentGroup('Axios', ['axios'])
-    HTTPS = UserAgentGroup('Https', ['+http'])
-    MOBILE_ANDROID = UserAgentGroup('Mobile Android', ['android'])
-    MOBILE_IOS = UserAgentGroup('Mobile IOS', ['iphone'])
+    HTTPS = UserAgentGroup('Https', ['^mozilla.*\\+http', '^safari.*\\+http', '^opera.*\\+http'])
+    MOBILE_IOS = UserAgentGroup('Mobile IOS', ['^mozilla.*iphone', '^safari.*iphone', '^opera.*iphone'])
+    MOBILE_ANDROID = UserAgentGroup('Mobile Android', ['^mozilla.*android', '^safari.*android', '^opera.*android'])
     BROWSER = UserAgentGroup('Desktop browser', ['mozilla', 'opera', 'safari'])
     OKHTTP = UserAgentGroup('Okhttp', ['okhttp'])
     APACHE = UserAgentGroup('Apache-HttpClient', ['apache-httpclient'])
+    POSTMAN = UserAgentGroup('PostmanRuntime', ['postmanruntime'])
     CURL = UserAgentGroup('Curl', ['^curl'])
 
     OTHER = UserAgentGroup('Other', ['@@'])

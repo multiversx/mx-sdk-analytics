@@ -7,6 +7,7 @@ Tool for data gathering and analysis on SDKs usage.
 - REPORT_FOLDER (Folder where saved .pdf files are stored)
 - MX_GITHUB_TOKEN (Github fine-grained personal access token that gives access to traffic and community api pages)
 - ELASTIC_SEARCH_USER, ELASTIC_SEARCH_PASSWORD credentials for accessing the logs index
+- LOG_URL, ACCESS_INDEX_NAME  url and name of the index that logs data related to network access
 
 ## INSTALL
 Create a virtual environment and install the dependencies:
@@ -29,7 +30,7 @@ pip install -r ./requirements-dev.txt --upgrade
 - GITHUB_OWN_ORGANIZATION - the organization to which the Github token belongs to, which allows for traffic data to be obtained
 - BLUE_REPORT_PORT, GREEN_REPORT_PORT, YELLOW_REPORT_PORT - Ports used for the Green, Blue, and Yellow Reports
 - adjust time needed to load different components when exporting the report as pdf (Ex: WAIT_FOR_TABS_COMPONENT_LOAD = 2000)
-- LOG_URL url of the index that logs data related to network access
+- adjust parameters for elastic search
 
 ### ECOSYSTEM_CONFIGURATION.PY
 - Enables adding or removing organizations to/from the reports as well as filtering repositories
