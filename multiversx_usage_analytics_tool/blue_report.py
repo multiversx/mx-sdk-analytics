@@ -1,12 +1,9 @@
-from pathlib import Path
 from typing import Any, Dict, cast
 
 import dash
 import plotly.graph_objs as go
 from dash import Input, Output, dcc, html
-from dotenv.main import load_dotenv
 
-from multiversx_usage_analytics_tool.constants import DAYS_IN_MONTHLY_REPORT
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 from multiversx_usage_analytics_tool.fetcher import Package
@@ -14,28 +11,22 @@ from multiversx_usage_analytics_tool.package_managers_fetcher import (
     PackageManagersFetcher, PackageManagersPackage)
 from multiversx_usage_analytics_tool.utils import (FormattedDate,
                                                    PackagesRegistry, Reports,
-                                                   get_environmen_var)
+                                                   get_environment_var)
 
+report_type = Reports.BLUE.value
 
-def get_dropdown_options(folder: str):
-    json_files = sorted(Path(folder).glob('blue*.json'), reverse=True)
-    return [{'label': file.name, 'value': str(file)} for file in json_files]
-
-
-load_dotenv()
 
 app = dash.Dash(__name__)
-background_color = '#e6f7ff'
 
 
 def get_layout():
-    directory = get_environmen_var('JSON_FOLDER')
-    dropdown_options = get_dropdown_options(directory)
+    directory = get_environment_var('JSON_FOLDER')
+    dropdown_options = report_type.get_report_dropdown_options(directory)
     selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
     organization_options = [item.value.name for item in EcosystemConfiguration]
 
     # Layout of the Dash app
-    return html.Div(style={'backgroundColor': background_color}, children=[
+    return html.Div(style={'backgroundColor': report_type.repo_color}, children=[
         html.Div(
             style={
                 'display': 'flex',
@@ -43,7 +34,7 @@ def get_layout():
             },
             children=[
                 html.H1(
-                    'PACKAGE MANAGERS REPORT',
+                    report_type.repo_title,
                     style={'marginRight': '20px', 'width': '30%'}
                 ),
                 dcc.Dropdown(
@@ -80,7 +71,7 @@ def create_table(fetcher: PackageManagersFetcher, section: PackagesRegistry):
     packages: list[Package] = [item for item in fetcher.packages if item.package_site == section.repo_name]
     packages.sort(key=lambda pkg: pkg.no_of_downloads, reverse=True)
     for package in packages:
-        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date, DAYS_IN_MONTHLY_REPORT)
+        package_statistics = package.create_summary_statistics_from_daily_downloads(fetcher.end_date, report_type.repo_length)
         row = [
             html.Td(package.package_name),
             html.Td(package_statistics['downloads_total'], style={'textAlign': 'right', 'maxWidth': '10ch'}),
@@ -167,7 +158,7 @@ def update_blue_report(selected_file: str, selected_organization: str):
                 html.H2('Libraries.io warnings') if organization.report_warnings else None,
                 create_package_info_box(fetcher, repo) if organization.report_warnings else None,
             ])
-            for repo in PackagesRegistry if Reports.BLUE in repo.reports
+            for repo in PackagesRegistry if report_type in repo.reports
         ],
             colors={
             "border": "white",  # Border color

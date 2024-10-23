@@ -1,4 +1,6 @@
 import os
+import re
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -11,13 +13,39 @@ from pyppeteer.browser import Browser
 from pyppeteer.page import Page
 
 from multiversx_usage_analytics_tool.constants import (
-    BLUE_REPORT_PORT, DATE_FORMAT, GREEN_REPORT_PORT,
-    WAIT_FOR_DROPDOWN_COMPONENT_LOAD)
+    BLUE_REPORT_PORT, DATE_FORMAT, DAYS_IN_MONTHLY_REPORT,
+    DAYS_IN_TWO_WEEKS_REPORT, GREEN_REPORT_PORT,
+    WAIT_FOR_DROPDOWN_COMPONENT_LOAD, YELLOW_REPORT_PORT)
+
+
+@dataclass
+class Report:
+    repo_name: str
+    repo_title: str
+    repo_color: str
+    repo_port: int
+    repo_length: int
+
+    def get_report_dropdown_options(self, folder: str):
+        json_files = sorted(Path(folder).glob(f'{self.repo_name}*.json'), reverse=True)
+        return [{'label': file.name, 'value': str(file)} for file in json_files]
 
 
 class Reports (Enum):
-    BLUE = 'blue'
-    GREEN = 'green'
+    BLUE = Report('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff', BLUE_REPORT_PORT, DAYS_IN_MONTHLY_REPORT)
+    GREEN = Report('green', 'GITHUB REPORT', '#e6ffe6', GREEN_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
+    YELLOW = Report('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
+
+
+@dataclass
+class Index:
+    index_title: str
+    index_name: str
+
+
+class Indexes(Enum):
+    ACCESS = Index('Access-logs', 'ACCESS_INDEX_NAME')
+    INGRESS = Index('Ingress-logs', 'INGRESS_INDEX_NAME')
 
 
 class Language(Enum):
@@ -38,16 +66,72 @@ class Language(Enum):
 
 
 class PackagesRegistry(Enum):
-    NPM = ('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE])
-    CARGO = ('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE])
-    PYPI = ('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE])
-    GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN])
+    NPM = ('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE.value])
+    CARGO = ('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE.value])
+    PYPI = ('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE.value])
+    GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN.value])
 
-    def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Reports]):
+    def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Report]):
         self.repo_name = repo_name
         self.search_url = search_url
         self.downloads_url = downloads_url
         self.reports = reports
+
+
+@dataclass
+class UserAgentGroup:
+    group_name: str
+    group_prefixes: List[str]
+
+
+class UserAgentGroups(Enum):
+    MULTIVERSX = UserAgentGroup('Multiversx', ['multiversx', 'mx-'])
+    PYTHON = UserAgentGroup('Python', ['python'])
+    AXIOS = UserAgentGroup('Axios', ['axios'])
+    HTTPS = UserAgentGroup('Https', ['^mozilla.*\\+http', '^safari.*\\+http', '^opera.*\\+http'])
+    MOBILE_IOS = UserAgentGroup('Mobile IOS', ['^mozilla.*iphone', '^safari.*iphone', '^opera.*iphone'])
+    MOBILE_ANDROID = UserAgentGroup('Mobile Android', ['^mozilla.*android', '^safari.*android', '^opera.*android'])
+    BROWSER = UserAgentGroup('Desktop browser', ['mozilla', 'opera', 'safari'])
+    OKHTTP = UserAgentGroup('Okhttp', ['okhttp'])
+    APACHE = UserAgentGroup('Apache-HttpClient', ['apache-httpclient'])
+    POSTMAN = UserAgentGroup('PostmanRuntime', ['postmanruntime'])
+    CURL = UserAgentGroup('Curl', ['^curl'])
+
+    OTHER = UserAgentGroup('Other', ['@@'])
+    UNKNOWN = UserAgentGroup('Unknown', ['group-prefix'])
+
+    @staticmethod
+    def find(user_agent_name: str) -> str:
+        group = UserAgentGroups.get_group(user_agent_name)
+        if group in [UserAgentGroups.MULTIVERSX.value, UserAgentGroups.UNKNOWN.value]:
+            return user_agent_name
+        elif group in [UserAgentGroups.AXIOS.value, UserAgentGroups.PYTHON.value, UserAgentGroups.APACHE.value,
+                       UserAgentGroups.OKHTTP.value, UserAgentGroups.CURL.value]:
+            i = user_agent_name.index('/')
+            return user_agent_name[:(i + 2)]
+        elif group == UserAgentGroups.HTTPS.value:
+            url_match = re.search(r'\+(https?://[^\s;)\]]+)', user_agent_name)
+            url = url_match.group(1) if url_match else None
+            return f'URL: {url}'
+        return group.group_name
+
+    @staticmethod
+    def get_group(user_agent_name: str) -> UserAgentGroup:
+        group = next(
+            (group for group in [item.value for item in UserAgentGroups] if any(
+                re.search(UserAgentGroups._safe_pattern(pattern), user_agent_name, re.IGNORECASE) for pattern in group.group_prefixes
+            )
+            ), UserAgentGroups.UNKNOWN.value)
+
+        return group
+
+    @staticmethod
+    def _safe_pattern(pattern: str) -> str:
+        try:
+            re.compile(pattern)
+            return pattern
+        except re.error:
+            return re.escape(pattern)
 
 
 class FormattedDate:
@@ -106,16 +190,12 @@ class FormattedDate:
         return self.date.strftime(format)
 
 
-def get_environmen_var(env_var: str) -> Any:
+def get_environment_var(env_var: str) -> Any:
+    load_dotenv()
     result = os.environ.get(env_var)
     if result is None:
         raise ValueError(f'The \'{env_var}\' environment variable is not set.')
     return result
-
-
-def check_required_environment_variables() -> Any:
-    for env_var in ['JSON_FOLDER']:
-        get_environmen_var(env_var)
 
 
 # save to pdf common methods
@@ -131,8 +211,8 @@ def combine_pdfs(pdf_files: List[str], output_pdf: str):
     print(f"Combined PDF saved as: {output_pdf}")
 
 
-async def get_pyppeteer_page(browser: Browser, report_type: Reports) -> Page:
-    report_port = GREEN_REPORT_PORT if report_type == Reports.GREEN else BLUE_REPORT_PORT
+async def get_pyppeteer_page(browser: Browser, report_type: Report) -> Page:
+    report_port = report_type.repo_port
 
     page = await browser.newPage()
     await page.setViewport({'width': 1440, 'height': 1080})
@@ -176,7 +256,7 @@ async def select_report(page: Page, selected_file: str) -> str:
     print()
     print(f"Target report: {selected_value}")
     file_name = selected_value.split('.')[0]  # extract name without extension
-    output = f'{file_name}.pdf' if any(repo_type in selected_value for repo_type in ['blue', 'green']) else 'combined.pdf'
+    output = f'{file_name}.pdf' if any(repo_type in selected_value for repo_type in ['blue', 'green', 'yellow']) else 'combined.pdf'
 
     return output
 
@@ -197,14 +277,14 @@ async def is_empty_page(page: Page) -> bool:
     return no_of_rows == 0
 
 
-def select_target_json_file(report_type: Reports) -> str:
-    report_port = GREEN_REPORT_PORT if report_type == Reports.GREEN else BLUE_REPORT_PORT
+def select_target_json_file(report_type: Report) -> str:
+    report_port = report_type.repo_port
     print(f'\nWARNING! Report should be available at port {report_port}.\n')
-    # display list of available json files
-    load_dotenv()
-    directory = get_environmen_var('JSON_FOLDER')
 
-    json_files = sorted(Path(directory).glob(f'{report_type.value}*.json'), reverse=True)
+    # display list of available json files
+    directory = get_environment_var('JSON_FOLDER')
+
+    json_files = sorted(Path(directory).glob(f'{report_type.repo_name}*.json'), reverse=True)
     file_options = [file.name for file in json_files]
 
     questions = [

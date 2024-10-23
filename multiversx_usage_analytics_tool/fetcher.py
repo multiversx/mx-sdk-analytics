@@ -1,12 +1,14 @@
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
-from constants import DAYS_IN_WEEK, DEFAULT_DATE
-from ecosystem import Organization
-from ecosystem_configuration import EcosystemConfiguration
-from utils import FormattedDate
+from multiversx_usage_analytics_tool.constants import (DAYS_IN_WEEK,
+                                                       DEFAULT_DATE)
+from multiversx_usage_analytics_tool.ecosystem import Organization
+from multiversx_usage_analytics_tool.ecosystem_configuration import \
+    EcosystemConfiguration
+from multiversx_usage_analytics_tool.utils import (FormattedDate,
+                                                   get_environment_var)
 
 '''
 in order to allow calculations of scores in future implementations, the score must be a dictionary of individual composite scores
@@ -133,7 +135,7 @@ class Fetcher:
         self.start_date = ''
         self.end_date = ''
         self.packages: List[Package] = []
-        self.rep_folder = os.environ.get("JSON_FOLDER")
+        self.rep_folder = get_environment_var("JSON_FOLDER")
         self.organization = Organization()
 
     def __str__(self):

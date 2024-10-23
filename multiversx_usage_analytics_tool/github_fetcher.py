@@ -1,4 +1,3 @@
-import os
 from http import HTTPStatus
 from typing import Any, Dict, List, cast
 
@@ -14,7 +13,8 @@ from multiversx_usage_analytics_tool.ecosystem_configuration import \
 from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
                                                      Package, Score)
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
-                                                   PackagesRegistry, Reports)
+                                                   PackagesRegistry, Reports,
+                                                   get_environment_var)
 
 
 class GithubDailyActivity(DailyActivity):
@@ -116,7 +116,7 @@ class GithubFetcher(Fetcher):
     def write_report(self, repo_name: str = 'rep'):
         return super().write_report(repo_name)
 
-    def write_json(self, repo_type=Reports.GREEN.value) -> None:
+    def write_json(self, repo_type=Reports.GREEN.value.repo_name) -> None:
         super().write_json(repo_type)
 
     def get_package(self, item: Dict[str, Any]) -> GithubPackage:
@@ -138,7 +138,7 @@ class GithubFetcher(Fetcher):
         }
 
     def _get_github_authorization_header(self) -> Dict[str, Any]:
-        bearer_token = os.environ.get("MX_GITHUB_TOKEN")
+        bearer_token = get_environment_var("MX_GITHUB_TOKEN")
         return {"Authorization": f"Bearer {bearer_token}"}
 
     def get_github_package_names(self) -> Dict[str, Any]:        # github api - query search result
