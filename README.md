@@ -6,8 +6,8 @@ Tool for data gathering and analysis on SDKs usage.
 - JSON_FOLDER (Folder where generated json files are stored after gathering data from Repository sites - "./Output" for development mode)
 - REPORT_FOLDER (Folder where saved .pdf files are stored)
 - MX_GITHUB_TOKEN (Github fine-grained personal access token that gives access to traffic and community api pages)
+- ELASTIC_SEARCH_LOGS_URL, ACCESS_INDEX_NAME  url and name of the index that logs data related to network access
 - ELASTIC_SEARCH_USER, ELASTIC_SEARCH_PASSWORD credentials for accessing the logs index
-- LOG_URL, ACCESS_INDEX_NAME  url and name of the index that logs data related to network access
 
 ## INSTALL
 Create a virtual environment and install the dependencies:
@@ -16,6 +16,17 @@ python3 -m venv ./venv
 source ./venv/bin/activate
 pip install -r ./requirements.txt --upgrade
 export PYTHONPATH=.
+```
+
+For save_to_pdf, install playwright browsers:
+```
+playwright install
+```
+
+(Optional - If you see a warning about missing system dependencies)
+Install system dependencies for Playwright, required libraries to ensure Playwright browsers can run correctly:
+```
+sudo $(which playwright) install-deps
 ```
 
 ## INSTALL DEVELOPMENT DEPENDENCIES

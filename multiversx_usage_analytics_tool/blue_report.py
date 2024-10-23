@@ -151,10 +151,12 @@ def update_blue_report(selected_file: str, selected_organization: str):
                 create_table(fetcher, repo),
 
                 html.H2('Download Trends'),
-                dcc.Graph(
-                    id='downloads-graph',
-                    figure=create_graph(fetcher, repo)
-                ),
+                html.Div([
+                    dcc.Graph(
+                        id='downloads-graph',
+                        figure=create_graph(fetcher, repo)
+                    ),
+                ], style={'display': 'inline-block', 'width': '95%'}),
                 html.H2('Libraries.io warnings') if organization.report_warnings else None,
                 create_package_info_box(fetcher, repo) if organization.report_warnings else None,
             ])

@@ -52,7 +52,7 @@ class ElasticSearchFetcher(Fetcher):
 
     def fetch_aggregate_data(self, end_date: str) -> ObjectApiResponse[Any]:
         indexer = Indexer(
-            get_environment_var('LOG_URL'),
+            get_environment_var('ELASTIC_SEARCH_LOGS_URL'),
             get_environment_var('ELASTIC_SEARCH_USER'),
             get_environment_var('ELASTIC_SEARCH_PASSWORD')
         )

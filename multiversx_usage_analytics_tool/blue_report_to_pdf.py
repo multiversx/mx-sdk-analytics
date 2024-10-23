@@ -1,11 +1,10 @@
 import asyncio
 import os
 import tempfile
-from math import ceil
 from pathlib import Path
 from typing import List
 
-from pyppeteer import launch
+from playwright.async_api import async_playwright
 
 from multiversx_usage_analytics_tool.constants import (
     WAIT_FOR_RADIO_COMPONENT_LOAD, WAIT_FOR_TABS_COMPONENT_LOAD)
@@ -27,59 +26,45 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
     tab_ids = [repo.repo_name.replace('.', '-') for repo in PackagesRegistry if Reports.BLUE.value in repo.reports]
     organizations = [item.value.name for item in EcosystemConfiguration]
 
-    browser = await launch(
-        headless=True,
-        handleSIGINT=False,
-        handleSIGTERM=False,
-        handleSIGHUP=False
-    )
-    # open report page
-    page = await get_pyppeteer_page(browser, Reports.BLUE.value)
+    async with async_playwright() as p:
+        browser, page = await get_pyppeteer_page(p, Reports.BLUE.value)
 
-    # click on selected file
-    output = await select_report(page, selected_file)
-    pdf_files = [output]
+        # click on selected file
+        output = await select_report(page, selected_file)
+        pdf_files = [output]
 
-    await page.waitForSelector('#organization-selector input[type="radio"]')
-    radio_buttons = await page.querySelectorAll('#organization-selector input[type="radio"]')
+        await page.wait_for_selector('#organization-selector input[type="radio"]')
+        radio_buttons = await page.query_selector_all('#organization-selector input[type="radio"]')
 
-    # Loop through each radio button (organization)
-    for idx, radio in enumerate(radio_buttons):
-        await radio.click()
-        await page.waitFor(wait_for_radio_selection_to_load_time)
+        # Loop through each radio button (organization)
+        for idx, radio in enumerate(radio_buttons):
+            await radio.click()
+            await page.wait_for_timeout(wait_for_radio_selection_to_load_time)
 
-        # Loop through each tab (package registry)
-        for tab_id in tab_ids:
-            await page.click(f'#{tab_id}')
-            await page.waitForSelector(f'#{tab_id}', {'timeout': 10000})
-            await page.waitFor(wait_for_tabs_content_to_load_time)
+            # Loop through each tab (package registry)
+            for tab_id in tab_ids:
+                await page.click(f'#{tab_id}')
+                await page.wait_for_selector(f'#{tab_id}', timeout=10000)
+                await page.wait_for_timeout(wait_for_tabs_content_to_load_time)
 
-            is_empty = await is_empty_page(page)
-            if is_empty:
-                print(f"Empty PDF for organization {organizations[idx]}, tab {tab_id}: not saved")
-                continue
+                is_empty = await is_empty_page(page)
+                if is_empty:
+                    print(f"Empty PDF for organization {organizations[idx]}, tab {tab_id}: not saved")
+                    continue
 
-            height = '1080px'
-            body_handle = await page.querySelector('body')
-            if body_handle:
-                bounding_box = await body_handle.boundingBox()
-                if bounding_box:
-                    height = str(ceil(bounding_box['height'])) + 'px'
+                # Save each tab's content as a PDF
+                pdf_file = os.path.join(temp_dir, f'report_{idx}_{tab_id}.pdf')
+                pdf_files.append(pdf_file)
+                await page.pdf(
+                    path=pdf_file,
+                    format='A4',
+                    landscape=True,
+                    print_background=True,
+                )
 
-            # Save each tab's content as a PDF
-            pdf_file = os.path.join(temp_dir, f'report_{idx}_{tab_id}.pdf')
-            pdf_files.append(pdf_file)
-            await page.pdf({
-                'path': pdf_file,
-                'format': 'A4',
-                'landscape': True,
-                'printBackground': True,
-                'width': '1440px',
-                'height': f'{height}'
-            })
-            print(f"Saved PDF for organization {organizations[idx]}, tab {tab_id}: {pdf_file}")
+                print(f"Saved PDF for organization {organizations[idx]}, tab {tab_id}: {pdf_file}")
 
-    await browser.close()
+        await browser.close()
     return pdf_files
 
 
