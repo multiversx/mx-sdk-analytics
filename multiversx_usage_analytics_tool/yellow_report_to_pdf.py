@@ -10,7 +10,7 @@ from multiversx_usage_analytics_tool.constants import \
     WAIT_FOR_TABS_COMPONENT_LOAD
 from multiversx_usage_analytics_tool.utils import (Reports, combine_pdfs,
                                                    get_environment_var,
-                                                   get_pyppeteer_page,
+                                                   get_playwright_page,
                                                    is_empty_page,
                                                    select_report,
                                                    select_target_json_file)
@@ -23,7 +23,7 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
 
     # open report page
     async with async_playwright() as p:
-        browser, page = await get_pyppeteer_page(p, Reports.YELLOW.value)
+        browser, page = await get_playwright_page(p, Reports.YELLOW.value)
 
         # click on selected file
         output = await select_report(page, selected_file)

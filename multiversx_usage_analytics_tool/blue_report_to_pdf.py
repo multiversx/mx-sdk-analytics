@@ -10,10 +10,10 @@ from multiversx_usage_analytics_tool.constants import (
     WAIT_FOR_RADIO_COMPONENT_LOAD, WAIT_FOR_TABS_COMPONENT_LOAD)
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
-from multiversx_usage_analytics_tool.utils import (PackagesRegistry, Reports,
+from multiversx_usage_analytics_tool.utils import (PackagesRegistries, Reports,
                                                    combine_pdfs,
                                                    get_environment_var,
-                                                   get_pyppeteer_page,
+                                                   get_playwright_page,
                                                    is_empty_page,
                                                    select_report,
                                                    select_target_json_file)
@@ -23,11 +23,11 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
     wait_for_radio_selection_to_load_time = WAIT_FOR_RADIO_COMPONENT_LOAD
     wait_for_tabs_content_to_load_time = WAIT_FOR_TABS_COMPONENT_LOAD
 
-    tab_ids = [repo.repo_name.replace('.', '-') for repo in PackagesRegistry if Reports.BLUE.value in repo.reports]
+    tab_ids = [repo.value.repo_name.replace('.', '-') for repo in PackagesRegistries if Reports.BLUE.value in repo.value.reports]
     organizations = [item.value.name for item in EcosystemConfiguration]
 
     async with async_playwright() as p:
-        browser, page = await get_pyppeteer_page(p, Reports.BLUE.value)
+        browser, page = await get_playwright_page(p, Reports.BLUE.value)
 
         # click on selected file
         output = await select_report(page, selected_file)

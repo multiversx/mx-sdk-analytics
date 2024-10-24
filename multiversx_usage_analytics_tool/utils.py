@@ -64,17 +64,19 @@ class Language(Enum):
         self.suffixes = suffixes
 
 
-class PackagesRegistry(Enum):
-    NPM = ('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE.value])
-    CARGO = ('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE.value])
-    PYPI = ('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE.value])
-    GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN.value])
+@dataclass(frozen=True)
+class PackagesRegistry:
+    repo_name: str
+    search_url: str
+    downloads_url: str
+    reports: list[Report]
 
-    def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Report]):
-        self.repo_name = repo_name
-        self.search_url = search_url
-        self.downloads_url = downloads_url
-        self.reports = reports
+
+class PackagesRegistries(Enum):
+    NPM = PackagesRegistry('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE.value])
+    CARGO = PackagesRegistry('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE.value])
+    PYPI = PackagesRegistry('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE.value])
+    GITHUB = PackagesRegistry('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN.value])
 
 
 @dataclass
@@ -211,7 +213,7 @@ def combine_pdfs(pdf_files: List[str], output_pdf: str):
     print(f"Combined PDF saved as: {output_pdf}")
 
 
-async def get_pyppeteer_page(p: Playwright, report_type: Report) -> Tuple[Browser, Page]:
+async def get_playwright_page(p: Playwright, report_type: Report) -> Tuple[Browser, Page]:
     report_port = report_type.repo_port
     DASH_APP_URL = f'http://0.0.0.0:{report_port}/'
 

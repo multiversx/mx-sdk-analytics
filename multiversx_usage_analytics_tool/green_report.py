@@ -9,6 +9,7 @@ from multiversx_usage_analytics_tool.ecosystem_configuration import \
 from multiversx_usage_analytics_tool.github_fetcher import (GithubFetcher,
                                                             GithubPackage)
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+                                                   PackagesRegistries,
                                                    PackagesRegistry, Reports,
                                                    get_environment_var)
 
@@ -210,29 +211,29 @@ def create_visits_graph(fetcher: GithubFetcher, section: PackagesRegistry, langu
 )
 def update_green_report(selected_file: str, selected_language: str):
     fetchers = {org: GithubFetcher.from_generated_file(selected_file, org.value) for org in EcosystemConfiguration}
-    repo = PackagesRegistry.GITHUB
+    repo = PackagesRegistries.GITHUB
     return html.Div([
         dcc.Tabs(id="org-selector", children=[
             dcc.Tab(label=org.value.name, id=org.value.name, style={'font-weight': 'normal'},
                     selected_style={'font-weight': 'bold'}, children=[
                 html.H1(f"{org.value.name} - {repo.name} Repositories Downloads {'' if selected_language == 'All' else ' - ' + selected_language}"),
                 html.H2('Two Weeks Download Data Table'),
-                create_table(fetchers[org], repo, selected_language),
+                create_table(fetchers[org], repo.value, selected_language),
                 html.H2('Clones & Visits Trends'),
                 html.Div([
                     dcc.Graph(
                         id='downloads-graph',
-                        figure=create_downloads_graph(fetchers[org], repo, selected_language)
+                        figure=create_downloads_graph(fetchers[org], repo.value, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.Div([
                     dcc.Graph(
                         id='visits-graph',
-                        figure=create_visits_graph(fetchers[org], repo, selected_language)
+                        figure=create_visits_graph(fetchers[org], repo.value, selected_language)
                     ),
                 ], style={'display': 'inline-block', 'width': '48%'}),
                 html.H2('Health score warnings') if org.value.report_warnings else None,
-                create_package_info_box(fetchers[org], repo, selected_language) if org.value.report_warnings else None,
+                create_package_info_box(fetchers[org], repo.value, selected_language) if org.value.report_warnings else None,
             ])
             for org in EcosystemConfiguration
         ],

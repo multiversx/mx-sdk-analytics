@@ -72,17 +72,17 @@ def create_table(fetcher: ElasticSearchFetcher, section: str):
 
         row = [
             html.Td(package.package_name),
-            html.Td(f'{package_statistics['downloads_total']:,}', style={'textAlign': 'right', 'maxWidth': '10ch'}),
-            html.Td(f'{package_statistics['downloads_last_week']:,}', style={'textAlign': 'right'}),
-            html.Td(f'{int(package_statistics['avg_daily_downloads']):,}', style={'textAlign': 'right'}),
+            html.Td(f'{package_statistics["downloads_total"]:,}', style={'textAlign': 'right', 'maxWidth': '10ch'}),
+            html.Td(f'{package_statistics["downloads_last_week"]:,}', style={'textAlign': 'right'}),
+            html.Td(f'{int(package_statistics["avg_daily_downloads"]):,}', style={'textAlign': 'right'}),
         ]
         table_rows.append(html.Tr(row))
 
     row = html.Tr([
         html.Td('Total', style={'fontWeight': 'bold'}),
-        html.Td(f'{total['total_usage']:,}', style={'textAlign': 'right', 'maxWidth': '10ch', 'fontWeight': 'bold'}),
-        html.Td(f'{total['last_week_usage']:,}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
-        html.Td(f'{total['total_usage'] / report_type.repo_length:,.0f}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
+        html.Td(f'{total["total_usage"]:,}', style={'textAlign': 'right', 'maxWidth': '10ch', 'fontWeight': 'bold'}),
+        html.Td(f'{total["last_week_usage"]:,}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
+        html.Td(f'{total["total_usage"] / report_type.repo_length:,.0f}', style={'textAlign': 'right', 'fontWeight': 'bold'}),
     ])
     table_rows.append(row)
 
@@ -138,10 +138,12 @@ def update_yellow_report(selected_file: str):
                 create_table(fetcher, section),
 
                 html.H2('Access Trends'),
-                dcc.Graph(
-                    id='downloads-graph',
-                    figure=create_graph(fetcher, section)
-                ),
+                html.Div([
+                    dcc.Graph(
+                        id='downloads-graph',
+                        figure=create_graph(fetcher, section)
+                    ),
+                ], style={'display': 'inline-block', 'width': '100%'}),
             ])
             for section in ['Grouped_data']
         ],

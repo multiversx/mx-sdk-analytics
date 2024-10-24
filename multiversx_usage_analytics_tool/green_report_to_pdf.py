@@ -13,7 +13,7 @@ from multiversx_usage_analytics_tool.ecosystem_configuration import \
 from multiversx_usage_analytics_tool.utils import (Language, Reports,
                                                    combine_pdfs,
                                                    get_environment_var,
-                                                   get_pyppeteer_page,
+                                                   get_playwright_page,
                                                    is_empty_page,
                                                    select_report,
                                                    select_target_json_file)
@@ -27,7 +27,7 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
     languages: List[str] = [item.lang_name for item in Language]
 
     async with async_playwright() as p:
-        browser, page = await get_pyppeteer_page(p, Reports.GREEN.value)
+        browser, page = await get_playwright_page(p, Reports.GREEN.value)
 
         # click on selected file
         output = await select_report(page, selected_file)
