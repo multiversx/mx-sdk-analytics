@@ -23,8 +23,8 @@ For save_to_pdf, install playwright browsers:
 playwright install
 ```
 
-(Optional - If you see a warning about missing system dependencies)
-Install system dependencies for Playwright, required libraries to ensure Playwright browsers can run correctly:
+(Optional - If a warning is issued about missing system dependencies)
+Install system dependencies for Playwright - required libraries to ensure Playwright browsers can run correctly:
 ```
 sudo $(which playwright) install-deps
 ```
