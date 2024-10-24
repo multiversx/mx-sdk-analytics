@@ -47,24 +47,26 @@ class Indexes(Enum):
     INGRESS = Index('Ingress-logs', 'INGRESS_INDEX_NAME')
 
 
-class Language(Enum):
-    JAVASCRIPT = ('Javascript', ['js', 'nestjs'])
-    RUST = ('Rust', ['rs', 'rust'])
-    PYTHON = ('Python', ['py'])
-    CSHARP = ('C#', ['csharp'])
-    C = ('C/C++', ['clang', 'cpp'])
-    GO = ('Go', ['go'])
-    PHP = ('PHP', ['php'])
-    JAVA = ('Java', ['java'])
-    KOTLIN = ('Kotlin', ['kotlin'])
-    UNKNOWN = ('Unknown', ['unknown'])
-
-    def __init__(self, lang_name: str, suffixes: list[str]):
-        self.lang_name = lang_name
-        self.suffixes = suffixes
+@dataclass
+class Language:
+    lang_name: str
+    suffixes: list[str]
 
 
-@dataclass(frozen=True)
+class Languages(Enum):
+    JAVASCRIPT = Language('Javascript', ['js', 'nestjs'])
+    RUST = Language('Rust', ['rs', 'rust'])
+    PYTHON = Language('Python', ['py'])
+    CSHARP = Language('C#', ['csharp'])
+    C = Language('C/C++', ['clang', 'cpp'])
+    GO = Language('Go', ['go'])
+    PHP = Language('PHP', ['php'])
+    JAVA = Language('Java', ['java'])
+    KOTLIN = Language('Kotlin', ['kotlin'])
+    UNKNOWN = Language('Unknown', ['unknown'])
+
+
+@dataclass()
 class PackagesRegistry:
     repo_name: str
     search_url: str

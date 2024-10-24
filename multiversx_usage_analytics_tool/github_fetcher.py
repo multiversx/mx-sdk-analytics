@@ -13,6 +13,7 @@ from multiversx_usage_analytics_tool.ecosystem_configuration import \
 from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
                                                      Package, Score)
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+                                                   Languages,
                                                    PackagesRegistries, Reports,
                                                    get_environment_var)
 
@@ -206,13 +207,17 @@ class GithubFetcher(Fetcher):
         return score
 
     def github_package_language(self, package_name: str, language: str) -> Language:
-        packet_language = next((lang for lang in Language if any("-" + suffix in package_name for suffix in lang.suffixes)), None)
+        packet_language = next((lang.value for lang in Languages if any(
+            "-" + suffix in package_name for suffix in lang.value.suffixes)), None)
 
         if not packet_language:
             if language == 'TypeScript':
-                return Language.JAVASCRIPT
+                return Languages.JAVASCRIPT.value
             else:
-                return next((lang for lang in Language if language and language.lower() == lang.lang_name.lower()), Language.UNKNOWN)
+                return next(
+                    (lang.value for lang in Languages if language and language.lower() == lang.value.lang_name.lower()),
+                    Languages.UNKNOWN.value
+                )
         else:
             return packet_language
 

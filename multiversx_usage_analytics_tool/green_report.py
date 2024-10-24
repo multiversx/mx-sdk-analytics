@@ -8,7 +8,7 @@ from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
 from multiversx_usage_analytics_tool.github_fetcher import (GithubFetcher,
                                                             GithubPackage)
-from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Languages,
                                                    PackagesRegistries,
                                                    PackagesRegistry, Reports,
                                                    get_environment_var)
@@ -21,7 +21,7 @@ app = dash.Dash(__name__)
 
 def get_layout():
     directory = get_environment_var('JSON_FOLDER')
-    language_options = ['All'] + [lang.lang_name for lang in Language]
+    language_options = ['All'] + [lang.value.lang_name for lang in Languages]
     dropdown_options = report_type.get_report_dropdown_options(directory)
     selected_option = dropdown_options[0]['value'] if dropdown_options else None  # Set default value as the newest file generated
 

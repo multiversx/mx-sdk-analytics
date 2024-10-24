@@ -13,7 +13,7 @@ from multiversx_usage_analytics_tool.constants import (DAYS_IN_MONTHLY_REPORT,
                                                        NPM_PAGE_SIZE,
                                                        SECONDS_BEFORE_RETRY)
 from multiversx_usage_analytics_tool.ecosystem import Organization
-from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Languages,
                                                    PackagesRegistries, Reports,
                                                    get_environment_var)
 
@@ -281,7 +281,7 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages.keys():
                 fetched_downloads = result.fetch_npm_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_npm_fetched_data(
-                    package_name, Language.JAVASCRIPT.lang_name, fetched_downloads)
+                    package_name, Languages.JAVASCRIPT.value.lang_name, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistries.NPM.name)
                 package_downloads.site_score = Score.from_dict(packages[package_name])
                 result.packages.append(package_downloads)
@@ -294,7 +294,7 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages:
                 fetched_downloads = result.fetch_crates_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_crates_fetched_data(
-                    package_name, Language.RUST.lang_name, fetched_downloads)
+                    package_name, Languages.RUST.value.lang_name, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistries.CARGO.name)
                 result.packages.append(package_downloads)
                 pbar.update(1)
@@ -306,7 +306,7 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages:
                 fetched_downloads = result.fetch_pypi_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_pypi_fetched_data(
-                    package_name, Language.PYTHON.lang_name, fetched_downloads)
+                    package_name, Languages.PYTHON.value.lang_name, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistries.PYPI.name)
                 package_downloads.site_score = Score.from_dict(result.fetch_pypi_package_score(package_name))
                 result.packages.append(package_downloads)

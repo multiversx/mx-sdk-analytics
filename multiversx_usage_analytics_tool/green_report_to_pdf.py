@@ -10,7 +10,7 @@ from multiversx_usage_analytics_tool.constants import (
     WAIT_FOR_RADIO_COMPONENT_LOAD, WAIT_FOR_TABS_COMPONENT_LOAD)
 from multiversx_usage_analytics_tool.ecosystem_configuration import \
     EcosystemConfiguration
-from multiversx_usage_analytics_tool.utils import (Language, Reports,
+from multiversx_usage_analytics_tool.utils import (Languages, Reports,
                                                    combine_pdfs,
                                                    get_environment_var,
                                                    get_playwright_page,
@@ -24,7 +24,7 @@ async def capture_pdfs(temp_dir: str, selected_file: str) -> List[str]:
     wait_for_tabs_content_to_load_time = WAIT_FOR_TABS_COMPONENT_LOAD
 
     tab_ids = [item.value.name for item in EcosystemConfiguration]
-    languages: List[str] = [item.lang_name for item in Language]
+    languages: List[str] = [item.value.lang_name for item in Languages]
 
     async with async_playwright() as p:
         browser, page = await get_playwright_page(p, Reports.GREEN.value)
