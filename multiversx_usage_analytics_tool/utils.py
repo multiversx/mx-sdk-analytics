@@ -4,13 +4,12 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import inquirer
 from dotenv.main import load_dotenv
-from PyPDF2._merger import PdfMerger
-from pyppeteer.browser import Browser
-from pyppeteer.page import Page
+from playwright.async_api import Browser, Page, Playwright
+from pypdf import PdfWriter
 
 from multiversx_usage_analytics_tool.constants import (
     BLUE_REPORT_PORT, DATE_FORMAT, DAYS_IN_MONTHLY_REPORT,
@@ -48,34 +47,38 @@ class Indexes(Enum):
     INGRESS = Index('Ingress-logs', 'INGRESS_INDEX_NAME')
 
 
-class Language(Enum):
-    JAVASCRIPT = ('Javascript', ['js', 'nestjs'])
-    RUST = ('Rust', ['rs', 'rust'])
-    PYTHON = ('Python', ['py'])
-    CSHARP = ('C#', ['csharp'])
-    C = ('C/C++', ['clang', 'cpp'])
-    GO = ('Go', ['go'])
-    PHP = ('PHP', ['php'])
-    JAVA = ('Java', ['java'])
-    KOTLIN = ('Kotlin', ['kotlin'])
-    UNKNOWN = ('Unknown', ['unknown'])
-
-    def __init__(self, lang_name: str, suffixes: list[str]):
-        self.lang_name = lang_name
-        self.suffixes = suffixes
+@dataclass
+class Language:
+    lang_name: str
+    suffixes: list[str]
 
 
-class PackagesRegistry(Enum):
-    NPM = ('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE.value])
-    CARGO = ('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE.value])
-    PYPI = ('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE.value])
-    GITHUB = ('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN.value])
+class Languages(Enum):
+    JAVASCRIPT = Language('Javascript', ['js', 'nestjs'])
+    RUST = Language('Rust', ['rs', 'rust'])
+    PYTHON = Language('Python', ['py'])
+    CSHARP = Language('C#', ['csharp'])
+    C = Language('C/C++', ['clang', 'cpp'])
+    GO = Language('Go', ['go'])
+    PHP = Language('PHP', ['php'])
+    JAVA = Language('Java', ['java'])
+    KOTLIN = Language('Kotlin', ['kotlin'])
+    UNKNOWN = Language('Unknown', ['unknown'])
 
-    def __init__(self, repo_name: str, search_url: str, downloads_url: str, reports: list[Report]):
-        self.repo_name = repo_name
-        self.search_url = search_url
-        self.downloads_url = downloads_url
-        self.reports = reports
+
+@dataclass()
+class PackagesRegistry:
+    repo_name: str
+    search_url: str
+    downloads_url: str
+    reports: list[Report]
+
+
+class PackagesRegistries(Enum):
+    NPM = PackagesRegistry('npmjs', 'https://registry.npmjs.org/-/v1/search', 'https://api.npmjs.org/downloads/range', [Reports.BLUE.value])
+    CARGO = PackagesRegistry('crates.io', 'https://crates.io/api/v1/crates', 'https://crates.io/api/v1/crates', [Reports.BLUE.value])
+    PYPI = PackagesRegistry('pypi', 'https://pypi.org/search', 'https://pypistats.org/api/packages', [Reports.BLUE.value])
+    GITHUB = PackagesRegistry('github', 'https://api.github.com/search/repositories', 'https://api.github.com/repos', [Reports.GREEN.value])
 
 
 @dataclass
@@ -201,36 +204,39 @@ def get_environment_var(env_var: str) -> Any:
 # save to pdf common methods
 
 def combine_pdfs(pdf_files: List[str], output_pdf: str):
-    merger = PdfMerger()
+    merger = PdfWriter()
 
-    for pdf_file in pdf_files:
-        merger.append(pdf_file)
+    for pdf in pdf_files:
+        merger.append(pdf)
 
     merger.write(output_pdf)
     merger.close()
+
     print(f"Combined PDF saved as: {output_pdf}")
 
 
-async def get_pyppeteer_page(browser: Browser, report_type: Report) -> Page:
+async def get_playwright_page(p: Playwright, report_type: Report) -> Tuple[Browser, Page]:
     report_port = report_type.repo_port
-
-    page = await browser.newPage()
-    await page.setViewport({'width': 1440, 'height': 1080})
     DASH_APP_URL = f'http://0.0.0.0:{report_port}/'
+
+    browser = await p.chromium.launch(headless=True)
+    page = await browser.new_page()
     await page.goto(DASH_APP_URL)
 
-    return page
+    return (browser, page)
 
 
 async def select_report(page: Page, selected_file: str) -> str:
     wait_for_dropdown_selection_to_load_time = WAIT_FOR_DROPDOWN_COMPONENT_LOAD
+
     # click on selected file received from dash
     file_selector_id = 'file-selector'
-    await page.waitForSelector(f'#{file_selector_id}')
+    await page.wait_for_selector(f'#{file_selector_id}', timeout=5000)
+
     if selected_file:
         desired_value = selected_file.split('/')[-1]  # extract file name without path
         await page.click(f'#{file_selector_id} .Select-control')
-        await page.waitForSelector('.Select-menu-outer')
+        await page.wait_for_selector('.Select-menu-outer')
 
         files = await page.evaluate('''() => {
             let elements = document.querySelectorAll('.VirtualizedSelectOption');
@@ -247,7 +253,7 @@ async def select_report(page: Page, selected_file: str) -> str:
         if desired_index is not None:
             option_selector = f'.Select-menu-outer .VirtualizedSelectOption:nth-child({desired_index + 1})'
             await page.click(option_selector)
-            page.waitFor(wait_for_dropdown_selection_to_load_time)
+            await page.wait_for_timeout(wait_for_dropdown_selection_to_load_time)
 
     # Get the selected json file name
     selected_value: str = await page.evaluate(f'''
@@ -262,7 +268,7 @@ async def select_report(page: Page, selected_file: str) -> str:
 
 
 async def is_empty_page(page: Page) -> bool:
-    await page.waitForSelector('#downloads_table')
+    await page.wait_for_selector('#downloads_table')
     no_of_rows = await page.evaluate('''
         (function() {
             var table = document.querySelector('#downloads_table');

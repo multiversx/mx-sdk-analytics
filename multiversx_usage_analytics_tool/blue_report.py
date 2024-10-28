@@ -10,6 +10,7 @@ from multiversx_usage_analytics_tool.fetcher import Package
 from multiversx_usage_analytics_tool.package_managers_fetcher import (
     PackageManagersFetcher, PackageManagersPackage)
 from multiversx_usage_analytics_tool.utils import (FormattedDate,
+                                                   PackagesRegistries,
                                                    PackagesRegistry, Reports,
                                                    get_environment_var)
 
@@ -144,21 +145,23 @@ def update_blue_report(selected_file: str, selected_organization: str):
     fetcher = PackageManagersFetcher.from_generated_file(selected_file, organization)
     return html.Div([
         dcc.Tabs([
-            dcc.Tab(label=repo.repo_name, id=repo.repo_name.replace('.', '-'), style={'font-weight': 'normal'},
+            dcc.Tab(label=repo.value.repo_name, id=repo.value.repo_name.replace('.', '-'), style={'font-weight': 'normal'},
                     selected_style={'font-weight': 'bold'}, children=[
                 html.H1(f"{organization.name} - {repo.name} Package Downloads"),
                 html.H2('Download Data Table'),
-                create_table(fetcher, repo),
+                create_table(fetcher, repo.value),
 
                 html.H2('Download Trends'),
-                dcc.Graph(
-                    id='downloads-graph',
-                    figure=create_graph(fetcher, repo)
-                ),
+                html.Div([
+                    dcc.Graph(
+                        id='downloads-graph',
+                        figure=create_graph(fetcher, repo.value)
+                    ),
+                ], style={'display': 'inline-block', 'width': '95%'}),
                 html.H2('Libraries.io warnings') if organization.report_warnings else None,
-                create_package_info_box(fetcher, repo) if organization.report_warnings else None,
+                create_package_info_box(fetcher, repo.value) if organization.report_warnings else None,
             ])
-            for repo in PackagesRegistry if report_type in repo.reports
+            for repo in PackagesRegistries if report_type in repo.value.reports
         ],
             colors={
             "border": "white",  # Border color

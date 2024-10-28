@@ -13,8 +13,8 @@ from multiversx_usage_analytics_tool.constants import (DAYS_IN_MONTHLY_REPORT,
                                                        NPM_PAGE_SIZE,
                                                        SECONDS_BEFORE_RETRY)
 from multiversx_usage_analytics_tool.ecosystem import Organization
-from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
-                                                   PackagesRegistry, Reports,
+from multiversx_usage_analytics_tool.utils import (FormattedDate, Languages,
+                                                   PackagesRegistries, Reports,
                                                    get_environment_var)
 
 
@@ -72,7 +72,7 @@ class PackageManagersPackage(Package):
         result.downloads = [PackageManagersDailyActivity.from_npm_fetched_data(item) for item in raw_downloads]
         result.package_name = response.get('package', package)
         result.package_language = lang
-        result.package_site = PackagesRegistry.NPM.repo_name
+        result.package_site = PackagesRegistries.NPM.value.repo_name
         result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
@@ -99,7 +99,7 @@ class PackageManagersPackage(Package):
 
         result.package_language = lang
         result.package_name = package
-        result.package_site = PackagesRegistry.CARGO.repo_name
+        result.package_site = PackagesRegistries.CARGO.value.repo_name
         result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
@@ -111,7 +111,7 @@ class PackageManagersPackage(Package):
             lambda x: x.get('category', '') == 'with_mirrors', raw_downloads)]
         result.package_language = lang
         result.package_name = response.get('package', package)
-        result.package_site = PackagesRegistry.PYPI.repo_name
+        result.package_site = PackagesRegistries.PYPI.value.repo_name
         result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         return result
 
@@ -160,14 +160,14 @@ class PackageManagersFetcher(Fetcher):
         scores_dict = {}
 
         while True:
-            url = self.organization.get_search_url_string(PackagesRegistry.NPM, page)
+            url = self.organization.get_search_url_string(PackagesRegistries.NPM.value, page)
             response = self.get_request(url)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('objects', [])
             # also gets npmjs scores in the form "{package_name}": {package_score}
             scores_dict.update({item.get('package', {}).get('name'): item.get('score', {}) for item in package_info
-                                if self.organization.get_search_filter(PackagesRegistry.NPM, item)})
+                                if self.organization.get_search_filter(PackagesRegistries.NPM.value, item)})
             if len(data['objects']) < size:
                 break
             page += 1
@@ -183,16 +183,16 @@ class PackageManagersFetcher(Fetcher):
 
     def get_crates_package_names(self) -> List[str]:      # crates api (crates/api) - query search result
         package_names = []
-        pattern = self.organization.search_includes[PackagesRegistry.CARGO]
+        pattern = self.organization.search_includes[PackagesRegistries.CARGO.value.repo_name]
         search_string = f'?q={pattern}'
         while search_string:
-            url = PackagesRegistry.CARGO.downloads_url + search_string
+            url = PackagesRegistries.CARGO.value.downloads_url + search_string
             response = self.get_request(url)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('crates', [])
             new_package_names = [
-                item.get('name') for item in package_info if self.organization.get_search_filter(PackagesRegistry.CARGO, item)]
+                item.get('name') for item in package_info if self.organization.get_search_filter(PackagesRegistries.CARGO.value, item)]
             package_names.extend(new_package_names)
             search_string = data.get('meta', {}).get('next_page', '')
         return package_names
@@ -208,7 +208,7 @@ class PackageManagersFetcher(Fetcher):
 
     def get_pypi_package_names(self) -> List[str]:
         package_names = []
-        pattern = self.organization.search_includes[PackagesRegistry.PYPI]
+        pattern = self.organization.search_includes[PackagesRegistries.PYPI.value.repo_name]
         response = requests.get('https://pypi.org/simple/', headers={"Accept": "application/vnd.pypi.simple.v1+json"})
         response.raise_for_status()
         package_info = response.json().get('projects', [])
@@ -221,7 +221,7 @@ class PackageManagersFetcher(Fetcher):
             response.raise_for_status()
             urls = response.json().get('info', {}).get('project_urls', {})
 
-            if urls and self.organization.get_search_filter(PackagesRegistry.PYPI, urls):
+            if urls and self.organization.get_search_filter(PackagesRegistries.PYPI.value, urls):
                 package_names.append(package_name)
 
         return package_names
@@ -281,8 +281,8 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages.keys():
                 fetched_downloads = result.fetch_npm_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_npm_fetched_data(
-                    package_name, Language.JAVASCRIPT.lang_name, fetched_downloads)
-                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.NPM.name)
+                    package_name, Languages.JAVASCRIPT.value.lang_name, fetched_downloads)
+                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistries.NPM.name)
                 package_downloads.site_score = Score.from_dict(packages[package_name])
                 result.packages.append(package_downloads)
                 pbar.update(1)
@@ -294,8 +294,8 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages:
                 fetched_downloads = result.fetch_crates_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_crates_fetched_data(
-                    package_name, Language.RUST.lang_name, fetched_downloads)
-                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.CARGO.name)
+                    package_name, Languages.RUST.value.lang_name, fetched_downloads)
+                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistries.CARGO.name)
                 result.packages.append(package_downloads)
                 pbar.update(1)
 
@@ -306,8 +306,8 @@ class PackageManagersFetcher(Fetcher):
             for package_name in packages:
                 fetched_downloads = result.fetch_pypi_downloads(package_name)
                 package_downloads = PackageManagersPackage.from_pypi_fetched_data(
-                    package_name, Language.PYTHON.lang_name, fetched_downloads)
-                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistry.PYPI.name)
+                    package_name, Languages.PYTHON.value.lang_name, fetched_downloads)
+                package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistries.PYPI.name)
                 package_downloads.site_score = Score.from_dict(result.fetch_pypi_package_score(package_name))
                 result.packages.append(package_downloads)
                 pbar.update(1)

@@ -13,7 +13,8 @@ from multiversx_usage_analytics_tool.ecosystem_configuration import \
 from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
                                                      Package, Score)
 from multiversx_usage_analytics_tool.utils import (FormattedDate, Language,
-                                                   PackagesRegistry, Reports,
+                                                   Languages,
+                                                   PackagesRegistries, Reports,
                                                    get_environment_var)
 
 
@@ -95,7 +96,7 @@ class GithubPackage(Package):
         result.views = [GithubDailyActivity.from_github_fetched_data(item) for item in raw_views]
         result.package_name = response.get('package', package)
         result.package_language = lang
-        result.package_site = PackagesRegistry.GITHUB.repo_name
+        result.package_site = PackagesRegistries.GITHUB.value.repo_name
         result.no_of_downloads = sum(dd.downloads for dd in result.downloads)
         result.main_page_statistics = response.get('main_page_statistics', {})
         return result
@@ -147,7 +148,7 @@ class GithubFetcher(Fetcher):
         scores_dict = {}
 
         while True:
-            url = self.organization.get_search_url_string(PackagesRegistry.GITHUB, page)
+            url = self.organization.get_search_url_string(PackagesRegistries.GITHUB.value, page)
             response = requests.get(url, headers=self._get_github_authorization_header())
             response.raise_for_status()
             data = response.json()
@@ -161,7 +162,7 @@ class GithubFetcher(Fetcher):
         return scores_dict
 
     def fetch_github_downloads(self, package_name: str) -> Dict[str, Any]:
-        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB, package_name)}/clones'
+        url = f'{self.organization.get_downloads_url_string(PackagesRegistries.GITHUB.value, package_name)}/clones'
         response = requests.get(url, headers=self._get_github_authorization_header())
 
         if response.status_code == HTTPStatus.FORBIDDEN:
@@ -171,7 +172,7 @@ class GithubFetcher(Fetcher):
         return response.json()
 
     def fetch_github_visits(self, package_name: str) -> Dict[str, Any]:
-        url = f'{self.organization.get_downloads_url_string(PackagesRegistry.GITHUB, package_name)}/views'
+        url = f'{self.organization.get_downloads_url_string(PackagesRegistries.GITHUB.value, package_name)}/views'
         response = requests.get(url, headers=self._get_github_authorization_header())
 
         if response.status_code == HTTPStatus.FORBIDDEN:
@@ -206,13 +207,17 @@ class GithubFetcher(Fetcher):
         return score
 
     def github_package_language(self, package_name: str, language: str) -> Language:
-        packet_language = next((lang for lang in Language if any("-" + suffix in package_name for suffix in lang.suffixes)), None)
+        packet_language = next((lang.value for lang in Languages if any(
+            "-" + suffix in package_name for suffix in lang.value.suffixes)), None)
 
         if not packet_language:
             if language == 'TypeScript':
-                return Language.JAVASCRIPT
+                return Languages.JAVASCRIPT.value
             else:
-                return next((lang for lang in Language if language and language.lower() == lang.lang_name.lower()), Language.UNKNOWN)
+                return next(
+                    (lang.value for lang in Languages if language and language.lower() == lang.value.lang_name.lower()),
+                    Languages.UNKNOWN.value
+                )
         else:
             return packet_language
 
