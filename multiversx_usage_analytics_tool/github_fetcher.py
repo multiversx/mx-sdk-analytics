@@ -140,7 +140,10 @@ class GithubFetcher(Fetcher):
 
     def _get_github_authorization_header(self) -> Dict[str, Any]:
         bearer_token = get_environment_var("MX_GITHUB_TOKEN")
-        return {"Authorization": f"Bearer {bearer_token}"}
+        return {
+            "Authorization": f"Bearer {bearer_token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
 
     def get_github_package_names(self) -> Dict[str, Any]:        # github api - query search result
         page = 0
@@ -150,6 +153,7 @@ class GithubFetcher(Fetcher):
         while True:
             url = self.organization.get_search_url_string(PackagesRegistries.GITHUB.value, page)
             response = requests.get(url, headers=self._get_github_authorization_header())
+
             response.raise_for_status()
             data = response.json()
             package_info = data.get('items', [])
@@ -165,7 +169,7 @@ class GithubFetcher(Fetcher):
         url = f'{self.organization.get_downloads_url_string(PackagesRegistries.GITHUB.value, package_name)}/clones'
         response = requests.get(url, headers=self._get_github_authorization_header())
 
-        if response.status_code == HTTPStatus.FORBIDDEN:
+        if response.status_code in [HTTPStatus.FORBIDDEN, HTTPStatus.UNAUTHORIZED]:
             self.forbidden_traffic_access_packages.append(package_name)
         else:
             response.raise_for_status()
