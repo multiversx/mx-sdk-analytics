@@ -158,13 +158,17 @@ class PackageManagersFetcher(Fetcher):
         page = 0
         size = NPM_PAGE_SIZE
         scores_dict = {}
-
         while True:
             url = self.organization.get_search_url_string(PackagesRegistries.NPM.value, page)
             response = self.get_request(url)
             response.raise_for_status()
             data = response.json()
             package_info = data.get('objects', [])
+
+            # identify the point where the response starts to repeat the firt page - from 09.12.2024
+            if package_info[0].get('package', {}).get('name') in scores_dict.keys():
+                break
+
             # also gets npmjs scores in the form "{package_name}": {package_score}
             scores_dict.update({item.get('package', {}).get('name'): item.get('score', {}) for item in package_info
                                 if self.organization.get_search_filter(PackagesRegistries.NPM.value, item)})

@@ -59,9 +59,10 @@ class Organization:
         if site == PackagesRegistries.NPM.value:
             item_name = item.get('package', {}).get('name')
             item_repository = item.get('package', {}).get('links', {}).get('repository', '')
-            item_scope = item.get('package', {}).get('scope', '')
-            return pattern in item_name and (self.name.lower() in item_scope or isinstance(item_repository, str) and any(
-                own_repo_str in item_repository for own_repo_str in own_github_orgs))
+            item_homepage = item.get('package', {}).get('links', {}).get('homepage', '')
+
+            return pattern in item_name and (True if '@' in item_name else (self.name.lower() in item_homepage or isinstance(item_repository, str) and any(
+                own_repo_str in item_repository for own_repo_str in own_github_orgs)))
 
         elif site == PackagesRegistries.CARGO.value:
             item_name = item.get('name', '')
