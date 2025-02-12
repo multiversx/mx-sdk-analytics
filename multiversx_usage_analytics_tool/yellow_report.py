@@ -133,7 +133,7 @@ def update_yellow_report(selected_file: str):
         dcc.Tabs([
             dcc.Tab(label=section.replace('_', ' '), id=section, style={'font-weight': 'normal'},
                     selected_style={'font-weight': 'bold'}, children=[
-                html.H1(f"{organization.name} - {section.replace('_', ' ')} - MAINNET User Agent Access Details"),
+                html.H1(f"{organization.name} - {section.replace('_', ' ')} - API User Agent Access Details"),
                 html.H2('Access Data Table'),
                 create_table(fetcher, section),
 

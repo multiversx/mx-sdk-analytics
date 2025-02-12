@@ -3,8 +3,8 @@ from typing import Any, Dict, List
 from elastic_transport._response import ObjectApiResponse
 from indexer import Indexer
 
-from multiversx_usage_analytics_tool.constants import (
-    DAYS_IN_TWO_WEEKS_REPORT, DEFAULT_DATE)
+from multiversx_usage_analytics_tool.constants import (DAYS_IN_WEEK,
+                                                       DEFAULT_DATE)
 from multiversx_usage_analytics_tool.ecosystem import Organization
 from multiversx_usage_analytics_tool.fetcher import (DailyActivity, Fetcher,
                                                      Package)
@@ -58,9 +58,9 @@ class ElasticSearchFetcher(Fetcher):
         )
 
         end_timestamp = FormattedDate.from_string(end_date)
-        start_timestamp = end_timestamp - DAYS_IN_TWO_WEEKS_REPORT
+        start_timestamp = end_timestamp - DAYS_IN_WEEK
 
-        index = get_environment_var(Indexes.ACCESS.value.index_name)
+        index = get_environment_var(Indexes.INGRESS.value.index_name)
         count = indexer.count_records(index, start_timestamp, end_timestamp)
         print(f'fetching from {self.organization.name} access logs - {count} documents...')
 
@@ -96,7 +96,7 @@ class ElasticSearchFetcher(Fetcher):
         result = ElasticSearchFetcher()
         result.organization = org
         result.end_date = end_date
-        result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_TWO_WEEKS_REPORT + 1)
+        result.start_date = str(FormattedDate.from_string(end_date) - DAYS_IN_WEEK + 1)
         received_data = result.fetch_aggregate_data(end_date)
         raw_packages = result.get_user_agent_aggregate_packages(received_data)  # type: ignore
         result.packages = result.get_user_agent_grouped_packages(raw_packages)  # type: ignore
