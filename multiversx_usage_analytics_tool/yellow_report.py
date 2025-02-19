@@ -56,7 +56,7 @@ app.layout = get_layout
 def create_table(fetcher: ElasticSearchFetcher, section: str):
     header_row = html.Thead([
         html.Th('User', style={'width': '70%', 'textAlign': 'left'}),
-        html.Th('Count last 2 weeks', style={'width': '10%', 'textAlign': 'right'}),
+        html.Th('Count Total', style={'width': '10%', 'textAlign': 'right'}),
         html.Th('Count last week', style={'width': '10%', 'textAlign': 'right'}),
         html.Th('Avg count per day', style={'width': '10%', 'textAlign': 'right'}),
     ])
