@@ -47,7 +47,7 @@ class ElasticSearchFetcher(Fetcher):
         return ElasticSearchPackage.from_generated_file(item)
 
     def get_user_agent_aggregate_packages(self, response: dict[str, Any]) -> List[ElasticSearchPackage]:
-        raw_downloads = [response[key] for key in response.keys()]  # response.get("aggregations", {}).get("user_agents", {}).get("buckets", [])
+        raw_downloads = [response[key] for key in response.keys()]
         return [ElasticSearchPackage.from_aggregate_elastic_search(item) for item in raw_downloads]
 
     def fetch_aggregate_data(self, end_date: str) -> dict[str, Any]:
