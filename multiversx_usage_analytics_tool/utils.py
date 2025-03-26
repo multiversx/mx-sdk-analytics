@@ -33,18 +33,19 @@ class Report:
 class Reports (Enum):
     BLUE = Report('blue', 'PACKAGE MANAGERS REPORT', '#e6f7ff', BLUE_REPORT_PORT, DAYS_IN_MONTHLY_REPORT)
     GREEN = Report('green', 'GITHUB REPORT', '#e6ffe6', GREEN_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
-    YELLOW = Report('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT, DAYS_IN_WEEK)
+    YELLOW = Report('yellow', 'USER AGENT REPORT', '#FFFFF0', YELLOW_REPORT_PORT, DAYS_IN_TWO_WEEKS_REPORT)
 
 
 @dataclass
 class Index:
     index_title: str
     index_name: str
+    days_to_fetch_in_one_go: int
 
 
 class Indexes(Enum):
-    ACCESS = Index('Access-logs', 'ACCESS_INDEX_NAME')
-    INGRESS = Index('Ingress-logs', 'INGRESS_INDEX_NAME')
+    ACCESS = Index('Access-logs', 'ACCESS_INDEX_NAME', DAYS_IN_TWO_WEEKS_REPORT)
+    INGRESS = Index('Ingress-logs', 'INGRESS_INDEX_NAME', DAYS_IN_WEEK)
 
 
 @dataclass
