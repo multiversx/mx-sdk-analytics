@@ -111,7 +111,7 @@ class UserAgentGroups(Enum):
             return user_agent_name
         elif group in [UserAgentGroups.AXIOS.value, UserAgentGroups.PYTHON.value, UserAgentGroups.APACHE.value,
                        UserAgentGroups.OKHTTP.value, UserAgentGroups.CURL.value]:
-            i = user_agent_name.index('/')
+            i = user_agent_name.index('/') if '/' in user_agent_name else len(user_agent_name) - 2
             return user_agent_name[:(i + 2)]
         elif group == UserAgentGroups.HTTPS.value:
             url_match = re.search(r'\+(https?://[^\s;)\]]+)', user_agent_name)
