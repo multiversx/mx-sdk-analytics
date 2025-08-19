@@ -308,7 +308,8 @@ class PackageManagersFetcher(Fetcher):
 
         with tqdm(total=len(packages)) as pbar:
             for package_name in packages:
-                fetched_downloads = result.fetch_pypi_downloads(package_name)
+                # fetched_downloads = result.fetch_pypi_downloads(package_name)
+                fetched_downloads = {}
                 package_downloads = PackageManagersPackage.from_pypi_fetched_data(
                     package_name, Languages.PYTHON.value.lang_name, fetched_downloads)
                 package_downloads.libraries_io_score = result.fetch_libraries_io_score(package_name, PackagesRegistries.PYPI.name)
